@@ -71,32 +71,12 @@ export default function Nav() {
         <a href="/" className="flex items-center gap-3.5 no-underline">
           <Image
             src="/logo-white.png"
-            alt="Tryon History Museum"
-            width={48}
-            height={48}
+            alt="Tryon History Museum & Visitors Center"
+            width={220}
+            height={124}
             className="transition-opacity"
             style={{ opacity: scrolled ? 0.9 : 1 }}
           />
-          <div className="flex flex-col leading-none">
-            <span
-              className="font-display text-[22px] font-bold uppercase transition-colors"
-              style={{
-                letterSpacing: "0.08em",
-                color: scrolled ? "#FAF7F4" : "#fff",
-              }}
-            >
-              Tryon
-            </span>
-            <span
-              className="font-display text-[11px] font-normal uppercase transition-colors"
-              style={{
-                letterSpacing: "0.22em",
-                color: scrolled ? MUTED_RED : "rgba(255,255,255,0.7)",
-              }}
-            >
-              History Museum
-            </span>
-          </div>
         </a>
 
         {/* Desktop nav */}
