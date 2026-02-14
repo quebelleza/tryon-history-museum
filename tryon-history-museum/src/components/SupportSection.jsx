@@ -12,7 +12,7 @@ const tiers = [
     name: "Individual",
     price: "$50",
     perks:
-      "Free admission, newsletter, 10% gift shop discount",
+      "Free admission, newsletter, 10% gift shop discount, member-only events",
   },
   {
     name: "Family",
