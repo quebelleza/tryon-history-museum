@@ -10,19 +10,19 @@ const GOLD_ACCENT = "#C4A35A";
 const tiers = [
   {
     name: "Individual",
-    price: "$35",
+    price: "$50",
     perks:
       "Free admission, newsletter, 10% gift shop discount",
   },
   {
     name: "Family",
-    price: "$60",
+    price: "$75",
     perks:
       "All individual perks for your household, guest passes, event priority",
   },
   {
     name: "Patron",
-    price: "$150",
+    price: "$250",
     perks:
       "All family perks, private tours, name on donor wall, exclusive events",
     featured: true,
