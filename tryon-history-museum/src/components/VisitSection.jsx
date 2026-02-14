@@ -90,31 +90,22 @@ export default function VisitSection() {
           {/* Right: Location */}
           <FadeIn delay={0.2}>
             <div className="lg:mt-14">
-              {/* Map placeholder */}
+              {/* Embedded Google Map */}
               <div
-                className="w-full h-60 flex items-center justify-center mb-8 relative overflow-hidden"
+                className="w-full h-60 mb-8 relative overflow-hidden"
                 style={{
-                  background:
-                    "linear-gradient(135deg, #F5F0EB 0%, #FAF7F4 100%)",
                   border: "1px solid rgba(123,45,38,0.1)",
                 }}
               >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      "repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(123,45,38,0.03) 20px, rgba(123,45,38,0.03) 21px), repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(123,45,38,0.03) 20px, rgba(123,45,38,0.03) 21px)",
-                  }}
-                />
-                <div className="text-center relative">
-                  <div className="text-2xl mb-2 opacity-30">📍</div>
-                  <div
-                    className="font-body text-[13px]"
-                    style={{ letterSpacing: "0.1em", color: MUTED_RED }}
-                  >
-                    Interactive map
-                  </div>
-                </div>
+                <iframe
+                  src="https://maps.google.com/maps?q=26+Maple+St,+Tryon,+NC+28782&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  title="Tryon History Museum location"
+                ></iframe>
               </div>
 
               <h3 className="font-display text-2xl font-semibold text-tryon-black mb-4">
