@@ -132,7 +132,7 @@ export default function GiftShopSection() {
                 className="font-body text-[14px] mb-8"
                 style={{ color: MUTED_RED }}
               >
-                229 Palmer Street, Tryon, NC 28782
+                26 Maple Street, Tryon, NC 28782
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a

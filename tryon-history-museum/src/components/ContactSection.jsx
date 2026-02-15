@@ -298,7 +298,7 @@ export default function ContactSection() {
                         <br />
                         & Visitor Center
                         <br />
-                        229 Palmer Street
+                        26 Maple Street
                         <br />
                         Tryon, NC 28782
                       </p>
