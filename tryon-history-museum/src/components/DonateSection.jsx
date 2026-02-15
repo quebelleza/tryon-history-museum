@@ -10,8 +10,8 @@ const MUTED_RED = "#A8584F";
 const donationTiers = [
   { amount: 25, label: "Friend", description: "Help us keep the lights on and the doors open." },
   { amount: 50, label: "Supporter", description: "Fund educational materials and exhibit upkeep." },
-  { amount: 100, label: "Patron", description: "Support special programs and community events." },
-  { amount: 250, label: "Benefactor", description: "Make a lasting impact on Tryon's heritage preservation." },
+  { amount: 250, label: "Patron", description: "Support special programs and community events." },
+  { amount: 500, label: "Benefactor", description: "Make a lasting impact on Tryon's heritage preservation." },
 ];
 
 export default function DonateSection() {
@@ -150,7 +150,7 @@ export default function DonateSection() {
                 >
                   Tryon History Museum
                   <br />
-                  229 Palmer Street
+                  26 Maple Street
                   <br />
                   Tryon, NC 28782
                 </p>
