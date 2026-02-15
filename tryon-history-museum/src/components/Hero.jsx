@@ -29,7 +29,7 @@ export default function Hero({ siteSettings }) {
 
   return (
     <section
-      className="relative min-h-[480px] md:min-h-[600px] h-screen flex items-end overflow-hidden"
+      className="relative min-h-[480px] md:min-h-[600px] h-screen flex items-end overflow-hidden pt-24 md:pt-28"
       style={{
         background: `linear-gradient(160deg, ${WARM_BLACK} 0%, ${DARK_RED} 50%, ${DEEP_RED} 100%)`,
       }}
