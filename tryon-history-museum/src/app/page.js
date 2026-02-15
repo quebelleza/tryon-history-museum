@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { getUpcomingEvents } from "@/sanity/lib/events";
 import { getAllMembershipTiers } from "@/sanity/lib/membershipTiers";
 import { getSiteSettings } from "@/sanity/lib/siteSettings";
+import { OrganizationJsonLd } from "@/components/JsonLd";
 
 export const revalidate = 60; // refresh from Sanity every 60 seconds
 
@@ -21,6 +22,7 @@ export default async function Home() {
 
   return (
     <main id="main-content">
+      <OrganizationJsonLd />
       <Nav />
       <Hero siteSettings={siteSettings} />
       <VisitSection siteSettings={siteSettings} />

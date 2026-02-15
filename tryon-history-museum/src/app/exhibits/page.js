@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import ExhibitsPageSection from "@/components/ExhibitsPageSection";
 import Footer from "@/components/Footer";
 import { getAllExhibits } from "@/sanity/lib/exhibits";
+import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const revalidate = 60;
 
@@ -16,6 +17,10 @@ export default async function ExhibitsPage() {
 
   return (
     <main id="main-content">
+      <BreadcrumbJsonLd items={[
+        { name: "Home", url: "https://tryonhistorymuseum.org" },
+        { name: "Exhibits", url: "https://tryonhistorymuseum.org/exhibits" },
+      ]} />
       <Nav />
       <ExhibitsPageSection exhibits={allExhibits} />
       <Footer />

@@ -7,6 +7,7 @@ export const viewport = {
 };
 
 export const metadata = {
+  metadataBase: new URL("https://tryonhistorymuseum.org"),
   title: "Tryon History Museum & Visitor Center | Tryon, NC",
   description:
     "Discover the rich heritage of Tryon, North Carolina — from Cherokee origins to the railroad age, from Nina Simone's first piano notes to a world-renowned equestrian tradition. Plan your visit today.",

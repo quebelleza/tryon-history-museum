@@ -2,6 +2,7 @@
 
 import FadeIn from "./FadeIn";
 import Image from "next/image";
+import SanityImage from "./SanityImage";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -45,7 +46,17 @@ function ExhibitCard({ exhibit }) {
       }}
     >
       {/* Image */}
-      {exhibit.coverImageUrl ? (
+      {exhibit.coverImage?.asset ? (
+        <div className="relative w-full aspect-[16/10] overflow-hidden">
+          <SanityImage
+            image={exhibit.coverImage}
+            alt={exhibit.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+        </div>
+      ) : exhibit.coverImageUrl ? (
         <div className="relative w-full aspect-[16/10] overflow-hidden">
           <Image
             src={exhibit.coverImageUrl}

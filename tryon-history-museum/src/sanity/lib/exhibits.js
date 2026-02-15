@@ -11,6 +11,7 @@ export async function getAllExhibits() {
     isPermanent,
     featured,
     order,
+    coverImage,
     "coverImageUrl": coverImage.asset->url
   }`
 
@@ -34,9 +35,11 @@ export async function getExhibitBySlug(slug) {
     endDate,
     isPermanent,
     featured,
+    coverImage,
     "coverImageUrl": coverImage.asset->url,
     gallery[] {
       caption,
+      asset,
       "url": asset->url
     }
   }`
@@ -57,6 +60,7 @@ export async function getFeaturedExhibits() {
     slug,
     description,
     isPermanent,
+    coverImage,
     "coverImageUrl": coverImage.asset->url
   }`
 

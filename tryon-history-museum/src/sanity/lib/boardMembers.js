@@ -8,6 +8,7 @@ export async function getAllBoardMembers() {
     term,
     bio,
     order,
+    photo,
     "photoUrl": photo.asset->url
   }`
 
