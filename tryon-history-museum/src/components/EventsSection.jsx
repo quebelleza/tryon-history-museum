@@ -6,7 +6,7 @@ const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
 
-const events = [
+const fallbackEvents = [
   {
     date: "Mar 15",
     title: "Tales of Tryon: The Railroad Years",
@@ -33,7 +33,36 @@ const events = [
   },
 ];
 
-export default function EventsSection() {
+function formatSanityDate(dateStr) {
+  if (!dateStr) return { month: "", day: "" };
+  const date = new Date(dateStr + "T12:00:00");
+  const month = date.toLocaleDateString("en-US", { month: "short" });
+  const day = date.getDate().toString();
+  return { month, day };
+}
+
+function normalizeEvents(sanityEvents) {
+  if (!sanityEvents || sanityEvents.length === 0) return fallbackEvents.map(e => ({
+    ...e,
+    month: e.date.split(" ")[0],
+    day: e.date.split(" ")[1],
+  }));
+
+  return sanityEvents.map((e) => {
+    const { month, day } = formatSanityDate(e.date);
+    return {
+      title: e.title,
+      type: e.eventType || "Event",
+      desc: e.description || "",
+      month,
+      day,
+    };
+  });
+}
+
+export default function EventsSection({ events }) {
+  const displayEvents = normalizeEvents(events);
+
   return (
     <section id="events" className="bg-tryon-cream py-24 md:py-28">
       <div className="max-w-[1200px] mx-auto px-8">
@@ -51,7 +80,7 @@ export default function EventsSection() {
           </FadeIn>
           <FadeIn delay={0.1}>
             <a
-              href="#"
+              href="/events"
               className="font-body text-[13px] font-semibold uppercase no-underline mt-4 md:mt-0"
               style={{
                 letterSpacing: "0.12em",
@@ -66,7 +95,7 @@ export default function EventsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {events.map((event, i) => (
+          {displayEvents.map((event, i) => (
             <FadeIn key={event.title} delay={i * 0.1}>
               <div
                 className="flex gap-7 p-9 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
@@ -84,7 +113,7 @@ export default function EventsSection() {
                     className="font-display text-[28px] font-bold leading-none"
                     style={{ color: DEEP_RED }}
                   >
-                    {event.date.split(" ")[1]}
+                    {event.day}
                   </div>
                   <div
                     className="font-body text-[11px] uppercase mt-1"
@@ -93,7 +122,7 @@ export default function EventsSection() {
                       color: "#A8584F",
                     }}
                   >
-                    {event.date.split(" ")[0]}
+                    {event.month}
                   </div>
                 </div>
                 {/* Details */}

@@ -20,8 +20,8 @@ const navItems = [
   {
     label: "Events",
     children: [
-      { name: "Upcoming Events", href: "#events" },
-      { name: "Tales of Tryon", href: "#" },
+      { name: "Upcoming Events", href: "/events" },
+      { name: "Tales of Tryon", href: "/events" },
       { name: "History Bits", href: "#" },
     ],
   },
