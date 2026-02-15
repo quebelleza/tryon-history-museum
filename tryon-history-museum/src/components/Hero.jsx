@@ -64,8 +64,8 @@ export default function Hero({ siteSettings }) {
         }}
       />
 
-      <div className="relative z-10 max-w-[1200px] mx-auto px-5 md:px-8 pb-16 md:pb-24 w-full">
-        <div className="max-w-[700px]">
+      <div className="relative z-10 max-w-[1200px] mx-auto px-4 md:px-8 pb-12 md:pb-24 w-full">
+        <div className="max-w-full md:max-w-[700px]">
           <div
             className="font-body text-xs uppercase mb-6 animate-fade-up animation-delay-300"
             style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
@@ -78,14 +78,14 @@ export default function Hero({ siteSettings }) {
             <span className="font-semibold italic">with a Grand Story</span>
           </h1>
           <p
-            className="font-body text-[17px] leading-relaxed max-w-[480px] mt-7 animate-fade-up animation-delay-700"
+            className="font-body text-[15px] md:text-[17px] leading-relaxed max-w-full md:max-w-[480px] mt-5 md:mt-7 animate-fade-up animation-delay-700"
             style={{ color: "rgba(255,255,255,0.65)" }}
           >
             From Cherokee heritage to the railroad age, from Nina Simone&apos;s
             first piano notes to a world-renowned equestrian tradition —
             discover the people and moments that shaped Tryon.
           </p>
-          <div className="flex flex-wrap gap-4 mt-10 animate-fade-up animation-delay-900">
+          <div className="flex flex-wrap gap-4 mt-8 md:mt-10 animate-fade-up animation-delay-900">
             <a
               href="#visit"
               className="font-body text-[13px] font-semibold uppercase no-underline transition-all hover:brightness-110"
