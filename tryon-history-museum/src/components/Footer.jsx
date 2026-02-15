@@ -17,7 +17,7 @@ const footerLinks = [
     heading: "About",
     links: [
       { name: "Our Story", href: "#about" },
-      { name: "Board of Directors", href: "#" },
+      { name: "Board of Directors", href: "/board" },
       { name: "Contact Us", href: "#" },
     ],
   },
