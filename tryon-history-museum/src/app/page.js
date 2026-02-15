@@ -20,7 +20,7 @@ export default async function Home() {
   ]);
 
   return (
-    <main>
+    <main id="main-content">
       <Nav />
       <Hero siteSettings={siteSettings} />
       <VisitSection siteSettings={siteSettings} />

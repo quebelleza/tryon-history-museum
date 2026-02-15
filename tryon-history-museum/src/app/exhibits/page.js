@@ -15,7 +15,7 @@ export default async function ExhibitsPage() {
   const allExhibits = await getAllExhibits();
 
   return (
-    <main>
+    <main id="main-content">
       <Nav />
       <ExhibitsPageSection exhibits={allExhibits} />
       <Footer />

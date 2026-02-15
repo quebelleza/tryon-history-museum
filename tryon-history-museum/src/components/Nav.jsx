@@ -57,6 +57,7 @@ export default function Nav() {
 
   return (
     <nav
+      aria-label="Main navigation"
       className="fixed top-0 left-0 right-0 z-50 transition-all duration-400"
       style={{
         background: scrolled ? "rgba(26,19,17,0.97)" : "transparent",
@@ -90,6 +91,8 @@ export default function Nav() {
               onMouseLeave={() => setActiveDropdown(null)}
             >
               <button
+                aria-expanded={activeDropdown === item.label}
+                aria-haspopup="true"
                 className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold"
                 style={{
                   letterSpacing: "0.12em",
@@ -146,7 +149,9 @@ export default function Nav() {
         <button
           className="md:hidden bg-transparent border-none cursor-pointer p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
         >
           <div className="space-y-1.5">
             <div
@@ -177,6 +182,8 @@ export default function Nav() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div
+          id="mobile-menu"
+          role="menu"
           className="md:hidden px-5 pb-8 pt-4"
           style={{ background: "rgba(26,19,17,0.98)" }}
         >

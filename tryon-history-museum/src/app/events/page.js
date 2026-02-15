@@ -15,7 +15,7 @@ export default async function EventsPage() {
   const allEvents = await getAllEvents();
 
   return (
-    <main>
+    <main id="main-content">
       <Nav />
       <EventsPageSection events={allEvents} />
       <Footer />

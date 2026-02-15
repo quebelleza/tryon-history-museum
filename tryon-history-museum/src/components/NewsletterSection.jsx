@@ -20,12 +20,16 @@ export default function NewsletterSection() {
             Tryon&apos;s past.
           </p>
           <form
+            aria-label="Newsletter signup"
             className="flex flex-col sm:flex-row gap-3 max-w-[440px] mx-auto"
             onSubmit={(e) => e.preventDefault()}
           >
+            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
             <input
+              id="newsletter-email"
               type="email"
               placeholder="Your email address"
+              autoComplete="email"
               className="flex-1 font-body text-sm px-5 py-3.5 outline-none text-tryon-black"
               style={{
                 border: "1px solid rgba(123,45,38,0.15)",

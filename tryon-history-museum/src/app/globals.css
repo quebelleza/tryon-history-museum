@@ -22,6 +22,17 @@
   }
 }
 
+/* Accessible focus ring for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #C4A35A;
+  outline-offset: 2px;
+}
+
+/* Remove default focus outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -45,3 +56,10 @@
 .animation-delay-700 { animation-delay: 0.7s; }
 .animation-delay-900 { animation-delay: 0.9s; }
 .animation-delay-1100 { animation-delay: 1.1s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    opacity: 1;
+    animation: none;
+  }
+}

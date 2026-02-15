@@ -15,7 +15,7 @@ export default async function BoardPage() {
   const sanityMembers = await getAllBoardMembers();
 
   return (
-    <main>
+    <main id="main-content">
       <Nav />
       <BoardSection sanityMembers={sanityMembers} />
       <Footer />
