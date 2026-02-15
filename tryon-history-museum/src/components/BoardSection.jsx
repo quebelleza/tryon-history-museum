@@ -151,12 +151,26 @@ function MemberCard({ member, index }) {
   );
 }
 
-export default function BoardSection() {
+function normalizeSanityMembers(sanityMembers) {
+  if (!sanityMembers || sanityMembers.length === 0) return null;
+  return sanityMembers.map((m) => ({
+    name: m.name,
+    title: m.role,
+    term: m.term,
+    photo: m.photoUrl || null,
+    bio: m.bio,
+  }));
+}
+
+export default function BoardSection({ sanityMembers }) {
+  const normalized = normalizeSanityMembers(sanityMembers);
+  const allMembers = normalized || boardMembers;
+
   // Separate officers and members
-  const officers = boardMembers.filter((m) =>
+  const officers = allMembers.filter((m) =>
     ["President", "Vice President", "Treasurer"].includes(m.title)
   );
-  const members = boardMembers.filter(
+  const members = allMembers.filter(
     (m) => !["President", "Vice President", "Treasurer"].includes(m.title)
   );
 

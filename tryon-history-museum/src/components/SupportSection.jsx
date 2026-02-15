@@ -29,7 +29,19 @@ const tiers = [
   },
 ];
 
-export default function SupportSection() {
+function normalizeSanityTiers(sanityTiers) {
+  if (!sanityTiers || sanityTiers.length === 0) return null;
+  return sanityTiers.map((t) => ({
+    name: t.name,
+    price: `$${t.price}`,
+    perks: t.perks,
+    featured: t.featured || false,
+  }));
+}
+
+export default function SupportSection({ sanityTiers }) {
+  const displayTiers = normalizeSanityTiers(sanityTiers) || tiers;
+
   return (
     <section
       id="support"
@@ -65,7 +77,7 @@ export default function SupportSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {tiers.map((tier, i) => (
+          {displayTiers.map((tier, i) => (
             <FadeIn key={tier.name} delay={i * 0.12}>
               <div
                 className="p-11 text-center transition-colors duration-300"

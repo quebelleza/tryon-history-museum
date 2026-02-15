@@ -1,6 +1,9 @@
 import Nav from "@/components/Nav";
 import BoardSection from "@/components/BoardSection";
 import Footer from "@/components/Footer";
+import { getAllBoardMembers } from "@/sanity/lib/boardMembers";
+
+export const revalidate = 60;
 
 export const metadata = {
   title: "Board of Directors | Tryon History Museum",
@@ -8,11 +11,13 @@ export const metadata = {
     "Meet the dedicated board members of the Tryon History Museum & Visitor Center in Tryon, North Carolina.",
 };
 
-export default function BoardPage() {
+export default async function BoardPage() {
+  const sanityMembers = await getAllBoardMembers();
+
   return (
     <main>
       <Nav />
-      <BoardSection />
+      <BoardSection sanityMembers={sanityMembers} />
       <Footer />
     </main>
   );

@@ -7,22 +7,28 @@ import SupportSection from "@/components/SupportSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import Footer from "@/components/Footer";
 import { getUpcomingEvents } from "@/sanity/lib/events";
+import { getAllMembershipTiers } from "@/sanity/lib/membershipTiers";
+import { getSiteSettings } from "@/sanity/lib/siteSettings";
 
-export const revalidate = 60; // refresh events from Sanity every 60 seconds
+export const revalidate = 60; // refresh from Sanity every 60 seconds
 
 export default async function Home() {
-  const sanityEvents = await getUpcomingEvents(4);
+  const [sanityEvents, sanityTiers, siteSettings] = await Promise.all([
+    getUpcomingEvents(4),
+    getAllMembershipTiers(),
+    getSiteSettings(),
+  ]);
 
   return (
     <main>
       <Nav />
-      <Hero />
-      <VisitSection />
+      <Hero siteSettings={siteSettings} />
+      <VisitSection siteSettings={siteSettings} />
       <AboutSection />
       <EventsSection events={sanityEvents} />
-      <SupportSection />
+      <SupportSection sanityTiers={sanityTiers} />
       <NewsletterSection />
-      <Footer />
+      <Footer siteSettings={siteSettings} />
     </main>
   );
 }

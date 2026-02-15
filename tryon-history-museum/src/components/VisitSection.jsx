@@ -6,7 +6,7 @@ const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const MUTED_RED = "#A8584F";
 
-const hours = [
+const fallbackHours = [
   { day: "Wednesday", time: "1:00 PM – 4:00 PM" },
   { day: "Thursday", time: "1:00 PM – 4:00 PM" },
   { day: "Friday", time: "11:00 AM – 5:00 PM" },
@@ -14,7 +14,37 @@ const hours = [
   { day: "Sunday – Tuesday", time: "Closed" },
 ];
 
-export default function VisitSection() {
+const fallbackContact = {
+  street: "26 Maple Street",
+  cityStateZip: "Tryon, NC 28782",
+  phone: "(828) 440-1116",
+  email: "info@tryonhistorymuseum.org",
+  mapEmbedUrl: "https://maps.google.com/maps?q=26+Maple+St,+Tryon,+NC+28782&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  visitorCenterNote: "The Museum also serves as Tryon\u2019s official Visitor Center. Stop in for local recommendations, maps, and everything you need to explore our corner of the Blue Ridge foothills.",
+  admissionNote: null,
+};
+
+function getDisplayData(siteSettings) {
+  const hours = siteSettings?.hours?.length
+    ? siteSettings.hours.map((h) => ({ day: h.day, time: h.time }))
+    : fallbackHours;
+
+  const addr = siteSettings?.address;
+  const street = addr?.street || fallbackContact.street;
+  const cityStateZip = addr
+    ? `${addr.city}, ${addr.state} ${addr.zip}`
+    : fallbackContact.cityStateZip;
+  const phone = siteSettings?.phone || fallbackContact.phone;
+  const email = siteSettings?.email || fallbackContact.email;
+  const mapUrl = siteSettings?.mapEmbedUrl || fallbackContact.mapEmbedUrl;
+  const visitorNote = siteSettings?.visitorCenterNote || fallbackContact.visitorCenterNote;
+  const admissionNote = siteSettings?.admissionNote || null;
+
+  return { hours, street, cityStateZip, phone, email, mapUrl, visitorNote, admissionNote };
+}
+
+export default function VisitSection({ siteSettings }) {
+  const { hours, street, cityStateZip, phone, email, mapUrl, visitorNote, admissionNote } = getDisplayData(siteSettings);
   return (
     <section id="visit" className="bg-tryon-cream py-24 md:py-28">
       <div className="max-w-[1200px] mx-auto px-8">
@@ -75,13 +105,13 @@ export default function VisitSection() {
                   className="font-body text-sm font-medium"
                   style={{ color: DEEP_RED }}
                 >
-                  Free admission
+                  {admissionNote ? admissionNote.split('—')[0].trim() : 'Free admission'}
                 </span>
                 <span
                   className="font-body text-[13px] ml-2"
                   style={{ color: MUTED_RED }}
                 >
-                  — donations gratefully accepted
+                  {admissionNote ? `— ${admissionNote.split('—').slice(1).join('—').trim()}` : '— donations gratefully accepted'}
                 </span>
               </div>
             </div>
@@ -98,7 +128,7 @@ export default function VisitSection() {
                 }}
               >
                 <iframe
-                  src="https://maps.google.com/maps?q=26+Maple+St,+Tryon,+NC+28782&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                  src={mapUrl}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -112,12 +142,12 @@ export default function VisitSection() {
                 Find Us
               </h3>
               <p className="font-body text-base text-tryon-black leading-relaxed mb-2">
-                26 Maple Street
+                {street}
                 <br />
-                Tryon, NC 28782
+                {cityStateZip}
               </p>
               <p className="font-body text-[15px] mb-7" style={{ color: MUTED_RED }}>
-                (828) 440-1116 &middot; info@tryonhistorymuseum.org
+                {phone} &middot; {email}
               </p>
               <div
                 className="p-5"
@@ -136,9 +166,7 @@ export default function VisitSection() {
                   className="font-body text-sm leading-relaxed m-0"
                   style={{ color: "rgba(26,19,17,0.7)" }}
                 >
-                  The Museum also serves as Tryon&apos;s official Visitor Center.
-                  Stop in for local recommendations, maps, and everything you
-                  need to explore our corner of the Blue Ridge foothills.
+                  {visitorNote}
                 </p>
               </div>
             </div>

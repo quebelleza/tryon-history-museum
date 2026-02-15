@@ -31,7 +31,13 @@ const footerLinks = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ siteSettings }) {
+  const street = siteSettings?.address?.street || "26 Maple Street";
+  const cityStateZip = siteSettings?.address
+    ? `${siteSettings.address.city}, ${siteSettings.address.state} ${siteSettings.address.zip}`
+    : "Tryon, NC 28782";
+  const phone = siteSettings?.phone || "(828) 440-1116";
+  const facebookUrl = siteSettings?.facebookUrl || "https://www.facebook.com/tryonhistorymuseum/";
   return (
     <footer className="py-16 md:pt-16 md:pb-10" style={{ background: WARM_BLACK }}>
       <div className="max-w-[1200px] mx-auto px-8">
@@ -57,11 +63,11 @@ export default function Footer() {
               className="font-body text-sm leading-relaxed max-w-[280px] m-0"
               style={{ color: "rgba(250,247,244,0.45)" }}
             >
-              26 Maple Street
+              {street}
               <br />
-              Tryon, NC 28782
+              {cityStateZip}
               <br />
-              (828) 440-1116
+              {phone}
             </p>
           </div>
 
@@ -101,7 +107,7 @@ export default function Footer() {
             501(c)(3) nonprofit organization
           </div>
           <a
-            href="https://www.facebook.com/tryonhistorymuseum/"
+            href={facebookUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="font-body text-xs no-underline transition-colors hover:!text-[#FAF7F4]"

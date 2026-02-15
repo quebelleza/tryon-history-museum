@@ -5,22 +5,27 @@ const DARK_RED = "#5C1F1A";
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
 
-function getTodayHours() {
+const fallbackSchedule = {
+  0: "Closed",
+  1: "Closed",
+  2: "Closed",
+  3: "1:00 PM – 4:00 PM",
+  4: "1:00 PM – 4:00 PM",
+  5: "11:00 AM – 5:00 PM",
+  6: "11:00 AM – 5:00 PM",
+};
+
+function getTodayHours(siteSettings) {
   const day = new Date().getDay(); // 0=Sun, 1=Mon, ...
-  const schedule = {
-    0: "Closed",
-    1: "Closed",
-    2: "Closed",
-    3: "1:00 PM – 4:00 PM",
-    4: "1:00 PM – 4:00 PM",
-    5: "11:00 AM – 5:00 PM",
-    6: "11:00 AM – 5:00 PM",
-  };
-  return schedule[day];
+  if (siteSettings?.hours) {
+    const match = siteSettings.hours.find((h) => h.dayOfWeek === day);
+    if (match) return match.time;
+  }
+  return fallbackSchedule[day];
 }
 
-export default function Hero() {
-  const todayHours = getTodayHours();
+export default function Hero({ siteSettings }) {
+  const todayHours = getTodayHours(siteSettings);
 
   return (
     <section
