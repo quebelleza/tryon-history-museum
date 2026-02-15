@@ -67,12 +67,12 @@ export default function Hero({ siteSettings }) {
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 md:px-8 pb-12 md:pb-24 w-full">
         <div className="max-w-full md:max-w-[700px]">
           <div
-            className="font-body text-xs uppercase mb-6 animate-fade-up animation-delay-300"
+            className="font-body text-xs uppercase mb-4 md:mb-6 animate-fade-up animation-delay-300"
             style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
           >
             Tryon, North Carolina &middot; Est. 1885
           </div>
-          <h1 className="font-display font-light text-white leading-[1.1] m-0 animate-fade-up animation-delay-500 text-[clamp(42px,6vw,72px)]">
+          <h1 className="font-display font-light text-white leading-[1.08] m-0 animate-fade-up animation-delay-500 text-[clamp(34px,8vw,72px)]">
             A Small Town
             <br />
             <span className="font-semibold italic">with a Grand Story</span>
@@ -85,27 +85,27 @@ export default function Hero({ siteSettings }) {
             first piano notes to a world-renowned equestrian tradition —
             discover the people and moments that shaped Tryon.
           </p>
-          <div className="flex flex-wrap gap-4 mt-8 md:mt-10 animate-fade-up animation-delay-900">
+          <div className="flex flex-wrap gap-3 md:gap-4 mt-6 md:mt-10 animate-fade-up animation-delay-900">
             <a
               href="#visit"
-              className="font-body text-[13px] font-semibold uppercase no-underline transition-all hover:brightness-110"
+              className="font-body text-[12px] md:text-[13px] font-semibold uppercase no-underline transition-all hover:brightness-110"
               style={{
                 letterSpacing: "0.12em",
                 color: WARM_BLACK,
                 background: GOLD_ACCENT,
-                padding: "14px 32px",
+                padding: "12px 24px",
               }}
             >
               Plan Your Visit
             </a>
             <a
               href="#about"
-              className="font-body text-[13px] font-semibold uppercase no-underline transition-all hover:bg-white/10"
+              className="font-body text-[12px] md:text-[13px] font-semibold uppercase no-underline transition-all hover:bg-white/10"
               style={{
                 letterSpacing: "0.12em",
                 color: "rgba(255,255,255,0.8)",
                 border: "1px solid rgba(255,255,255,0.25)",
-                padding: "14px 32px",
+                padding: "12px 24px",
               }}
             >
               Our Story
