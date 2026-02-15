@@ -67,7 +67,7 @@ export default function Nav() {
         padding: scrolled ? "12px 0" : "20px 0",
       }}
     >
-      <div className="max-w-[1200px] mx-auto px-8 flex items-center justify-between">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-3.5 no-underline">
           <Image
@@ -75,7 +75,7 @@ export default function Nav() {
             alt="Tryon History Museum & Visitors Center"
             width={220}
             height={124}
-            className="transition-opacity"
+            className="transition-opacity w-[150px] md:w-[220px] h-auto"
             style={{ opacity: scrolled ? 0.9 : 1 }}
           />
         </a>
@@ -177,7 +177,7 @@ export default function Nav() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div
-          className="md:hidden px-8 pb-8 pt-4"
+          className="md:hidden px-5 pb-8 pt-4"
           style={{ background: "rgba(26,19,17,0.98)" }}
         >
           {navItems.map((item) => (

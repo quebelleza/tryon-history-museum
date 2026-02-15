@@ -28,7 +28,7 @@ function EventCard({ event, isPast }) {
 
   return (
     <div
-      className={`flex gap-7 p-9 transition-all duration-300 ${isPast ? "opacity-50" : "hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"}`}
+      className={`flex gap-4 md:gap-7 p-5 md:p-9 transition-all duration-300 ${isPast ? "opacity-50" : "hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"}`}
       style={{
         background: "#FFFDF9",
         border: "1px solid rgba(123,45,38,0.08)",
@@ -36,7 +36,7 @@ function EventCard({ event, isPast }) {
     >
       {/* Date block */}
       <div
-        className="min-w-[72px] text-center py-4 pr-7 flex-shrink-0"
+        className="min-w-[56px] md:min-w-[72px] text-center py-4 pr-4 md:pr-7 flex-shrink-0"
         style={{ borderRight: "1px solid rgba(123,45,38,0.1)" }}
       >
         <div
@@ -109,7 +109,7 @@ export default function EventsPageSection({ events }) {
               "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)",
           }}
         />
-        <div className="max-w-[1200px] mx-auto px-8 relative z-10">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-8 relative z-10">
           <FadeIn>
             <div
               className="font-body text-[11px] uppercase mb-4"
@@ -135,7 +135,7 @@ export default function EventsPageSection({ events }) {
 
       {/* Upcoming Events */}
       <section className="bg-tryon-cream py-16 md:py-20">
-        <div className="max-w-[900px] mx-auto px-8">
+        <div className="max-w-[900px] mx-auto px-5 md:px-8">
           <FadeIn>
             <div
               className="font-body text-[11px] uppercase mb-10"
@@ -222,7 +222,7 @@ export default function EventsPageSection({ events }) {
       {/* Past Events */}
       {past.length > 0 && (
         <section className="py-16 md:py-20" style={{ background: "#F5F0EB" }}>
-          <div className="max-w-[900px] mx-auto px-8">
+          <div className="max-w-[900px] mx-auto px-5 md:px-8">
             <FadeIn>
               <div
                 className="font-body text-[11px] uppercase mb-10"

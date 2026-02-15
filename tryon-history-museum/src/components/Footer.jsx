@@ -40,7 +40,7 @@ export default function Footer({ siteSettings }) {
   const facebookUrl = siteSettings?.facebookUrl || "https://www.facebook.com/tryonhistorymuseum/";
   return (
     <footer className="py-16 md:pt-16 md:pb-10" style={{ background: WARM_BLACK }}>
-      <div className="max-w-[1200px] mx-auto px-8">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-12">
           {/* Identity */}
           <div>

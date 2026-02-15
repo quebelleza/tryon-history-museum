@@ -65,7 +65,7 @@ export default function EventsSection({ events }) {
 
   return (
     <section id="events" className="bg-tryon-cream py-24 md:py-28">
-      <div className="max-w-[1200px] mx-auto px-8">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="flex flex-wrap justify-between items-end mb-16">
           <FadeIn>
             <div
@@ -98,7 +98,7 @@ export default function EventsSection({ events }) {
           {displayEvents.map((event, i) => (
             <FadeIn key={event.title} delay={i * 0.1}>
               <div
-                className="flex gap-7 p-9 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                className="flex gap-4 md:gap-7 p-5 md:p-9 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 style={{
                   background: "#FFFDF9",
                   border: "1px solid rgba(123,45,38,0.08)",
@@ -106,7 +106,7 @@ export default function EventsSection({ events }) {
               >
                 {/* Date block */}
                 <div
-                  className="min-w-[72px] text-center py-4 pr-7"
+                  className="min-w-[56px] md:min-w-[72px] text-center py-4 pr-4 md:pr-7"
                   style={{ borderRight: "1px solid rgba(123,45,38,0.1)" }}
                 >
                   <div

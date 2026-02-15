@@ -53,7 +53,7 @@ export default function AboutSection() {
         }}
       />
 
-      <div className="max-w-[1200px] mx-auto px-8">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="max-w-[600px] mb-20">
           <FadeIn>
             <div
@@ -86,7 +86,7 @@ export default function AboutSection() {
           {historyCards.map((card, i) => (
             <FadeIn key={card.era} delay={i * 0.15}>
               <div
-                className="p-10 h-full transition-colors duration-300 hover:border-[rgba(196,163,90,0.35)]"
+                className="p-6 md:p-10 h-full transition-colors duration-300 hover:border-[rgba(196,163,90,0.35)]"
                 style={{
                   border: "1px solid rgba(196,163,90,0.15)",
                 }}
@@ -114,7 +114,7 @@ export default function AboutSection() {
         {/* Nina Simone highlight */}
         <FadeIn delay={0.2}>
           <div
-            className="mt-16 p-10 md:p-14 flex gap-12 items-center"
+            className="mt-16 p-7 md:p-14 flex flex-col md:flex-row gap-6 md:gap-12 items-start md:items-center"
             style={{
               background: `linear-gradient(135deg, ${DARK_RED}40 0%, transparent 100%)`,
               border: "1px solid rgba(196,163,90,0.15)",

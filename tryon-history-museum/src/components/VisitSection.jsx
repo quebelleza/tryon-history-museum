@@ -47,7 +47,7 @@ export default function VisitSection({ siteSettings }) {
   const { hours, street, cityStateZip, phone, email, mapUrl, visitorNote, admissionNote } = getDisplayData(siteSettings);
   return (
     <section id="visit" className="bg-tryon-cream py-24 md:py-28">
-      <div className="max-w-[1200px] mx-auto px-8">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-start">
           {/* Left: Hours */}
           <FadeIn>

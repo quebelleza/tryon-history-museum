@@ -29,7 +29,7 @@ export default function Hero({ siteSettings }) {
 
   return (
     <section
-      className="relative min-h-[600px] h-screen flex items-end overflow-hidden"
+      className="relative min-h-[480px] md:min-h-[600px] h-screen flex items-end overflow-hidden"
       style={{
         background: `linear-gradient(160deg, ${WARM_BLACK} 0%, ${DARK_RED} 50%, ${DEEP_RED} 100%)`,
       }}
@@ -64,7 +64,7 @@ export default function Hero({ siteSettings }) {
         }}
       />
 
-      <div className="relative z-10 max-w-[1200px] mx-auto px-8 pb-16 md:pb-24 w-full">
+      <div className="relative z-10 max-w-[1200px] mx-auto px-5 md:px-8 pb-16 md:pb-24 w-full">
         <div className="max-w-[700px]">
           <div
             className="font-body text-xs uppercase mb-6 animate-fade-up animation-delay-300"
@@ -114,7 +114,35 @@ export default function Hero({ siteSettings }) {
         </div>
       </div>
 
-      {/* Hours badge */}
+      {/* Mobile hours badge */}
+      <div
+        className="md:hidden w-full animate-fade-up animation-delay-1100"
+        style={{
+          background: "rgba(26,19,17,0.92)",
+          backdropFilter: "blur(12px)",
+          borderTop: "1px solid rgba(123,45,38,0.2)",
+          padding: "16px 20px",
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div
+              className="font-body text-[10px] uppercase"
+              style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+            >
+              Today&apos;s Hours
+            </div>
+            <div className="font-display text-lg text-white font-light mt-0.5">
+              {todayHours}
+            </div>
+          </div>
+          <a href="#visit" className="no-underline font-body text-xs" style={{ color: GOLD_ACCENT }}>
+            See all hours
+          </a>
+        </div>
+      </div>
+
+      {/* Desktop hours badge */}
       <div
         className="absolute bottom-0 right-0 animate-fade-up animation-delay-1100 hidden md:block"
         style={{

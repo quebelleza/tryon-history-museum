@@ -50,7 +50,7 @@ export default function SupportSection({ sanityTiers }) {
         background: `linear-gradient(170deg, ${DEEP_RED} 0%, ${DARK_RED} 60%, ${WARM_BLACK} 100%)`,
       }}
     >
-      <div className="max-w-[1200px] mx-auto px-8">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="text-center max-w-[560px] mx-auto mb-16">
           <FadeIn>
             <div
@@ -80,7 +80,7 @@ export default function SupportSection({ sanityTiers }) {
           {displayTiers.map((tier, i) => (
             <FadeIn key={tier.name} delay={i * 0.12}>
               <div
-                className="p-11 text-center transition-colors duration-300"
+                className="p-7 md:p-11 text-center transition-colors duration-300"
                 style={{
                   border: `1px solid rgba(196,163,90,${tier.featured ? "0.4" : "0.15"})`,
                   background: tier.featured
@@ -132,7 +132,7 @@ export default function SupportSection({ sanityTiers }) {
         {/* Volunteer + Donate CTAs */}
         <FadeIn delay={0.3}>
           <div
-            className="flex justify-center gap-12 mt-14 pt-12"
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 mt-14 pt-12"
             style={{ borderTop: "1px solid rgba(196,163,90,0.1)" }}
           >
             <a

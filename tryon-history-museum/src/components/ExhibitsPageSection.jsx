@@ -122,7 +122,7 @@ export default function ExhibitsPageSection({ exhibits }) {
               "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)",
           }}
         />
-        <div className="max-w-[1200px] mx-auto px-8 relative z-10">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-8 relative z-10">
           <FadeIn>
             <div
               className="font-body text-[11px] uppercase mb-4"
@@ -149,7 +149,7 @@ export default function ExhibitsPageSection({ exhibits }) {
       {/* Permanent Exhibits */}
       {permanent.length > 0 && (
         <section className="bg-tryon-cream py-16 md:py-20">
-          <div className="max-w-[1000px] mx-auto px-8">
+          <div className="max-w-[1000px] mx-auto px-5 md:px-8">
             <FadeIn>
               <div
                 className="font-body text-[11px] uppercase mb-10"
@@ -175,7 +175,7 @@ export default function ExhibitsPageSection({ exhibits }) {
           className="py-16 md:py-20"
           style={{ background: "#F5F0EB" }}
         >
-          <div className="max-w-[1000px] mx-auto px-8">
+          <div className="max-w-[1000px] mx-auto px-5 md:px-8">
             <FadeIn>
               <div
                 className="font-body text-[11px] uppercase mb-10"
@@ -198,7 +198,7 @@ export default function ExhibitsPageSection({ exhibits }) {
       {/* Empty state */}
       {hasNoExhibits && (
         <section className="bg-tryon-cream py-20 md:py-28">
-          <div className="max-w-[600px] mx-auto px-8 text-center">
+          <div className="max-w-[600px] mx-auto px-5 md:px-8 text-center">
             <FadeIn>
               <div
                 className="font-display text-6xl mb-4"

@@ -7,7 +7,7 @@ const DEEP_RED = "#7B2D26";
 export default function NewsletterSection() {
   return (
     <section className="bg-tryon-warm py-16 md:py-20">
-      <div className="max-w-[600px] mx-auto px-8 text-center">
+      <div className="max-w-[600px] mx-auto px-5 md:px-8 text-center">
         <FadeIn>
           <h3 className="font-display text-3xl font-normal text-tryon-black mb-3">
             Stay Connected
@@ -20,7 +20,7 @@ export default function NewsletterSection() {
             Tryon&apos;s past.
           </p>
           <form
-            className="flex gap-3 max-w-[440px] mx-auto"
+            className="flex flex-col sm:flex-row gap-3 max-w-[440px] mx-auto"
             onSubmit={(e) => e.preventDefault()}
           >
             <input
