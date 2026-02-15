@@ -14,7 +14,7 @@ const navItems = [
     children: [
       { name: "Hours & Admission", href: "#visit" },
       { name: "Plan Your Visit", href: "#visit" },
-      { name: "Gift Shop", href: "#" },
+      { name: "Gift Shop", href: "/gift-shop" },
     ],
   },
   {
@@ -31,7 +31,7 @@ const navItems = [
       { name: "Our Story", href: "#about" },
       { name: "Exhibits", href: "/exhibits" },
       { name: "Board of Directors", href: "/board" },
-      { name: "Contact Us", href: "#" },
+      { name: "Contact Us", href: "/contact" },
     ],
   },
   {
@@ -39,7 +39,7 @@ const navItems = [
     children: [
       { name: "Become a Member", href: "#support" },
       { name: "Volunteer", href: "#" },
-      { name: "Donate", href: "#" },
+      { name: "Donate", href: "/donate" },
     ],
   },
 ];

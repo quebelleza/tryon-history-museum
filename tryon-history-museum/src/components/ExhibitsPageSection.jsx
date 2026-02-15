@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import FadeIn from "./FadeIn";
 import Image from "next/image";
 import SanityImage from "./SanityImage";
@@ -37,9 +38,16 @@ function ExhibitCard({ exhibit }) {
     exhibit.isPermanent
   );
 
+  const slug = exhibit.slug?.current;
+
+  const Wrapper = slug ? Link : "div";
+  const wrapperProps = slug
+    ? { href: `/exhibits/${slug}`, className: "group block no-underline" }
+    : { className: "group" };
+
   return (
-    <div
-      className="group"
+    <Wrapper
+      {...wrapperProps}
       style={{
         background: "#FFFDF9",
         border: "1px solid rgba(123,45,38,0.08)",
@@ -108,7 +116,7 @@ function ExhibitCard({ exhibit }) {
           </p>
         )}
       </div>
-    </div>
+    </Wrapper>
   );
 }
 

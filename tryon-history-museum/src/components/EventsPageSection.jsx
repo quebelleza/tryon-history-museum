@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
@@ -25,10 +26,16 @@ function formatDate(dateStr) {
 
 function EventCard({ event, isPast }) {
   const { month, day, full } = formatDate(event.date);
+  const slug = event.slug?.current;
+
+  const Wrapper = slug && !isPast ? Link : "div";
+  const wrapperProps = slug && !isPast
+    ? { href: `/events/${slug}`, className: `flex gap-4 md:gap-7 p-5 md:p-9 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer no-underline` }
+    : { className: `flex gap-4 md:gap-7 p-5 md:p-9 transition-all duration-300 ${isPast ? "opacity-50" : "hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"}` };
 
   return (
-    <div
-      className={`flex gap-4 md:gap-7 p-5 md:p-9 transition-all duration-300 ${isPast ? "opacity-50" : "hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"}`}
+    <Wrapper
+      {...wrapperProps}
       style={{
         background: "#FFFDF9",
         border: "1px solid rgba(123,45,38,0.08)",
@@ -81,7 +88,7 @@ function EventCard({ event, isPast }) {
           </p>
         )}
       </div>
-    </div>
+    </Wrapper>
   );
 }
 

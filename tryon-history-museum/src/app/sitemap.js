@@ -30,9 +30,27 @@ export default async function sitemap() {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    {
+      url: `${BASE_URL}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/donate`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/gift-shop`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
   ];
 
-  // Dynamic exhibit routes (for future detail pages)
+  // Dynamic exhibit routes
   let exhibitRoutes = [];
   try {
     const exhibits = await getAllExhibits();
@@ -48,5 +66,21 @@ export default async function sitemap() {
     // Silently skip if Sanity is unavailable
   }
 
-  return [...staticRoutes, ...exhibitRoutes];
+  // Dynamic event routes
+  let eventRoutes = [];
+  try {
+    const events = await getAllEvents();
+    eventRoutes = (events || [])
+      .filter((e) => e.slug?.current)
+      .map((event) => ({
+        url: `${BASE_URL}/events/${event.slug.current}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.6,
+      }));
+  } catch (e) {
+    // Silently skip if Sanity is unavailable
+  }
+
+  return [...staticRoutes, ...exhibitRoutes, ...eventRoutes];
 }

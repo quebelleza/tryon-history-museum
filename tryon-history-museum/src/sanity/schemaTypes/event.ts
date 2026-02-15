@@ -12,6 +12,13 @@ export const event = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {source: 'title'},
+      description: 'URL-friendly name for the event detail page',
+    }),
+    defineField({
       name: 'date',
       title: 'Date',
       type: 'date',
