@@ -25,7 +25,7 @@ export default async function Image() {
           About the Museum
         </div>
         <div style={{ fontSize: 64, fontWeight: 300, color: "#FFFFFF", lineHeight: 1.1, marginBottom: "8px" }}>
-          2025 Board of
+          2026 Board of
         </div>
         <div style={{ fontSize: 64, fontWeight: 600, fontStyle: "italic", color: "#FFFFFF", lineHeight: 1.1, marginBottom: "24px" }}>
           Directors

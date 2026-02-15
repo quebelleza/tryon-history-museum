@@ -21,7 +21,7 @@ const boardMembers = [
     title: "Vice President",
     term: "2028",
     photo: "/board/heather-brady.jpg",
-    bio: "Heather Brady came to Tryon from Greenville, SC, with a lifelong curiosity for history, place, and storytelling. Her professional background in real estate and project management has deepened her appreciation for preservation, research, and the narratives that shape communities. From tracing historic deeds to uncovering local lore, Heather is passionate about keeping Tryon\u2019s history alive and relevant. As Vice President of the Tryon History Museum, she brings a strategic, hands-on approach to her work, with a goal of strengthening the Museum\u2019s role as a vibrant destination and essential stop on the Tryon map.",
+    bio: "Heather Brady came to Tryon from Greenville, SC, with a lifelong curiosity for history, place, and storytelling. Her professional background in real estate and technical project management has deepened her appreciation for preservation, research, and the narratives that shape communities. From tracing historic deeds to uncovering local lore, Heather is passionate about keeping Tryon\u2019s history alive and relevant. As Vice President of the Tryon History Museum, she brings a strategic, hands-on approach to her work, with a goal of strengthening the Museum\u2019s role as a vibrant destination and essential stop on the Tryon map.",
   },
   {
     name: "Wanda May",
@@ -199,7 +199,7 @@ export default function BoardSection({ sanityMembers }) {
               About the Museum
             </div>
             <h1 className="font-display text-4xl md:text-6xl font-light text-white leading-[1.1] mb-6">
-              2025 Board of{" "}
+              2026 Board of{" "}
               <span className="italic font-semibold">Directors</span>
             </h1>
             <p
