@@ -9,10 +9,17 @@ const GOLD_ACCENT = "#C4A35A";
 
 const fallbackEvents = [
   {
+    date: "Feb 27",
+    title: "Curator Chat: WWII Veterans Tribute Exhibit",
+    type: "Members Only",
+    desc: "Join us for an intimate members-only conversation with our curator about our upcoming WWII Veterans tribute exhibit \u2014 honoring the Tryon natives who served, and the stories that connect this small town to a world at war.",
+    href: "#",
+  },
+  {
     date: "Mar 17",
     title: "Volunteer Appreciation Luncheon",
     type: "Museum Event",
-    desc: "{PLACEHOLDER \u2014 add description}",
+    desc: "Our annual celebration honoring the volunteers, docents, and board members who give their time, talents, and energy to keep Tryon\u2019s story alive \u2014 with a special musical surprise on St. Patrick\u2019s Day.",
     href: "#",
   },
   {
@@ -20,12 +27,6 @@ const fallbackEvents = [
     title: "Dr. M.C. Palmer: A Country Doctor\u2019s Legacy",
     type: "Presentation",
     desc: "Discover the remarkable life and practice of one of Tryon\u2019s most beloved physicians.",
-  },
-  {
-    date: "Apr 19",
-    title: "Block House Steeplechase History",
-    type: "Special Exhibit Opening",
-    desc: "A new exhibit celebrating nearly a century of North Carolina\u2019s longest-running steeplechase.",
   },
   {
     date: "May 16",
