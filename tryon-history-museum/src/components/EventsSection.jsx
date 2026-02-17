@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
@@ -8,16 +9,11 @@ const GOLD_ACCENT = "#C4A35A";
 
 const fallbackEvents = [
   {
-    date: "Mar 15",
-    title: "Tales of Tryon: The Railroad Years",
-    type: "Lecture Series",
-    desc: "Explore how the railroad transformed Tryon from Cherokee territory to a thriving artisan village.",
-  },
-  {
-    date: "Mar 22",
-    title: "Spring Equestrian Heritage Walk",
-    type: "Walking Tour",
-    desc: "A guided tour of Tryon\u2019s equestrian landmarks, from the original Riding and Hunt Club to Morris the Horse.",
+    date: "Mar 17",
+    title: "Volunteer Appreciation Luncheon",
+    type: "Museum Event",
+    desc: "{PLACEHOLDER \u2014 add description}",
+    href: "#",
   },
   {
     date: "Apr 5",
@@ -30,6 +26,13 @@ const fallbackEvents = [
     title: "Block House Steeplechase History",
     type: "Special Exhibit Opening",
     desc: "A new exhibit celebrating nearly a century of North Carolina\u2019s longest-running steeplechase.",
+  },
+  {
+    date: "May 16",
+    title: "Modernist Home Tour",
+    type: "Home Tour",
+    desc: "A rare look inside 6 stunning modernist homes \u2014 with expert docent guides, bus transportation, and lunch included.",
+    href: "/events/modernist-home-tour",
   },
 ];
 
@@ -46,6 +49,7 @@ function normalizeEvents(sanityEvents) {
     ...e,
     month: e.date.split(" ")[0],
     day: e.date.split(" ")[1],
+    href: e.href || null,
   }));
 
   return sanityEvents.map((e) => {
@@ -95,10 +99,10 @@ export default function EventsSection({ events }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {displayEvents.map((event, i) => (
-            <FadeIn key={event.title} delay={i * 0.1}>
+          {displayEvents.map((event, i) => {
+            const cardContent = (
               <div
-                className="flex gap-4 md:gap-7 p-5 md:p-9 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                className="flex gap-4 md:gap-7 p-5 md:p-9 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg h-full"
                 style={{
                   background: "#FFFDF9",
                   border: "1px solid rgba(123,45,38,0.08)",
@@ -144,8 +148,20 @@ export default function EventsSection({ events }) {
                   </p>
                 </div>
               </div>
-            </FadeIn>
-          ))}
+            );
+
+            return (
+              <FadeIn key={event.title} delay={i * 0.1}>
+                {event.href ? (
+                  <Link href={event.href} className="block no-underline h-full">
+                    {cardContent}
+                  </Link>
+                ) : (
+                  cardContent
+                )}
+              </FadeIn>
+            );
+          })}
         </div>
       </div>
     </section>
