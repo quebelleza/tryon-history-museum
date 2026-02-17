@@ -166,7 +166,7 @@ export default function EventsPageSection({ events }) {
               {/* Thumbnail */}
               <div className="relative w-full aspect-[21/9] overflow-hidden">
                 <Image
-                  src="/images/events/modernist-home-tour-hero.jpg"
+                  src="/images/events/modernist-home-tour-hero.webp"
                   alt="Watercolor illustration of a modernist home with the Blue Ridge mountains"
                   fill
                   className="object-cover"

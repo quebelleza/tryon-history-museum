@@ -107,7 +107,7 @@ export default function ModernistHomeTourSection() {
         {/* Hero image */}
         <div className="relative w-full aspect-[16/7] md:aspect-[21/9] min-h-[420px]">
           <Image
-            src="/images/events/modernist-home-tour-hero.jpg"
+            src="/images/events/modernist-home-tour-hero.webp"
             alt="Watercolor illustration of a modernist home with the Blue Ridge mountains"
             fill
             className="object-cover"
