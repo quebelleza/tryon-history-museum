@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
@@ -150,6 +151,87 @@ export default function EventsPageSection({ events }) {
             >
               Upcoming Events
             </div>
+          </FadeIn>
+
+          {/* Featured Event: Modernist Home Tour */}
+          <FadeIn>
+            <Link
+              href="/events/modernist-home-tour"
+              className="block no-underline mb-8 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg overflow-hidden"
+              style={{
+                background: "#FFFDF9",
+                border: "1px solid rgba(123,45,38,0.08)",
+              }}
+            >
+              {/* Thumbnail */}
+              <div className="relative w-full aspect-[21/9] overflow-hidden">
+                <Image
+                  src="/images/events/modernist-home-tour-hero.jpg"
+                  alt="Watercolor illustration of a modernist home with the Blue Ridge mountains"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 900px) 100vw, 900px"
+                  priority
+                />
+              </div>
+              <div className="flex gap-4 md:gap-7 p-5 md:p-9">
+                {/* Date block */}
+                <div
+                  className="min-w-[56px] md:min-w-[72px] text-center py-4 pr-4 md:pr-7 flex-shrink-0"
+                  style={{ borderRight: "1px solid rgba(123,45,38,0.1)" }}
+                >
+                  <div
+                    className="font-display text-[28px] font-bold leading-none"
+                    style={{ color: DEEP_RED }}
+                  >
+                    16
+                  </div>
+                  <div
+                    className="font-body text-[11px] uppercase mt-1"
+                    style={{ letterSpacing: "0.15em", color: MUTED_RED }}
+                  >
+                    May
+                  </div>
+                </div>
+                {/* Details */}
+                <div className="flex-1">
+                  <div
+                    className="font-body text-[11px] uppercase mb-2 font-semibold"
+                    style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}
+                  >
+                    Home Tour
+                  </div>
+                  <h3 className="font-display text-[22px] font-semibold text-tryon-black mb-1">
+                    Modernist Home Tour
+                  </h3>
+                  <p
+                    className="font-body text-[13px] italic mb-3 m-0"
+                    style={{ color: MUTED_RED }}
+                  >
+                    A Celebration of Architectural Innovation in Tryon
+                  </p>
+                  <p
+                    className="font-body text-sm leading-relaxed m-0 mb-4"
+                    style={{ color: "rgba(26,19,17,0.6)" }}
+                  >
+                    Step inside 6 stunning modernist homes — historic gems and
+                    inspired new builds — with expert docent guides, bus
+                    transportation, and a catered lunch included.
+                  </p>
+                  <span
+                    className="inline-block font-body text-[12px] font-semibold uppercase"
+                    style={{
+                      letterSpacing: "0.12em",
+                      color: WARM_BLACK,
+                      background: GOLD_ACCENT,
+                      padding: "10px 22px",
+                    }}
+                  >
+                    Learn More &amp; Join the Interest List
+                  </span>
+                </div>
+              </div>
+            </Link>
           </FadeIn>
 
           {hasNoEvents && (
