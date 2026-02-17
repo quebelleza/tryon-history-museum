@@ -51,7 +51,6 @@ const tourHighlights = [
   { icon: "🎙️", text: "Expert docent guides at each home" },
   { icon: "🚌", text: "Hassle-free bus transportation between all stops" },
   { icon: "🍽️", text: "Catered lunch included" },
-  { icon: "☀️", text: "Rain or shine event" },
 ];
 
 const logistics = [
@@ -61,7 +60,6 @@ const logistics = [
   { label: "Transportation", value: "Bus transportation provided from Tryon Presbyterian Church — no private vehicles at tour homes" },
   { label: "Lunch", value: "Catered lunch served at Tryon Presbyterian Church, included in ticket price" },
   { label: "Restrooms", value: "Available at Tryon Presbyterian Church" },
-  { label: "Weather", value: "Rain or shine event" },
 ];
 
 export default function ModernistHomeTourSection() {
@@ -154,7 +152,7 @@ export default function ModernistHomeTourSection() {
                 className="font-body text-[13px] uppercase mb-2"
                 style={{ letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)" }}
               >
-                Saturday, May 16, 2026 · Rain or Shine · Tryon, North Carolina
+                Saturday, May 16, 2026 · Tryon, North Carolina
               </div>
               <div
                 className="font-body text-[12px]"
