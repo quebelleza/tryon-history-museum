@@ -41,22 +41,24 @@ export default function AdminDashboardSection() {
 
   useEffect(() => {
     async function load() {
-      const [statsRes, expiringRes, expiredRes, patronsRes] = await Promise.all([
+      const [statsRes, expiringRes, expiredRes, patronsRes, stewardsRes] = await Promise.all([
         fetch("/api/admin/stats"),
         fetch("/api/admin/members?status=expiring_soon&perPage=10&sortBy=expiration_date&sortDir=asc"),
         fetch("/api/admin/members?status=expired&perPage=10&sortBy=expiration_date&sortDir=desc"),
         fetch("/api/admin/members?donorClass=patron&perPage=20"),
+        fetch("/api/admin/members?donorClass=steward&perPage=20"),
       ]);
-      const [statsData, expiringData, expiredData, patronsData] = await Promise.all([
+      const [statsData, expiringData, expiredData, patronsData, stewardsData] = await Promise.all([
         statsRes.json(),
         expiringRes.json(),
         expiredRes.json(),
         patronsRes.json(),
+        stewardsRes.json(),
       ]);
       setStats(statsData);
       setExpiring(expiringData.members || []);
       setExpired(expiredData.members || []);
-      setPatrons(patronsData.members || []);
+      setPatrons([...(stewardsData.members || []), ...(patronsData.members || [])]);
       setLoading(false);
     }
     load();

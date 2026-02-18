@@ -6,21 +6,23 @@ export async function POST(request) {
   const { isAdmin } = await verifyAdmin();
   if (!isAdmin) {
     return NextResponse.json(
-      { error: "You don't have permission to perform this action. Please contact the Museum Administrator." },
+      { error: "Only administrators can change user roles." },
       { status: 403 }
     );
   }
 
   const supabase = createAdminClient();
-  const body = await request.json();
+  const { auth_user_id, role } = await request.json();
 
-  const { data, error } = await supabase
-    .from("membership_payments")
-    .insert(body)
-    .select()
-    .single();
+  if (!auth_user_id || !["member", "board_member", "admin"].includes(role)) {
+    return NextResponse.json({ error: "Invalid parameters." }, { status: 400 });
+  }
+
+  const { error } = await supabase.auth.admin.updateUserById(auth_user_id, {
+    app_metadata: { role },
+  });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ payment: data });
+  return NextResponse.json({ success: true, role });
 }

@@ -3,8 +3,8 @@ import { verifyAdmin } from "@/lib/supabase/adminAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
-  const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  const { hasAdminAccess } = await verifyAdmin();
+  if (!hasAdminAccess) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const supabase = createAdminClient();
 

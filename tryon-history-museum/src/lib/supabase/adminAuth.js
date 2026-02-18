@@ -2,8 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 /**
- * Verify the current request is from an admin user.
- * Returns { user, isAdmin } or throws.
+ * Verify the current request is from a user with admin-panel access.
+ * Returns { user, role, isAdmin, isBoardMember, hasAdminAccess }.
+ *
+ * role values: "admin" | "board_member" | "member" | null
+ * hasAdminAccess = true for both admin and board_member
  */
 export async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -33,8 +36,11 @@ export async function verifyAdmin() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { user: null, isAdmin: false };
+  if (!user) return { user: null, role: null, isAdmin: false, isBoardMember: false, hasAdminAccess: false };
 
-  const isAdmin = user.app_metadata?.role === "admin";
-  return { user, isAdmin };
+  const role = user.app_metadata?.role || "member";
+  const isAdmin = role === "admin";
+  const isBoardMember = role === "board_member";
+  const hasAdminAccess = isAdmin || isBoardMember;
+  return { user, role, isAdmin, isBoardMember, hasAdminAccess };
 }

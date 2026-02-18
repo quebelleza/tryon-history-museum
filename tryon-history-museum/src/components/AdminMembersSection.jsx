@@ -56,6 +56,8 @@ export default function AdminMembersSection() {
   const [sortBy, setSortBy] = useState("last_name");
   const [sortDir, setSortDir] = useState("asc");
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(null);
+  const isAdmin = role === "admin";
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
@@ -73,6 +75,7 @@ export default function AdminMembersSection() {
     setMembers(data.members || []);
     setTotal(data.total || 0);
     setTotalPages(data.totalPages || 1);
+    if (data.role) setRole(data.role);
     setLoading(false);
   }, [search, statusFilter, tierFilter, donorFilter, sortBy, sortDir, page]);
 
@@ -185,6 +188,7 @@ export default function AdminMembersSection() {
           <option value="none">None</option>
           <option value="donor">Donor</option>
           <option value="patron">Patron</option>
+          <option value="steward">Steward</option>
         </select>
       </div>
 
@@ -264,20 +268,24 @@ export default function AdminMembersSection() {
                       >
                         View
                       </Link>
-                      <Link
-                        href={`/admin/members/${m.id}`}
-                        className="font-body text-[11px] uppercase font-semibold no-underline hover:underline"
-                        style={{ letterSpacing: "0.05em", color: MUTED_RED }}
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(m.id, `${m.first_name} ${m.last_name}`)}
-                        className="font-body text-[11px] uppercase font-semibold bg-transparent border-none cursor-pointer hover:underline"
-                        style={{ letterSpacing: "0.05em", color: DEEP_RED }}
-                      >
-                        Delete
-                      </button>
+                      {isAdmin && (
+                        <Link
+                          href={`/admin/members/${m.id}`}
+                          className="font-body text-[11px] uppercase font-semibold no-underline hover:underline"
+                          style={{ letterSpacing: "0.05em", color: MUTED_RED }}
+                        >
+                          Edit
+                        </Link>
+                      )}
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDelete(m.id, `${m.first_name} ${m.last_name}`)}
+                          className="font-body text-[11px] uppercase font-semibold bg-transparent border-none cursor-pointer hover:underline"
+                          style={{ letterSpacing: "0.05em", color: DEEP_RED }}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

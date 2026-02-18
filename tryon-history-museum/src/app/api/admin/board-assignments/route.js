@@ -3,8 +3,8 @@ import { verifyAdmin } from "@/lib/supabase/adminAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request) {
-  const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  const { hasAdminAccess } = await verifyAdmin();
+  if (!hasAdminAccess) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const supabase = createAdminClient();
   const body = await request.json();
@@ -21,8 +21,8 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-  const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  const { hasAdminAccess } = await verifyAdmin();
+  if (!hasAdminAccess) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const supabase = createAdminClient();
   const body = await request.json();

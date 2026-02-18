@@ -27,8 +27,13 @@ export default function AdminPatronsSection() {
   }, []);
 
   async function loadPatrons() {
-    const res = await fetch("/api/admin/members?donorClass=patron&perPage=100");
-    const data = await res.json();
+    // Fetch both patrons and stewards
+    const [patronRes, stewardRes] = await Promise.all([
+      fetch("/api/admin/members?donorClass=patron&perPage=100"),
+      fetch("/api/admin/members?donorClass=steward&perPage=100"),
+    ]);
+    const [patronData, stewardData] = await Promise.all([patronRes.json(), stewardRes.json()]);
+    const data = { members: [...(stewardData.members || []), ...(patronData.members || [])] };
 
     // For each patron, fetch their detail (includes assignments + payments)
     const enriched = await Promise.all(
@@ -162,12 +167,12 @@ export default function AdminPatronsSection() {
                   <div
                     className="inline-block ml-2 font-body text-[9px] uppercase font-semibold px-2 py-0.5 rounded-sm"
                     style={{
-                      background: "rgba(196,163,90,0.12)",
-                      color: GOLD_ACCENT,
+                      background: p.donor_class === "steward" ? "rgba(107,79,29,0.12)" : "rgba(196,163,90,0.12)",
+                      color: p.donor_class === "steward" ? "#6B4F1D" : GOLD_ACCENT,
                       letterSpacing: "0.08em",
                     }}
                   >
-                    Patron
+                    {p.donor_class === "steward" ? "Steward" : "Patron"}
                   </div>
                 </div>
               </div>

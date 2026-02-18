@@ -30,23 +30,24 @@ export async function updateSession(request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdmin = user?.app_metadata?.role === "admin";
+  const role = user?.app_metadata?.role;
+  const hasAdminAccess = role === "admin" || role === "board_member";
 
   // Debug: log on /admin and /login routes (remove once confirmed working)
   if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname === "/login") {
     console.log("[admin-debug] path:", request.nextUrl.pathname);
-    console.log("[admin-debug] user:", !!user, "| app_metadata:", JSON.stringify(user?.app_metadata), "| isAdmin:", isAdmin);
+    console.log("[admin-debug] user:", !!user, "| app_metadata:", JSON.stringify(user?.app_metadata), "| hasAdminAccess:", hasAdminAccess);
   }
 
-  // --- Admin routes: only admin role allowed ---
-  if (request.nextUrl.pathname.startsWith("/admin") && !isAdmin) {
+  // --- Admin routes: only admin or board_member role allowed ---
+  if (request.nextUrl.pathname.startsWith("/admin") && !hasAdminAccess) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // --- Admin user on /login or /member/dashboard → send to /admin/dashboard ---
-  if (isAdmin && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/member/dashboard")) {
+  // --- Admin/board_member on /login or /member/dashboard → send to /admin/dashboard ---
+  if (hasAdminAccess && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/member/dashboard")) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/dashboard";
     return NextResponse.redirect(url);
@@ -60,7 +61,7 @@ export async function updateSession(request) {
   }
 
   // --- Non-admin authenticated users away from /login ---
-  if (user && !isAdmin && request.nextUrl.pathname === "/login") {
+  if (user && !hasAdminAccess && request.nextUrl.pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/member/dashboard";
     return NextResponse.redirect(url);

@@ -3,8 +3,8 @@ import { verifyAdmin } from "@/lib/supabase/adminAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request) {
-  const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  const { hasAdminAccess, role } = await verifyAdmin();
+  if (!hasAdminAccess) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const supabase = createAdminClient();
   const { searchParams } = new URL(request.url);
@@ -42,12 +42,13 @@ export async function GET(request) {
     page,
     perPage,
     totalPages: Math.ceil((count || 0) / perPage),
+    role,
   });
 }
 
 export async function POST(request) {
-  const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  const { hasAdminAccess } = await verifyAdmin();
+  if (!hasAdminAccess) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const supabase = createAdminClient();
   const body = await request.json();
