@@ -13,7 +13,8 @@ const fallbackEvents = [
     title: "Curator Chat: WWII Veterans Tribute Exhibit",
     type: "Members Only",
     desc: "Join us for an intimate members-only conversation with our curator about our upcoming WWII Veterans tribute exhibit \u2014 honoring the Tryon natives who served, and the stories that connect this small town to a world at war.",
-    href: "#",
+    href: "/events/curator-chat-wwii",
+    membersOnly: true,
   },
   {
     date: "Mar 17",
@@ -51,6 +52,7 @@ function normalizeEvents(sanityEvents) {
     month: e.date.split(" ")[0],
     day: e.date.split(" ")[1],
     href: e.href || null,
+    membersOnly: e.membersOnly || false,
   }));
 
   return sanityEvents.map((e) => {
@@ -132,11 +134,27 @@ export default function EventsSection({ events }) {
                 </div>
                 {/* Details */}
                 <div className="flex-1">
-                  <div
-                    className="font-body text-[11px] uppercase mb-2 font-semibold"
-                    style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}
-                  >
-                    {event.type}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div
+                      className="font-body text-[11px] uppercase font-semibold"
+                      style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}
+                    >
+                      {event.type}
+                    </div>
+                    {event.membersOnly && (
+                      <span
+                        className="inline-flex items-center gap-1 font-body text-[9px] uppercase font-semibold px-2 py-0.5"
+                        style={{
+                          letterSpacing: "0.1em",
+                          color: "#1B2A4A",
+                          background: "rgba(27,42,74,0.08)",
+                          borderRadius: "2px",
+                        }}
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Members Only
+                      </span>
+                    )}
                   </div>
                   <h3 className="font-display text-[22px] font-semibold text-tryon-black mb-2">
                     {event.title}

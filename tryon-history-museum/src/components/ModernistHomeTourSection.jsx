@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import FadeIn from "./FadeIn";
+import { getMemberAccess } from "@/lib/supabase/memberAccess";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -70,6 +71,22 @@ export default function ModernistHomeTourSection() {
     isMember: false,
   });
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
+  const [access, setAccess] = useState({ isLoggedIn: false, isActiveMember: false, member: null });
+
+  useEffect(() => {
+    getMemberAccess().then((a) => {
+      setAccess(a);
+      if (a.member) {
+        setForm((prev) => ({
+          ...prev,
+          firstName: a.member.first_name || prev.firstName,
+          lastName: a.member.last_name || prev.lastName,
+          email: a.member.email || prev.email,
+          isMember: true,
+        }));
+      }
+    });
+  }, []);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -356,39 +373,76 @@ export default function ModernistHomeTourSection() {
           </FadeIn>
 
           <div className="flex flex-col sm:flex-row gap-5 mb-8">
-            {pricingTiers.map((tier, i) => (
-              <FadeIn key={tier.label} delay={i * 0.1} className="flex-1">
-                <div
-                  className="p-7 md:p-9 text-center h-full flex flex-col justify-center"
-                  style={{
-                    background: "#FFFDF9",
-                    border: "1px solid rgba(123,45,38,0.08)",
-                  }}
-                >
+            {pricingTiers.map((tier, i) => {
+              const isPreSale = i === 0;
+              const locked = isPreSale && !access.isActiveMember;
+              return (
+                <FadeIn key={tier.label} delay={i * 0.1} className="flex-1">
                   <div
-                    className="font-display text-4xl font-semibold mb-2"
-                    style={{ color: DEEP_RED }}
+                    className="p-7 md:p-9 text-center h-full flex flex-col justify-center relative"
+                    style={{
+                      background: locked ? "#F5F3F0" : "#FFFDF9",
+                      border: locked ? "1px solid rgba(27,42,74,0.08)" : "1px solid rgba(123,45,38,0.08)",
+                      opacity: locked ? 0.7 : 1,
+                    }}
                   >
-                    {tier.price}
-                  </div>
-                  <div
-                    className="font-body text-[13px] font-semibold uppercase"
-                    style={{ letterSpacing: "0.1em", color: WARM_BLACK }}
-                  >
-                    {tier.label}
-                  </div>
-                  {tier.note && (
+                    {locked && (
+                      <div className="flex justify-center mb-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      </div>
+                    )}
                     <div
-                      className="font-body text-[12px] mt-2"
-                      style={{ color: "rgba(26,19,17,0.45)" }}
+                      className="font-display text-4xl font-semibold mb-2"
+                      style={{ color: locked ? "rgba(26,19,17,0.35)" : DEEP_RED }}
                     >
-                      {tier.note}
+                      {tier.price}
                     </div>
-                  )}
-                </div>
-              </FadeIn>
-            ))}
+                    <div
+                      className="font-body text-[13px] font-semibold uppercase"
+                      style={{ letterSpacing: "0.1em", color: locked ? "rgba(26,19,17,0.4)" : WARM_BLACK }}
+                    >
+                      {tier.label}
+                    </div>
+                    {tier.note && (
+                      <div
+                        className="font-body text-[12px] mt-2"
+                        style={{ color: "rgba(26,19,17,0.45)" }}
+                      >
+                        {tier.note}
+                      </div>
+                    )}
+                    {locked && (
+                      <div
+                        className="font-body text-[11px] mt-3"
+                        style={{ color: "#1B2A4A" }}
+                      >
+                        <Link href="/login" className="no-underline hover:underline" style={{ color: "#1B2A4A", fontWeight: 600 }}>Log in</Link>{" "}
+                        or{" "}
+                        <Link href="/membership" className="no-underline hover:underline" style={{ color: "#1B2A4A", fontWeight: 600 }}>become a member</Link>{" "}
+                        for pre-sale pricing
+                      </div>
+                    )}
+                  </div>
+                </FadeIn>
+              );
+            })}
           </div>
+
+          {access.isActiveMember && (
+            <FadeIn delay={0.12}>
+              <div
+                className="p-4 mb-6 text-center"
+                style={{
+                  background: "rgba(45,106,79,0.06)",
+                  border: "1px solid rgba(45,106,79,0.12)",
+                }}
+              >
+                <p className="font-body text-[14px] m-0" style={{ color: "#2D6A4F" }}>
+                  ✦ You&apos;re eligible for pre-sale pricing as a Museum Member.
+                </p>
+              </div>
+            </FadeIn>
+          )}
 
           {/* Ticket details callout */}
           <FadeIn delay={0.15}>

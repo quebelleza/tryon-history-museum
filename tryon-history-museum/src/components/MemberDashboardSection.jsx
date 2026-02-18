@@ -357,10 +357,112 @@ export default function MemberDashboardSection() {
           </FadeIn>
         )}
 
-        {/* Quick links */}
+        {/* Upcoming Members-Only Events */}
         <FadeIn delay={0.2}>
           <div
             className="font-body text-[11px] uppercase mb-5 mt-10"
+            style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+          >
+            Upcoming Members-Only Events
+          </div>
+          <div className="space-y-4 mb-10">
+            <Link
+              href="/events/curator-chat-wwii"
+              className="flex items-center gap-5 no-underline p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+              style={{
+                background: "#FFFDF9",
+                border: "1px solid rgba(123,45,38,0.08)",
+              }}
+            >
+              <div
+                className="min-w-[48px] text-center flex-shrink-0"
+                style={{ borderRight: "1px solid rgba(123,45,38,0.1)", paddingRight: "16px" }}
+              >
+                <div
+                  className="font-display text-[22px] font-bold leading-none"
+                  style={{ color: DEEP_RED }}
+                >
+                  27
+                </div>
+                <div
+                  className="font-body text-[10px] uppercase mt-0.5"
+                  style={{ letterSpacing: "0.15em", color: MUTED_RED }}
+                >
+                  Feb
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className="font-body text-[13px] font-semibold"
+                    style={{ color: WARM_BLACK }}
+                  >
+                    Curator Chat: WWII Veterans Tribute Exhibit
+                  </span>
+                  <span
+                    className="inline-flex items-center gap-1 font-body text-[9px] uppercase font-semibold px-2 py-0.5"
+                    style={{
+                      letterSpacing: "0.1em",
+                      color: "#1B2A4A",
+                      background: "rgba(27,42,74,0.08)",
+                      borderRadius: "2px",
+                    }}
+                  >
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Members Only
+                  </span>
+                </div>
+                <div
+                  className="font-body text-[12px]"
+                  style={{ color: "rgba(26,19,17,0.45)" }}
+                >
+                  An intimate conversation about the upcoming WWII Veterans tribute exhibit
+                </div>
+              </div>
+            </Link>
+          </div>
+        </FadeIn>
+
+        {/* My Benefits */}
+        <FadeIn delay={0.25}>
+          <div
+            className="font-body text-[11px] uppercase mb-5"
+            style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+          >
+            My Benefits
+          </div>
+          <div
+            className="p-7 md:p-9 mb-10"
+            style={{
+              background: "#FFFDF9",
+              border: "1px solid rgba(123,45,38,0.08)",
+            }}
+          >
+            <div
+              className="font-display text-lg font-semibold mb-3"
+              style={{ color: WARM_BLACK }}
+            >
+              {tierLabel(member.effective_access_tier)} Membership
+            </div>
+            <p
+              className="font-body text-[14px] leading-[1.7] m-0"
+              style={{ color: "rgba(26,19,17,0.6)" }}
+            >
+              {member.effective_access_tier === "family"
+                ? member.donor_class === "patron"
+                  ? "All Family benefits plus our deepest gratitude for your generous support of Tryon\u2019s story."
+                  : member.donor_class === "donor"
+                  ? "All Individual benefits for your household, plus guest passes and event priority — with our thanks for your generous support."
+                  : "All Individual benefits for your household, plus guest passes and event priority."
+                : "Member pricing on tickets, access to members-only events, newsletter, 10% gift shop discount."}
+            </p>
+          </div>
+        </FadeIn>
+
+        {/* Quick links */}
+        <FadeIn delay={0.3}>
+          <div
+            className="font-body text-[11px] uppercase mb-5"
             style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
           >
             Quick Links
