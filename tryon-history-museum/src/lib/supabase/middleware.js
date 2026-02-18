@@ -32,31 +32,37 @@ export async function updateSession(request) {
 
   const isAdmin = user?.app_metadata?.role === "admin";
 
-  // Redirect unauthenticated users away from /member routes
+  // Debug: log on /admin and /login routes (remove once confirmed working)
+  if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname === "/login") {
+    console.log("[admin-debug] path:", request.nextUrl.pathname);
+    console.log("[admin-debug] user:", !!user, "| app_metadata:", JSON.stringify(user?.app_metadata), "| isAdmin:", isAdmin);
+  }
+
+  // --- Admin routes: only admin role allowed ---
+  if (request.nextUrl.pathname.startsWith("/admin") && !isAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // --- Admin user on /login or /member/dashboard → send to /admin/dashboard ---
+  if (isAdmin && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/member/dashboard")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  // --- Unauthenticated users away from /member routes ---
   if (!user && request.nextUrl.pathname.startsWith("/member")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Redirect unauthenticated or non-admin users away from /admin routes
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-    if (!isAdmin) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // Redirect authenticated users away from /login
-  if (user && request.nextUrl.pathname === "/login") {
+  // --- Non-admin authenticated users away from /login ---
+  if (user && !isAdmin && request.nextUrl.pathname === "/login") {
     const url = request.nextUrl.clone();
-    url.pathname = isAdmin ? "/admin/dashboard" : "/member/dashboard";
+    url.pathname = "/member/dashboard";
     return NextResponse.redirect(url);
   }
 
