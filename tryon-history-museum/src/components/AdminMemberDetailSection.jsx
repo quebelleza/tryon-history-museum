@@ -356,6 +356,37 @@ export default function AdminMemberDetailSection({ memberId }) {
         </div>
       )}
 
+      {/* Payment Summary card — admin only */}
+      {isAdmin && member.last_payment_amount && (
+        <div className="p-6 md:p-8 mb-6" style={{ background: "#FFFDF9", border: "1px solid rgba(196,163,90,0.15)" }}>
+          <div className="font-body text-[11px] uppercase mb-4 font-semibold" style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}>
+            Payment Summary
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div>
+              <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Last Payment</div>
+              <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.last_payment_date)}</div>
+            </div>
+            <div>
+              <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Amount Paid</div>
+              <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>${parseFloat(member.last_payment_amount).toFixed(2)}</div>
+            </div>
+            <div>
+              <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Membership Fee</div>
+              <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{member.membership_fee != null ? `$${parseFloat(member.membership_fee).toFixed(2)}` : "—"}</div>
+            </div>
+            <div>
+              <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Donation</div>
+              <div className="font-body text-[14px] font-semibold" style={{ color: member.additional_donation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{member.additional_donation != null ? `$${parseFloat(member.additional_donation).toFixed(2)}` : "—"}</div>
+            </div>
+            <div>
+              <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Valid Through</div>
+              <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.expiration_date)}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment history — admin only */}
       {isAdmin && (
         <div className="p-6 md:p-8 mb-6" style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}>
@@ -388,16 +419,17 @@ export default function AdminMemberDetailSection({ memberId }) {
                   <select value={paymentForm.payment_method} onChange={(e) => setPaymentForm((p) => ({ ...p, payment_method: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer" style={fieldStyle}>
                     <option value="cash">Cash</option>
                     <option value="check">Check</option>
-                    <option value="credit_card">Credit Card</option>
+                    <option value="stripe">Credit Card</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
                 <div>
                   <label className={labelCls} style={labelStyle}>Type</label>
                   <select value={paymentForm.payment_type} onChange={(e) => setPaymentForm((p) => ({ ...p, payment_type: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer" style={fieldStyle}>
-                    <option value="new">New</option>
+                    <option value="new_membership">New Membership</option>
                     <option value="renewal">Renewal</option>
                     <option value="donation">Donation</option>
+                    <option value="upgrade">Upgrade</option>
                   </select>
                 </div>
                 <div className="sm:col-span-2">
@@ -416,19 +448,29 @@ export default function AdminMemberDetailSection({ memberId }) {
               No payment records.
             </p>
           ) : (
-            <div className="space-y-3">
-              {payments.map((p) => (
-                <div key={p.id} className="flex items-start justify-between gap-3 py-2" style={{ borderBottom: "1px solid rgba(123,45,38,0.04)" }}>
-                  <div>
-                    <div className="font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>
-                      ${parseFloat(p.amount).toFixed(2)}
-                      <span className="font-normal ml-2" style={{ color: "rgba(26,19,17,0.4)" }}>{p.payment_type} · {p.payment_method}</span>
-                    </div>
-                    {p.notes && <div className="font-body text-[12px] mt-0.5" style={{ color: "rgba(26,19,17,0.4)" }}>{p.notes}</div>}
-                  </div>
-                  <div className="font-body text-[12px] whitespace-nowrap" style={{ color: "rgba(26,19,17,0.4)" }}>{formatDate(p.payment_date)}</div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(123,45,38,0.08)" }}>
+                    {["Date", "Total", "Fee", "Donation", "Method", "Type", "Notes"].map((h) => (
+                      <th key={h} className="text-left font-body text-[10px] uppercase font-semibold px-3 py-2" style={{ letterSpacing: "0.1em", color: MUTED_RED }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((p) => (
+                    <tr key={p.id} style={{ borderBottom: "1px solid rgba(123,45,38,0.04)" }}>
+                      <td className="px-3 py-2 font-body text-[13px] whitespace-nowrap" style={{ color: "rgba(26,19,17,0.6)" }}>{formatDate(p.payment_date)}</td>
+                      <td className="px-3 py-2 font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>${parseFloat(p.amount).toFixed(2)}</td>
+                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.membership_fee != null ? `$${parseFloat(p.membership_fee).toFixed(2)}` : "—"}</td>
+                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: p.additional_donation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{p.additional_donation != null ? `$${parseFloat(p.additional_donation).toFixed(2)}` : "—"}</td>
+                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.payment_method}</td>
+                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.payment_type}</td>
+                      <td className="px-3 py-2 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.4)" }}>{p.notes || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

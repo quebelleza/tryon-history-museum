@@ -206,7 +206,8 @@ export default function AdminMembersSection() {
                 { key: "membership_tier", label: "Tier" },
                 { key: "donor_class", label: "Donor Class" },
                 { key: "status", label: "Status" },
-                { key: "expiration_date", label: "Exp. Date" },
+                { key: "last_payment_date", label: "Last Payment" },
+                { key: "expiration_date", label: "Valid Through" },
                 { key: null, label: "Actions" },
               ].map((col) => (
                 <th
@@ -224,13 +225,13 @@ export default function AdminMembersSection() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
+                <td colSpan={8} className="px-4 py-8 text-center font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
                   Loading…
                 </td>
               </tr>
             ) : members.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
+                <td colSpan={8} className="px-4 py-8 text-center font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
                   No members found.
                 </td>
               </tr>
@@ -255,6 +256,16 @@ export default function AdminMembersSection() {
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={m.status} />
+                  </td>
+                  <td className="px-4 py-3 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                    {m.last_payment_date ? (
+                      <div>
+                        <div>{formatDate(m.last_payment_date)}</div>
+                        {m.last_payment_amount != null && (
+                          <div className="font-semibold" style={{ color: WARM_BLACK }}>${parseFloat(m.last_payment_amount).toFixed(2)}</div>
+                        )}
+                      </div>
+                    ) : "—"}
                   </td>
                   <td className="px-4 py-3 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
                     {formatDate(m.expiration_date)}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { computeMembership } from "@/lib/membershipPricing";
 
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
@@ -24,37 +25,22 @@ const readOnlyFieldStyle = {
 const labelCls = "block font-body text-[10px] uppercase mb-1.5 font-semibold";
 const labelStyle = { letterSpacing: "0.15em", color: MUTED_RED };
 
-/**
- * Smart auto-labeling: given a payment amount, return the computed fields.
- */
-function computeFromAmount(amount) {
-  const amt = parseFloat(amount) || 0;
-  if (amt >= 1000) return { membership_tier: "family", donor_class: "steward", member_label: "steward", effective_access_tier: "family" };
-  if (amt >= 250)  return { membership_tier: "family", donor_class: "patron",  member_label: "patron",  effective_access_tier: "family" };
-  if (amt >= 76)   return { membership_tier: "family", donor_class: "donor",   member_label: "donor",   effective_access_tier: "family" };
-  if (amt >= 51)   return { membership_tier: "family", donor_class: "none",    member_label: "member",  effective_access_tier: "family" };
-  if (amt >= 50)   return { membership_tier: "individual", donor_class: "none", member_label: "member", effective_access_tier: "individual" };
-  return null;
+function tierLabel(t) {
+  if (!t) return "—";
+  return t.charAt(0).toUpperCase() + t.slice(1);
 }
-
-function getSummaryMessage(amount) {
-  const amt = parseFloat(amount) || 0;
-  if (amt >= 1000) return "This generous contribution qualifies for Steward recognition with Family-level access — our highest level of support.";
-  if (amt >= 250)  return "This contribution qualifies for Patron membership with Family-level access.";
-  if (amt >= 76)   return "This contribution qualifies for Donor membership with Family-level access.";
-  if (amt >= 51)   return "This qualifies for a Family membership.";
-  if (amt >= 50)   return "This qualifies for an Individual membership.";
-  if (amt > 0)     return "Amount is below the minimum $50 membership. Please adjust.";
-  return null;
+function donorLabel(d) {
+  if (!d || d === "none") return "None";
+  return d.charAt(0).toUpperCase() + d.slice(1);
 }
-
-function getSummaryColor(amount) {
-  const amt = parseFloat(amount) || 0;
-  if (amt >= 1000) return "#6B4F1D";
-  if (amt >= 250)  return GOLD_ACCENT;
-  if (amt >= 50)   return "#2D6A4F";
-  if (amt > 0)     return DEEP_RED;
-  return null;
+function fmtDate(dateStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+function fmtCurrency(v) {
+  const n = parseFloat(v) || 0;
+  return "$" + n.toFixed(2);
 }
 
 const defaultForm = {
@@ -63,13 +49,6 @@ const defaultForm = {
   email: "",
   phone: "",
   address: "",
-  membership_tier: "individual",
-  donor_class: "none",
-  member_label: "member",
-  effective_access_tier: "individual",
-  status: "active",
-  join_date: new Date().toISOString().split("T")[0],
-  expiration_date: "",
   notes: "",
 };
 
@@ -77,32 +56,20 @@ export default function AdminNewMemberSection() {
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentMethod, setPaymentMethod] = useState("check");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
+  // Live computation from pricing utility
+  const computed = useMemo(() => {
+    const amt = parseFloat(paymentAmount) || 0;
+    if (amt <= 0) return null;
+    return computeMembership(amt, paymentDate);
+  }, [paymentAmount, paymentDate]);
+
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
-  }
-
-  function handlePaymentAmountChange(value) {
-    setPaymentAmount(value);
-    const computed = computeFromAmount(value);
-    if (computed) {
-      setForm((prev) => ({ ...prev, ...computed }));
-    }
-  }
-
-  // Auto-set expiration to 1 year from join date
-  function handleJoinDateChange(value) {
-    setForm((prev) => {
-      const exp = new Date(value + "T12:00:00");
-      exp.setFullYear(exp.getFullYear() + 1);
-      return {
-        ...prev,
-        join_date: value,
-        expiration_date: exp.toISOString().split("T")[0],
-      };
-    });
   }
 
   async function handleSubmit(e) {
@@ -110,18 +77,15 @@ export default function AdminNewMemberSection() {
     setSaving(true);
     setError(null);
 
-    // Server-side validation: recompute from payment amount
     const amt = parseFloat(paymentAmount) || 0;
-    if (amt > 0 && amt < 50) {
-      setError("Payment amount must be at least $50 for membership.");
-      setSaving(false);
-      return;
-    }
 
-    const computed = amt > 0 ? computeFromAmount(paymentAmount) : {};
-    const payload = { ...form, ...computed };
-    // Remove fields not in the members table
-    delete payload.effective_access_tier;
+    const payload = {
+      ...form,
+      join_date: paymentDate,
+      payment_amount: amt > 0 ? amt : undefined,
+      payment_date: amt > 0 ? paymentDate : undefined,
+      payment_method: amt > 0 ? paymentMethod : undefined,
+    };
 
     const res = await fetch("/api/admin/members", {
       method: "POST",
@@ -139,18 +103,13 @@ export default function AdminNewMemberSection() {
     }
   }
 
-  const summaryMsg = getSummaryMessage(paymentAmount);
-  const summaryColor = getSummaryColor(paymentAmount);
-  const hasAutoLabeled = parseFloat(paymentAmount) >= 50;
-
-  function tierLabel(t) {
-    if (!t) return "—";
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  }
-  function donorLabel(d) {
-    if (!d || d === "none") return "None";
-    return d.charAt(0).toUpperCase() + d.slice(1);
-  }
+  const hasPayment = (parseFloat(paymentAmount) || 0) > 0;
+  const summaryColor = computed
+    ? computed.belowMinimum ? DEEP_RED
+      : computed.donorClass === "steward" ? "#6B4F1D"
+      : computed.donorClass === "patron" || computed.donorClass === "donor" ? GOLD_ACCENT
+      : "#2D6A4F"
+    : null;
 
   return (
     <div className="p-8 md:p-10 max-w-[900px]">
@@ -254,19 +213,29 @@ export default function AdminNewMemberSection() {
           </div>
         </div>
 
-        {/* Payment amount + smart auto-labeling */}
+        {/* Payment & Membership Calculation */}
         <div
           className="p-6 md:p-8 mb-6"
-          style={{ background: "#FFFDF9", border: `1px solid ${hasAutoLabeled ? "rgba(196,163,90,0.2)" : "rgba(123,45,38,0.08)"}` }}
+          style={{ background: "#FFFDF9", border: `1px solid ${hasPayment && computed && !computed.belowMinimum ? "rgba(196,163,90,0.2)" : "rgba(123,45,38,0.08)"}` }}
         >
           <div
             className="font-body text-[11px] uppercase mb-4 font-semibold"
             style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}
           >
-            Contribution & Membership Level
+            Payment & Membership
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-5">
+            <div>
+              <label className={labelCls} style={labelStyle}>Last Payment Date</label>
+              <input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                className="w-full font-body text-sm px-3 py-2 outline-none"
+                style={fieldStyle}
+              />
+            </div>
             <div>
               <label className={labelCls} style={labelStyle}>Payment Amount ($)</label>
               <input
@@ -274,119 +243,107 @@ export default function AdminNewMemberSection() {
                 step="0.01"
                 min="0"
                 value={paymentAmount}
-                onChange={(e) => handlePaymentAmountChange(e.target.value)}
+                onChange={(e) => setPaymentAmount(e.target.value)}
                 className="w-full font-body text-sm px-3 py-2 outline-none"
                 style={fieldStyle}
-                placeholder="Enter amount to auto-set tier"
+                placeholder="0.00"
               />
             </div>
             <div>
-              <label className={labelCls} style={labelStyle}>Membership Tier</label>
-              <input
-                type="text"
-                readOnly
-                value={tierLabel(form.membership_tier)}
-                className="w-full font-body text-sm px-3 py-2 outline-none"
-                style={readOnlyFieldStyle}
-              />
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Donor Class</label>
-              <input
-                type="text"
-                readOnly
-                value={donorLabel(form.donor_class)}
-                className="w-full font-body text-sm px-3 py-2 outline-none"
-                style={readOnlyFieldStyle}
-              />
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Member Label</label>
-              <input
-                type="text"
-                readOnly
-                value={tierLabel(form.member_label)}
-                className="w-full font-body text-sm px-3 py-2 outline-none"
-                style={readOnlyFieldStyle}
-              />
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Access Tier</label>
-              <input
-                type="text"
-                readOnly
-                value={tierLabel(form.effective_access_tier)}
-                className="w-full font-body text-sm px-3 py-2 outline-none"
-                style={readOnlyFieldStyle}
-              />
+              <label className={labelCls} style={labelStyle}>Payment Method</label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer"
+                style={fieldStyle}
+              >
+                <option value="cash">Cash</option>
+                <option value="check">Check</option>
+                <option value="stripe">Credit Card</option>
+                <option value="other">Other</option>
+              </select>
             </div>
           </div>
 
-          {summaryMsg && (
+          {/* Live Calculation Summary */}
+          {computed && (
             <div
-              className="mt-5 p-4"
+              className="p-5 md:p-6"
               style={{
-                background: `${summaryColor}08`,
+                background: computed.belowMinimum ? "rgba(123,45,38,0.03)" : "rgba(196,163,90,0.04)",
+                border: `1px solid ${summaryColor}18`,
                 borderLeft: `3px solid ${summaryColor}`,
               }}
             >
-              <p className="font-body text-[14px] leading-[1.6] m-0" style={{ color: summaryColor }}>
-                {summaryMsg}
-              </p>
+              <div className="font-body text-[11px] uppercase mb-3 font-semibold" style={{ letterSpacing: "0.12em", color: summaryColor }}>
+                Membership Summary
+              </div>
+
+              <div className="space-y-1.5 mb-3">
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Payment Date</span>
+                  <span style={{ color: WARM_BLACK }}>{fmtDate(paymentDate)}</span>
+                </div>
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Amount Paid</span>
+                  <span className="font-semibold" style={{ color: WARM_BLACK }}>{fmtCurrency(paymentAmount)}</span>
+                </div>
+              </div>
+
+              <div className="my-3" style={{ borderTop: "1px solid rgba(26,19,17,0.08)" }} />
+
+              <div className="space-y-1.5 mb-3">
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Membership Fee ({computed.pricingLabel})</span>
+                  <span style={{ color: WARM_BLACK }}>{fmtCurrency(computed.membershipFee)}</span>
+                </div>
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Additional Donation</span>
+                  <span style={{ color: computed.additionalDonation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{fmtCurrency(computed.additionalDonation)}</span>
+                </div>
+              </div>
+
+              <div className="my-3" style={{ borderTop: "1px solid rgba(26,19,17,0.08)" }} />
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Tier</span>
+                  <span className="font-semibold" style={{ color: WARM_BLACK }}>{tierLabel(computed.membershipTier)} Membership</span>
+                </div>
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Donor Class</span>
+                  <span style={{ color: WARM_BLACK }}>{donorLabel(computed.donorClass)}</span>
+                </div>
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Membership Valid Through</span>
+                  <span style={{ color: WARM_BLACK }}>{fmtDate(computed.expirationDate)}</span>
+                </div>
+              </div>
+
+              {computed.belowMinimum && (
+                <div className="mt-3 p-3" style={{ background: "rgba(123,45,38,0.05)" }}>
+                  <p className="font-body text-[13px] m-0" style={{ color: DEEP_RED }}>{computed.note}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Dates & status */}
+        {/* Notes */}
         <div
           className="p-6 md:p-8 mb-6"
           style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div>
-              <label className={labelCls} style={labelStyle}>Status</label>
-              <select
-                value={form.status}
-                onChange={(e) => handleChange("status", e.target.value)}
-                className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer"
-                style={fieldStyle}
-              >
-                <option value="active">Active</option>
-                <option value="expiring_soon">Expiring Soon</option>
-                <option value="expired">Expired</option>
-                <option value="pending">Pending</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Join Date</label>
-              <input
-                type="date"
-                value={form.join_date}
-                onChange={(e) => handleJoinDateChange(e.target.value)}
-                className="w-full font-body text-sm px-3 py-2 outline-none"
-                style={fieldStyle}
-              />
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Expiration Date</label>
-              <input
-                type="date"
-                value={form.expiration_date}
-                onChange={(e) => handleChange("expiration_date", e.target.value)}
-                className="w-full font-body text-sm px-3 py-2 outline-none"
-                style={fieldStyle}
-              />
-            </div>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className={labelCls} style={labelStyle}>Notes</label>
-              <textarea
-                value={form.notes}
-                onChange={(e) => handleChange("notes", e.target.value)}
-                rows={3}
-                className="w-full font-body text-sm px-3 py-2 outline-none resize-y"
-                style={fieldStyle}
-              />
-            </div>
+          <div>
+            <label className={labelCls} style={labelStyle}>Notes</label>
+            <textarea
+              value={form.notes}
+              onChange={(e) => handleChange("notes", e.target.value)}
+              rows={3}
+              className="w-full font-body text-sm px-3 py-2 outline-none resize-y"
+              style={fieldStyle}
+              placeholder="Optional notes about this member"
+            />
           </div>
         </div>
 
