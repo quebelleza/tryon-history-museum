@@ -10,6 +10,17 @@ const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
 const MUTED_RED = "#A8584F";
+const NAVY = "#1B2A4A";
+
+function getRoleBadge(appRole, member) {
+  if (appRole === "admin") return { label: "Museum Administrator", bg: NAVY, color: "#FAF7F4", accent: NAVY };
+  if (appRole === "board_member") return { label: "Board Member", bg: NAVY, color: "#FAF7F4", accent: NAVY };
+  if (member?.donor_class === "steward") return { label: "Steward", bg: "rgba(107,79,29,0.1)", color: "#6B4F1D", accent: "#6B4F1D" };
+  if (member?.donor_class === "patron") return { label: "Patron", bg: "rgba(196,163,90,0.12)", color: "#8B6914", accent: GOLD_ACCENT };
+  if (member?.donor_class === "donor") return { label: "Donor", bg: "rgba(196,163,90,0.08)", color: GOLD_ACCENT, accent: GOLD_ACCENT };
+  if (member?.membership_tier === "family" || member?.effective_access_tier === "family") return { label: "Family Member", bg: "rgba(26,19,17,0.04)", color: WARM_BLACK, accent: MUTED_RED };
+  return { label: "Member", bg: "rgba(26,19,17,0.04)", color: WARM_BLACK, accent: MUTED_RED };
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -46,6 +57,7 @@ export default function MemberDashboardSection() {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     async function loadMember() {
@@ -60,6 +72,8 @@ export default function MemberDashboardSection() {
         router.push("/login");
         return;
       }
+
+      setUserRole(user.app_metadata?.role || "member");
 
       const { data, error: dbError } = await supabase
         .from("members")
@@ -159,6 +173,8 @@ export default function MemberDashboardSection() {
   }
 
   const stat = statusLabel(member.status);
+  const badge = getRoleBadge(userRole, member);
+  const hasAdminAccess = userRole === "admin" || userRole === "board_member";
 
   return (
     <section
@@ -209,11 +225,24 @@ export default function MemberDashboardSection() {
               border: "1px solid rgba(123,45,38,0.08)",
             }}
           >
-            <div
-              className="font-body text-[11px] uppercase mb-6"
-              style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-            >
-              Your Membership
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div
+                className="font-body text-[11px] uppercase"
+                style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+              >
+                Your Membership
+              </div>
+              <span
+                className="inline-block font-body text-[11px] font-semibold uppercase px-3.5 py-1.5 rounded-sm"
+                style={{
+                  letterSpacing: "0.1em",
+                  background: badge.bg,
+                  color: badge.color,
+                  border: `1px solid ${badge.accent}22`,
+                }}
+              >
+                {badge.label}
+              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
@@ -329,30 +358,67 @@ export default function MemberDashboardSection() {
         </FadeIn>
 
         {/* Donor badge */}
-        {(member.donor_class === "donor" || member.donor_class === "patron") && (
+        {(member.donor_class === "donor" || member.donor_class === "patron" || member.donor_class === "steward") && (
           <FadeIn delay={0.15}>
             <div
               className="p-5 md:p-7 mb-6 flex items-center gap-4"
               style={{
-                background: "#FFFDF9",
-                border: "1px solid rgba(196,163,90,0.2)",
+                background: member.donor_class === "steward" ? "rgba(107,79,29,0.03)" : "#FFFDF9",
+                border: member.donor_class === "steward" ? "1px solid rgba(107,79,29,0.15)" : "1px solid rgba(196,163,90,0.2)",
               }}
             >
-              <span className="text-2xl flex-shrink-0">✦</span>
+              <span className="text-2xl flex-shrink-0">{member.donor_class === "steward" ? "★" : "✦"}</span>
               <div>
                 <div
                   className="font-body text-[12px] uppercase font-semibold mb-1"
-                  style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}
+                  style={{ letterSpacing: "0.15em", color: member.donor_class === "steward" ? "#6B4F1D" : GOLD_ACCENT }}
                 >
-                  {member.donor_class === "patron" ? "Patron" : "Donor"}
+                  {member.donor_class === "steward" ? "Steward" : member.donor_class === "patron" ? "Patron" : "Donor"}
                 </div>
                 <p
                   className="font-body text-[14px] m-0"
                   style={{ color: "rgba(26,19,17,0.6)" }}
                 >
-                  Thank you for your generous support.
+                  {member.donor_class === "steward"
+                    ? "Your extraordinary generosity shapes the future of our museum. Thank you."
+                    : "Thank you for your generous support."}
                 </p>
               </div>
+            </div>
+          </FadeIn>
+        )}
+
+        {/* Admin Dashboard Access — board_member / admin only */}
+        {hasAdminAccess && (
+          <FadeIn delay={0.18}>
+            <div
+              className="p-6 md:p-8 mb-6"
+              style={{ background: NAVY, border: "1px solid rgba(27,42,74,0.3)" }}
+            >
+              <div
+                className="font-body text-[11px] uppercase mb-2 font-semibold"
+                style={{ letterSpacing: "0.2em", color: "rgba(250,247,244,0.5)" }}
+              >
+                Museum Administration
+              </div>
+              <p
+                className="font-body text-[14px] leading-[1.6] mb-4 m-0"
+                style={{ color: "rgba(250,247,244,0.75)" }}
+              >
+                You have board-level access to the Museum&apos;s admin tools.
+              </p>
+              <Link
+                href="/admin/dashboard"
+                className="inline-block font-body text-[12px] font-semibold uppercase no-underline transition-all hover:brightness-110"
+                style={{
+                  letterSpacing: "0.12em",
+                  color: NAVY,
+                  background: "#FAF7F4",
+                  padding: "10px 24px",
+                }}
+              >
+                Go to Admin Dashboard →
+              </Link>
             </div>
           </FadeIn>
         )}
@@ -449,7 +515,9 @@ export default function MemberDashboardSection() {
               style={{ color: "rgba(26,19,17,0.6)" }}
             >
               {member.effective_access_tier === "family"
-                ? member.donor_class === "patron"
+                ? member.donor_class === "steward"
+                  ? "Our highest level of recognition — all Family benefits, priority invitations, and our deepest gratitude for your extraordinary support of Tryon\u2019s story."
+                  : member.donor_class === "patron"
                   ? "All Family benefits plus our deepest gratitude for your generous support of Tryon\u2019s story."
                   : member.donor_class === "donor"
                   ? "All Individual benefits for your household, plus guest passes and event priority — with our thanks for your generous support."

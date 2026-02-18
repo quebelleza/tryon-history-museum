@@ -31,8 +31,20 @@ export default function AdminSidebar() {
       className="fixed top-0 left-0 h-full w-[240px] flex flex-col z-40"
       style={{ background: WARM_BLACK, borderRight: "1px solid rgba(196,163,90,0.12)" }}
     >
+      {/* Back to Museum Website — always first */}
+      <Link
+        href="/"
+        className="flex items-center gap-2.5 no-underline px-5 py-3.5 transition-all duration-200 hover:opacity-80"
+        style={{ background: "rgba(250,247,244,0.06)", borderBottom: "1px solid rgba(196,163,90,0.1)" }}
+      >
+        <span className="font-body text-[13px]" style={{ color: "rgba(250,247,244,0.7)" }}>←</span>
+        <span className="font-body text-[12px] font-semibold" style={{ color: "rgba(250,247,244,0.7)", letterSpacing: "0.03em" }}>
+          Back to Museum Website
+        </span>
+      </Link>
+
       {/* Logo area */}
-      <div className="px-6 pt-6 pb-5" style={{ borderBottom: "1px solid rgba(196,163,90,0.1)" }}>
+      <div className="px-6 pt-5 pb-5" style={{ borderBottom: "1px solid rgba(196,163,90,0.1)" }}>
         <div
           className="font-display text-[15px] font-semibold uppercase tracking-wider"
           style={{ color: GOLD_ACCENT }}
@@ -73,14 +85,6 @@ export default function AdminSidebar() {
 
       {/* Bottom actions */}
       <div className="px-3 pb-5 space-y-1" style={{ borderTop: "1px solid rgba(196,163,90,0.1)", paddingTop: "12px" }}>
-        <Link
-          href="/"
-          className="flex items-center gap-3 no-underline px-3 py-2.5 rounded transition-all duration-200"
-          style={{ color: "rgba(250,247,244,0.4)" }}
-        >
-          <span className="text-sm">←</span>
-          <span className="font-body text-[13px]">Back to Site</span>
-        </Link>
         <button
           onClick={handleSignOut}
           className="flex items-center gap-3 w-full text-left bg-transparent border-none cursor-pointer px-3 py-2.5 rounded transition-all duration-200"
