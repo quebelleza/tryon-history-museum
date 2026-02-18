@@ -311,7 +311,7 @@ export default function MemberDashboardSection() {
                   Your membership expires soon. Renew now to keep your benefits.
                 </p>
                 <Link
-                  href="#"
+                  href="/member/renew"
                   className="inline-block font-body text-[12px] font-semibold uppercase no-underline transition-all hover:brightness-110"
                   style={{
                     letterSpacing: "0.12em",
@@ -341,7 +341,7 @@ export default function MemberDashboardSection() {
                   member access.
                 </p>
                 <Link
-                  href="#"
+                  href="/member/renew"
                   className="inline-block font-body text-[12px] font-semibold uppercase no-underline transition-all hover:brightness-110"
                   style={{
                     letterSpacing: "0.12em",

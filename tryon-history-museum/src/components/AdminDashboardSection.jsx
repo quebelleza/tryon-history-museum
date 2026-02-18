@@ -37,16 +37,19 @@ export default function AdminDashboardSection() {
   const [expiring, setExpiring] = useState([]);
   const [expired, setExpired] = useState([]);
   const [patrons, setPatrons] = useState([]);
+  const [emailLogs, setEmailLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sendingReminder, setSendingReminder] = useState(null);
 
   useEffect(() => {
     async function load() {
-      const [statsRes, expiringRes, expiredRes, patronsRes, stewardsRes] = await Promise.all([
+      const [statsRes, expiringRes, expiredRes, patronsRes, stewardsRes, logsRes] = await Promise.all([
         fetch("/api/admin/stats"),
         fetch("/api/admin/members?status=expiring_soon&perPage=10&sortBy=expiration_date&sortDir=asc"),
         fetch("/api/admin/members?status=expired&perPage=10&sortBy=expiration_date&sortDir=desc"),
         fetch("/api/admin/members?donorClass=patron&perPage=20"),
         fetch("/api/admin/members?donorClass=steward&perPage=20"),
+        fetch("/api/admin/email-logs"),
       ]);
       const [statsData, expiringData, expiredData, patronsData, stewardsData] = await Promise.all([
         statsRes.json(),
@@ -55,14 +58,36 @@ export default function AdminDashboardSection() {
         patronsRes.json(),
         stewardsRes.json(),
       ]);
+      const logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
       setStats(statsData);
       setExpiring(expiringData.members || []);
       setExpired(expiredData.members || []);
       setPatrons([...(stewardsData.members || []), ...(patronsData.members || [])]);
+      setEmailLogs(logsData.logs || []);
       setLoading(false);
     }
     load();
   }, []);
+
+  async function handleSendReminder(memberId) {
+    setSendingReminder(memberId);
+    try {
+      const res = await fetch("/api/emails/send-reminder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ member_id: memberId }),
+      });
+      if (res.ok) {
+        alert("Reminder email sent!");
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to send reminder.");
+      }
+    } catch {
+      alert("Failed to send reminder.");
+    }
+    setSendingReminder(null);
+  }
 
   if (loading) {
     return (
@@ -157,11 +182,12 @@ export default function AdminDashboardSection() {
                     </div>
                   </div>
                   <button
-                    className="font-body text-[10px] uppercase font-semibold px-2 py-1 bg-transparent cursor-pointer"
+                    onClick={() => handleSendReminder(m.id)}
+                    disabled={sendingReminder === m.id}
+                    className="font-body text-[10px] uppercase font-semibold px-2 py-1 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-default"
                     style={{ color: "#B8860B", border: "1px solid rgba(184,134,11,0.3)", letterSpacing: "0.05em" }}
-                    title="Placeholder — Phase 5"
                   >
-                    Remind
+                    {sendingReminder === m.id ? "Sending…" : "Send Reminder"}
                   </button>
                 </div>
               ))}
@@ -200,13 +226,13 @@ export default function AdminDashboardSection() {
                       {m.membership_tier} · Exp {formatDate(m.expiration_date)}
                     </div>
                   </div>
-                  <button
-                    className="font-body text-[10px] uppercase font-semibold px-2 py-1 bg-transparent cursor-pointer"
+                  <Link
+                    href="/member/renew"
+                    className="font-body text-[10px] uppercase font-semibold px-2 py-1 no-underline"
                     style={{ color: DEEP_RED, border: `1px solid rgba(123,45,38,0.3)`, letterSpacing: "0.05em" }}
-                    title="Placeholder — coming soon"
                   >
                     Reinstate
-                  </button>
+                  </Link>
                 </div>
               ))}
             </div>
@@ -254,6 +280,60 @@ export default function AdminDashboardSection() {
             View All Patrons →
           </Link>
         </div>
+      </div>
+
+      {/* Email Log */}
+      <div className="mt-10 p-6" style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}>
+        <div className="font-body text-[11px] uppercase mb-4 font-semibold" style={{ letterSpacing: "0.15em", color: MUTED_RED }}>
+          Recent Emails
+        </div>
+        {emailLogs.length === 0 ? (
+          <p className="font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
+            No emails sent yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(123,45,38,0.08)" }}>
+                  {["Date", "Member", "Type", "Sent To", "Status"].map((h) => (
+                    <th key={h} className="text-left font-body text-[10px] uppercase font-semibold px-3 py-2" style={{ letterSpacing: "0.1em", color: MUTED_RED }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {emailLogs.map((log) => (
+                  <tr key={log.id} style={{ borderBottom: "1px solid rgba(123,45,38,0.04)" }}>
+                    <td className="px-3 py-2 font-body text-[12px] whitespace-nowrap" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      {log.created_at ? formatDate(log.created_at.split("T")[0]) : "—"}
+                    </td>
+                    <td className="px-3 py-2 font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>
+                      {log.member_name || "—"}
+                    </td>
+                    <td className="px-3 py-2 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      {(log.email_type || "").replace(/_/g, " ")}
+                    </td>
+                    <td className="px-3 py-2 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.5)" }}>
+                      {log.sent_to}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span
+                        className="inline-block font-body text-[10px] uppercase font-semibold px-2 py-0.5 rounded-sm"
+                        style={{
+                          letterSpacing: "0.05em",
+                          background: log.status === "sent" ? "rgba(45,106,79,0.1)" : "rgba(123,45,38,0.1)",
+                          color: log.status === "sent" ? "#2D6A4F" : DEEP_RED,
+                        }}
+                      >
+                        {log.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
