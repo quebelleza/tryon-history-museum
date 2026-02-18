@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 const GOLD_ACCENT = "#C4A35A";
 const WARM_BLACK = "#1A1311";
@@ -45,15 +48,38 @@ const navItems = [
 ];
 
 export default function Nav() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user: u } }) => setUser(u));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setAccountOpen(false);
+    setMobileOpen(false);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <nav
@@ -131,8 +157,70 @@ export default function Nav() {
               </div>
             </div>
           ))}
+          {/* Auth controls */}
+          {user ? (
+            <div
+              className="relative"
+              onMouseEnter={() => setAccountOpen(true)}
+              onMouseLeave={() => setAccountOpen(false)}
+            >
+              <button
+                aria-expanded={accountOpen}
+                aria-haspopup="true"
+                className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold"
+                style={{
+                  letterSpacing: "0.12em",
+                  color: scrolled
+                    ? "rgba(250,247,244,0.8)"
+                    : "rgba(255,255,255,0.85)",
+                }}
+              >
+                My Account
+              </button>
+              <div
+                className="absolute top-full right-0 min-w-[180px] transition-all duration-300"
+                style={{
+                  background: WARM_BLACK,
+                  border: "1px solid rgba(123,45,38,0.25)",
+                  padding: accountOpen ? "16px 24px" : "0 24px",
+                  opacity: accountOpen ? 1 : 0,
+                  maxHeight: accountOpen ? 200 : 0,
+                  overflow: "hidden",
+                  pointerEvents: accountOpen ? "auto" : "none",
+                }}
+              >
+                <Link
+                  href="/member/dashboard"
+                  className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
+                  style={{ color: "rgba(250,247,244,0.7)" }}
+                >
+                  Member Dashboard
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="block w-full text-left bg-transparent border-none cursor-pointer font-body text-sm py-2 transition-colors hover:!text-tryon-gold"
+                  style={{ color: "rgba(250,247,244,0.7)" }}
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="font-body text-[13px] font-normal uppercase no-underline py-2 transition-colors hover:!text-tryon-gold"
+              style={{
+                letterSpacing: "0.12em",
+                color: scrolled
+                  ? "rgba(250,247,244,0.8)"
+                  : "rgba(255,255,255,0.85)",
+              }}
+            >
+              Member Login
+            </Link>
+          )}
           <a
-            href="#"
+            href="/donate"
             className="font-body text-xs font-semibold uppercase no-underline transition-all hover:brightness-110"
             style={{
               letterSpacing: "0.14em",
@@ -208,9 +296,46 @@ export default function Nav() {
               ))}
             </div>
           ))}
+          {/* Mobile auth controls */}
+          <div className="mb-6 mt-2">
+            <div
+              className="font-body text-xs uppercase mb-3"
+              style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+            >
+              Account
+            </div>
+            {user ? (
+              <>
+                <Link
+                  href="/member/dashboard"
+                  className="block font-body text-sm no-underline py-1.5"
+                  style={{ color: "rgba(250,247,244,0.6)" }}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Member Dashboard
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="block bg-transparent border-none cursor-pointer font-body text-sm py-1.5 px-0"
+                  style={{ color: "rgba(250,247,244,0.6)" }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="block font-body text-sm no-underline py-1.5"
+                style={{ color: "rgba(250,247,244,0.6)" }}
+                onClick={() => setMobileOpen(false)}
+              >
+                Member Login
+              </Link>
+            )}
+          </div>
           <a
-            href="#"
-            className="inline-block font-body text-xs font-semibold uppercase no-underline mt-4"
+            href="/donate"
+            className="inline-block font-body text-xs font-semibold uppercase no-underline mt-2"
             style={{
               letterSpacing: "0.14em",
               color: WARM_BLACK,
