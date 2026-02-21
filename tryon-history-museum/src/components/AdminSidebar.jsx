@@ -13,6 +13,7 @@ const navItems = [
   { label: "All Members", href: "/admin/members", icon: "👥" },
   { label: "Add Member", href: "/admin/members/new", icon: "➕" },
   { label: "Patron Management", href: "/admin/patrons", icon: "✦" },
+  { label: "Volunteers", href: "/admin/volunteers", icon: "🤝" },
 ];
 
 export default function AdminSidebar() {
