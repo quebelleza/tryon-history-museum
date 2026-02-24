@@ -126,7 +126,8 @@ export default function AdminMemberDetailSection({ memberId }) {
 
   async function handleSave() {
     setSaving(true);
-    const body = isBoardMember ? { member_label: member.member_label } : member;
+    const cleaned = { ...member, email: member.email?.trim() || null };
+    const body = isBoardMember ? { member_label: cleaned.member_label } : cleaned;
     const res = await fetch(`/api/admin/members/${memberId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -313,9 +314,10 @@ export default function AdminMemberDetailSection({ memberId }) {
             style={fieldStyle}
           >
             <option value="member">Member</option>
-            <option value="donor">Donor</option>
-            <option value="patron">Patron</option>
-            <option value="steward">Steward</option>
+            <option value="gillette">Gillette</option>
+            <option value="simone">Simone</option>
+            <option value="pacolet">Pacolet</option>
+            <option value="fitzgerald">Fitzgerald</option>
             <option value="board_member">Board Member</option>
           </select>
         </div>

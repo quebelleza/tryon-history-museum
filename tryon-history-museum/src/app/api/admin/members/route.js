@@ -110,6 +110,7 @@ export async function POST(request) {
       memberFields.membership_tier = computed.membershipTier;
       memberFields.donor_level = computed.donorLevel;
       memberFields.donor_class = computed.donorLevel;
+      memberFields.member_label = computed.memberLabel;
       memberFields.status = computed.status;
       memberFields.renewal_due_date = computed.renewalDueDate;
       memberFields.last_payment_date = pDate;

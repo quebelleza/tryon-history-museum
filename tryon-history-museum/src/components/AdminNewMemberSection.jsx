@@ -87,6 +87,7 @@ export default function AdminNewMemberSection() {
 
     const payload = {
       ...form,
+      email: form.email?.trim() || null,
       start_date: paymentDate,
       payment_amount: amt > 0 ? amt : undefined,
       payment_date: amt > 0 ? paymentDate : undefined,
@@ -190,10 +191,9 @@ export default function AdminNewMemberSection() {
               />
             </div>
             <div>
-              <label className={labelCls} style={labelStyle}>Email *</label>
+              <label className={labelCls} style={labelStyle}>Email</label>
               <input
                 type="email"
-                required
                 value={form.email}
                 onChange={(e) => handleChange("email", e.target.value)}
                 className="w-full font-body text-sm px-3 py-2 outline-none"
@@ -394,6 +394,12 @@ export default function AdminNewMemberSection() {
                       <span>Donor Level</span>
                       <span className="font-semibold" style={{ color: computed.donorLevelLabel ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>
                         {computed.donorLevelLabel || "None"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      <span>Member Label</span>
+                      <span className="font-semibold" style={{ color: computed.memberLabel && computed.memberLabel !== "member" ? GOLD_ACCENT : WARM_BLACK }}>
+                        {computed.memberLabel ? computed.memberLabel.charAt(0).toUpperCase() + computed.memberLabel.slice(1) : "Member"}
                       </span>
                     </div>
                     <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>

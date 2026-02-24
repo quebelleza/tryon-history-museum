@@ -50,6 +50,7 @@ export async function PATCH(request, { params }) {
     memberUpdate.membership_tier = computed.membershipTier;
     memberUpdate.donor_level = computed.donorLevel;
     memberUpdate.donor_class = computed.donorLevel;
+    memberUpdate.member_label = computed.memberLabel;
     memberUpdate.membership_fee = computed.membershipFee;
     memberUpdate.additional_donation = computed.additionalDonation;
     memberUpdate.renewal_due_date = computed.renewalDueDate;
@@ -135,6 +136,7 @@ export async function DELETE(request, { params }) {
       memberUpdate.membership_tier = computed.membershipTier;
       memberUpdate.donor_level = computed.donorLevel;
       memberUpdate.donor_class = computed.donorLevel;
+      memberUpdate.member_label = computed.memberLabel;
       memberUpdate.membership_fee = computed.membershipFee;
       memberUpdate.additional_donation = computed.additionalDonation;
       memberUpdate.renewal_due_date = computed.renewalDueDate;

@@ -5,14 +5,14 @@
  * Payment types: "new_member", "renewal", "donation"
  *
  * Fee schedule (new_member / renewal):
- *   $50        → Individual, $50 fee, $0 donation, donor_level none
- *   $51–$74    → Individual, $50 fee, remainder donation, donor_level none
- *   $75        → Family, $75 fee, $0 donation, donor_level none
- *   $76–$99    → Family, $75 fee, remainder donation, donor_level none
- *   $100–$249  → Family, $75 fee, remainder donation, donor_level gillette
- *   $250–$499  → Family, $75 fee, remainder donation, donor_level simone
- *   $500–$999  → Family, $75 fee, remainder donation, donor_level pacolet
- *   $1,000+    → Family, $75 fee, remainder donation, donor_level fitzgerald
+ *   $50        → Individual, $50 fee, $0 donation, donor_level none, label member
+ *   $51–$74    → Individual, $50 fee, remainder donation, donor_level none, label member
+ *   $75        → Family, $75 fee, $0 donation, donor_level none, label member
+ *   $76–$99    → Family, $75 fee, remainder donation, donor_level none, label member
+ *   $100–$249  → Individual, $50 fee, remainder donation, donor_level gillette, label gillette
+ *   $250–$499  → Individual, $50 fee, remainder donation, donor_level simone, label simone
+ *   $500–$999  → Individual, $50 fee, remainder donation, donor_level pacolet, label pacolet
+ *   $1,000+    → Individual, $50 fee, remainder donation, donor_level fitzgerald, label fitzgerald
  *
  * Donation: full amount recorded as donation, no membership changes.
  */
@@ -42,6 +42,7 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
       additionalDonation: amt,
       donorLevel: null,
       donorLevelLabel: null,
+      memberLabel: null,
       renewalDueDate: null,
       membershipStartDate: null,
       status: null,
@@ -59,6 +60,7 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
       additionalDonation: 0,
       donorLevel: "none",
       donorLevelLabel: null,
+      memberLabel: "member",
       renewalDueDate,
       membershipStartDate: paymentType === "new_member" ? paymentDate : null,
       status: "active",
@@ -67,10 +69,24 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
     };
   }
 
+  // Donor level based on total payment amount
+  let donorLevel = "none";
+  let donorLevelLabel = null;
+  let memberLabel = "member";
+  if (amt >= 1000) { donorLevel = "fitzgerald"; donorLevelLabel = "Fitzgerald"; memberLabel = "fitzgerald"; }
+  else if (amt >= 500) { donorLevel = "pacolet"; donorLevelLabel = "Pacolet"; memberLabel = "pacolet"; }
+  else if (amt >= 250) { donorLevel = "simone"; donorLevelLabel = "Simone"; memberLabel = "simone"; }
+  else if (amt >= 100) { donorLevel = "gillette"; donorLevelLabel = "Gillette"; memberLabel = "gillette"; }
+
+  // Named donor levels ($100+) use Individual base fee ($50)
+  // Non-donor payments use Family fee ($75) if amount covers it
   let membershipTier;
   let membershipFee;
 
-  if (amt >= FAMILY_FEE) {
+  if (donorLevel !== "none") {
+    membershipTier = "individual";
+    membershipFee = INDIVIDUAL_FEE;
+  } else if (amt >= FAMILY_FEE) {
     membershipTier = "family";
     membershipFee = FAMILY_FEE;
   } else {
@@ -80,14 +96,6 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
 
   const additionalDonation = Math.round((amt - membershipFee) * 100) / 100;
 
-  // Donor level based on total payment amount
-  let donorLevel = "none";
-  let donorLevelLabel = null;
-  if (amt >= 1000) { donorLevel = "fitzgerald"; donorLevelLabel = "Fitzgerald"; }
-  else if (amt >= 500) { donorLevel = "pacolet"; donorLevelLabel = "Pacolet"; }
-  else if (amt >= 250) { donorLevel = "simone"; donorLevelLabel = "Simone"; }
-  else if (amt >= 100) { donorLevel = "gillette"; donorLevelLabel = "Gillette"; }
-
   return {
     isDonation: false,
     membershipTier,
@@ -95,6 +103,7 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
     additionalDonation,
     donorLevel,
     donorLevelLabel,
+    memberLabel,
     renewalDueDate,
     membershipStartDate: paymentType === "new_member" ? paymentDate : null,
     status: "active",
