@@ -106,6 +106,7 @@ export async function POST(request) {
     if (!computed.isDonation) {
       memberFields.membership_tier = computed.membershipTier;
       memberFields.donor_level = computed.donorLevel;
+      memberFields.donor_class = computed.donorLevel;
       memberFields.status = computed.status;
       memberFields.renewal_due_date = computed.renewalDueDate;
       memberFields.last_payment_date = pDate;

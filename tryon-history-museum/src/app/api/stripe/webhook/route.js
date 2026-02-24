@@ -65,6 +65,7 @@ export async function POST(request) {
       membership_fee: computed.membershipFee,
       additional_donation: computed.additionalDonation,
       donor_level: computed.donorLevel,
+      donor_class: computed.donorLevel,
     };
 
     await supabase
