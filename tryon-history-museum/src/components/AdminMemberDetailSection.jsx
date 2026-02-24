@@ -84,6 +84,15 @@ export default function AdminMemberDetailSection({ memberId }) {
     notes: "",
   });
 
+  // Payment edit/delete state
+  const [editingPaymentId, setEditingPaymentId] = useState(null);
+  const [editPaymentForm, setEditPaymentForm] = useState({});
+  const [editPaymentSaving, setEditPaymentSaving] = useState(false);
+  const [editPaymentMsg, setEditPaymentMsg] = useState(null);
+  const [deletingPaymentId, setDeletingPaymentId] = useState(null);
+  const [deletePaymentSaving, setDeletePaymentSaving] = useState(false);
+  const [deletePaymentMsg, setDeletePaymentMsg] = useState(null);
+
   // Permissions section (admin only)
   const [permRole, setPermRole] = useState("member");
   const [permSaving, setPermSaving] = useState(false);
@@ -154,6 +163,60 @@ export default function AdminMemberDetailSection({ memberId }) {
         notes: "",
       });
     }
+  }
+
+  function startEditPayment(p) {
+    setEditingPaymentId(p.id);
+    setEditPaymentForm({
+      payment_date: p.payment_date || "",
+      amount: p.amount || "",
+      payment_type: p.payment_type || "new_member",
+      payment_method: p.payment_method || "check",
+      notes: p.notes || "",
+    });
+    setEditPaymentMsg(null);
+    setDeletePaymentMsg(null);
+    setDeletingPaymentId(null);
+  }
+
+  async function handleSaveEditPayment() {
+    setEditPaymentSaving(true);
+    setEditPaymentMsg(null);
+    const res = await fetch(`/api/admin/payments/${editingPaymentId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editPaymentForm),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setPayments((prev) => prev.map((p) => (p.id === editingPaymentId ? data.payment : p)));
+      if (data.member) setMember((prev) => ({ ...prev, ...data.member }));
+      setEditingPaymentId(null);
+      setEditPaymentMsg("Payment updated successfully.");
+      setTimeout(() => setEditPaymentMsg(null), 4000);
+    } else {
+      const data = await res.json();
+      setEditPaymentMsg(data.error || "Failed to update payment.");
+    }
+    setEditPaymentSaving(false);
+  }
+
+  async function handleDeletePayment(paymentId) {
+    setDeletePaymentSaving(true);
+    setDeletePaymentMsg(null);
+    const res = await fetch(`/api/admin/payments/${paymentId}`, { method: "DELETE" });
+    if (res.ok) {
+      const data = await res.json();
+      setPayments((prev) => prev.filter((p) => p.id !== paymentId));
+      if (data.member) setMember((prev) => ({ ...prev, ...data.member }));
+      setDeletingPaymentId(null);
+      setDeletePaymentMsg("Payment deleted.");
+      setTimeout(() => setDeletePaymentMsg(null), 4000);
+    } else {
+      const data = await res.json();
+      setDeletePaymentMsg(data.error || "Failed to delete payment.");
+    }
+    setDeletePaymentSaving(false);
   }
 
   async function handlePermSave() {
@@ -513,6 +576,17 @@ export default function AdminMemberDetailSection({ memberId }) {
             </form>
           )}
 
+          {editPaymentMsg && (
+            <div className="mb-4 p-3 font-body text-[13px]" style={{ background: editPaymentMsg.includes("success") ? "rgba(45,106,79,0.06)" : "rgba(123,45,38,0.06)", color: editPaymentMsg.includes("success") ? "#2D6A4F" : DEEP_RED }}>
+              {editPaymentMsg}
+            </div>
+          )}
+          {deletePaymentMsg && (
+            <div className="mb-4 p-3 font-body text-[13px]" style={{ background: deletePaymentMsg === "Payment deleted." ? "rgba(45,106,79,0.06)" : "rgba(123,45,38,0.06)", color: deletePaymentMsg === "Payment deleted." ? "#2D6A4F" : DEEP_RED }}>
+              {deletePaymentMsg}
+            </div>
+          )}
+
           {payments.length === 0 ? (
             <p className="font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
               No payment records.
@@ -522,22 +596,120 @@ export default function AdminMemberDetailSection({ memberId }) {
               <table className="w-full border-collapse">
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(123,45,38,0.08)" }}>
-                    {["Date", "Total", "Fee", "Donation", "Method", "Type", "Notes"].map((h) => (
+                    {["Date", "Total", "Fee", "Donation", "Method", "Type", "Notes", ""].map((h) => (
                       <th key={h} className="text-left font-body text-[10px] uppercase font-semibold px-3 py-2" style={{ letterSpacing: "0.1em", color: MUTED_RED }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {payments.map((p) => (
-                    <tr key={p.id} style={{ borderBottom: "1px solid rgba(123,45,38,0.04)" }}>
-                      <td className="px-3 py-2 font-body text-[13px] whitespace-nowrap" style={{ color: "rgba(26,19,17,0.6)" }}>{formatDate(p.payment_date)}</td>
-                      <td className="px-3 py-2 font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>${parseFloat(p.amount).toFixed(2)}</td>
-                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.membership_fee != null ? `$${parseFloat(p.membership_fee).toFixed(2)}` : "—"}</td>
-                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: p.additional_donation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{p.additional_donation != null ? `$${parseFloat(p.additional_donation).toFixed(2)}` : "—"}</td>
-                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.payment_method}</td>
-                      <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.payment_type}</td>
-                      <td className="px-3 py-2 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.4)" }}>{p.notes || "—"}</td>
-                    </tr>
+                    editingPaymentId === p.id ? (
+                      <tr key={p.id} style={{ borderBottom: "1px solid rgba(196,163,90,0.15)", background: "rgba(196,163,90,0.03)" }}>
+                        <td className="px-3 py-2" colSpan={8}>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                            <div>
+                              <label className={labelCls} style={labelStyle}>Date</label>
+                              <input type="date" value={editPaymentForm.payment_date} onChange={(e) => setEditPaymentForm((f) => ({ ...f, payment_date: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none" style={fieldStyle} />
+                            </div>
+                            <div>
+                              <label className={labelCls} style={labelStyle}>Amount ($)</label>
+                              <input type="number" step="0.01" value={editPaymentForm.amount} onChange={(e) => setEditPaymentForm((f) => ({ ...f, amount: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none" style={fieldStyle} />
+                            </div>
+                            <div>
+                              <label className={labelCls} style={labelStyle}>Type</label>
+                              <select value={editPaymentForm.payment_type} onChange={(e) => setEditPaymentForm((f) => ({ ...f, payment_type: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer" style={fieldStyle}>
+                                <option value="new_member">New Member</option>
+                                <option value="new_membership">New Membership</option>
+                                <option value="renewal">Renewal</option>
+                                <option value="donation">Donation</option>
+                                <option value="upgrade">Upgrade</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className={labelCls} style={labelStyle}>Method</label>
+                              <select value={editPaymentForm.payment_method} onChange={(e) => setEditPaymentForm((f) => ({ ...f, payment_method: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer" style={fieldStyle}>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                                <option value="stripe">Credit Card</option>
+                                <option value="other">Other</option>
+                              </select>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className={labelCls} style={labelStyle}>Notes</label>
+                              <input type="text" value={editPaymentForm.notes} onChange={(e) => setEditPaymentForm((f) => ({ ...f, notes: e.target.value }))} className="w-full font-body text-sm px-3 py-2 outline-none" style={fieldStyle} placeholder="Optional notes" />
+                            </div>
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={handleSaveEditPayment}
+                              disabled={editPaymentSaving}
+                              className="font-body text-[11px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50"
+                              style={{ letterSpacing: "0.08em", color: WARM_BLACK, background: GOLD_ACCENT, padding: "8px 18px", border: "none" }}
+                            >
+                              {editPaymentSaving ? "Saving…" : "Save Changes"}
+                            </button>
+                            <button
+                              onClick={() => setEditingPaymentId(null)}
+                              className="font-body text-[11px] uppercase cursor-pointer"
+                              style={{ letterSpacing: "0.08em", color: "rgba(26,19,17,0.5)", background: "transparent", border: "1px solid rgba(26,19,17,0.15)", padding: "8px 18px" }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : deletingPaymentId === p.id ? (
+                      <tr key={p.id} style={{ borderBottom: "1px solid rgba(123,45,38,0.15)", background: "rgba(123,45,38,0.03)" }}>
+                        <td className="px-3 py-3" colSpan={8}>
+                          <p className="font-body text-[13px] mb-3 mt-0" style={{ color: DEEP_RED }}>
+                            Are you sure you want to delete this payment record? This cannot be undone.
+                          </p>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleDeletePayment(p.id)}
+                              disabled={deletePaymentSaving}
+                              className="font-body text-[11px] font-semibold uppercase cursor-pointer disabled:opacity-50"
+                              style={{ letterSpacing: "0.08em", color: "#FFFDF9", background: DEEP_RED, padding: "8px 18px", border: "none" }}
+                            >
+                              {deletePaymentSaving ? "Deleting…" : "Confirm"}
+                            </button>
+                            <button
+                              onClick={() => setDeletingPaymentId(null)}
+                              className="font-body text-[11px] uppercase cursor-pointer"
+                              style={{ letterSpacing: "0.08em", color: "rgba(26,19,17,0.5)", background: "transparent", border: "1px solid rgba(26,19,17,0.15)", padding: "8px 18px" }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={p.id} style={{ borderBottom: "1px solid rgba(123,45,38,0.04)" }}>
+                        <td className="px-3 py-2 font-body text-[13px] whitespace-nowrap" style={{ color: "rgba(26,19,17,0.6)" }}>{formatDate(p.payment_date)}</td>
+                        <td className="px-3 py-2 font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>${parseFloat(p.amount).toFixed(2)}</td>
+                        <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.membership_fee != null ? `$${parseFloat(p.membership_fee).toFixed(2)}` : "—"}</td>
+                        <td className="px-3 py-2 font-body text-[13px]" style={{ color: p.additional_donation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{p.additional_donation != null ? `$${parseFloat(p.additional_donation).toFixed(2)}` : "—"}</td>
+                        <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.payment_method}</td>
+                        <td className="px-3 py-2 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>{p.payment_type}</td>
+                        <td className="px-3 py-2 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.4)" }}>{p.notes || "—"}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <button
+                            onClick={() => startEditPayment(p)}
+                            className="font-body text-[11px] uppercase font-semibold bg-transparent border-none cursor-pointer mr-3"
+                            style={{ letterSpacing: "0.05em", color: GOLD_ACCENT }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => { setDeletingPaymentId(p.id); setEditingPaymentId(null); setDeletePaymentMsg(null); }}
+                            className="font-body text-[11px] uppercase font-semibold bg-transparent border-none cursor-pointer"
+                            style={{ letterSpacing: "0.05em", color: DEEP_RED }}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    )
                   ))}
                 </tbody>
               </table>
