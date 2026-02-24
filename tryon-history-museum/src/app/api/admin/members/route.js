@@ -99,6 +99,9 @@ export async function POST(request) {
   const pDate = payment_date || new Date().toISOString().split("T")[0];
   const pType = payment_type || "new_member";
 
+  // Always ensure donor_class has a valid new-enum value
+  if (!memberFields.donor_class) memberFields.donor_class = "none";
+
   if (amt > 0) {
     const { computeMembership } = await import("@/lib/membershipPricing");
     const computed = computeMembership(amt, pDate, pType);
