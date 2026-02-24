@@ -38,9 +38,27 @@ function tierLabel(t) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-function donorLabel(d) {
-  if (!d || d === "none") return "—";
-  return d.charAt(0).toUpperCase() + d.slice(1);
+function donorLevelLabel(dl) {
+  if (!dl || dl === "none") return "—";
+  const labels = { gillette: "Gillette", simone: "Simone", pacolet: "Pacolet", fitzgerald: "Fitzgerald" };
+  return labels[dl] || "—";
+}
+
+function fmtShortDate(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + "T12:00:00");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${mm}/${dd}/${yy}`;
+}
+
+function renewalColor(dateStr) {
+  if (!dateStr) return "rgba(26,19,17,0.3)";
+  const diff = Math.ceil((new Date(dateStr + "T12:00:00") - new Date()) / 86400000);
+  if (diff < 0) return DEEP_RED;
+  if (diff <= 60) return "#B8860B";
+  return "#2D6A4F";
 }
 
 export default function AdminMembersSection() {
@@ -186,9 +204,10 @@ export default function AdminMembersSection() {
         >
           <option value="">All Donor Classes</option>
           <option value="none">None</option>
-          <option value="donor">Donor</option>
-          <option value="patron">Patron</option>
-          <option value="steward">Steward</option>
+          <option value="gillette">Gillette</option>
+          <option value="simone">Simone</option>
+          <option value="pacolet">Pacolet</option>
+          <option value="fitzgerald">Fitzgerald</option>
         </select>
       </div>
 
@@ -204,10 +223,10 @@ export default function AdminMembersSection() {
                 { key: "last_name", label: "Name" },
                 { key: "email", label: "Email" },
                 { key: "membership_tier", label: "Tier" },
-                { key: "donor_class", label: "Donor Class" },
+                { key: "donor_class", label: "Donor Level" },
                 { key: "status", label: "Status" },
                 { key: "last_payment_date", label: "Last Payment" },
-                { key: "expiration_date", label: "Valid Through" },
+                { key: "renewal_due_date", label: "Renewal Due" },
                 { key: null, label: "Actions" },
               ].map((col) => (
                 <th
@@ -251,24 +270,19 @@ export default function AdminMembersSection() {
                   <td className="px-4 py-3 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
                     {tierLabel(m.membership_tier)}
                   </td>
-                  <td className="px-4 py-3 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                    {donorLabel(m.donor_class)}
+                  <td className="px-4 py-3 font-body text-[13px]" style={{ color: donorLevelLabel(m.donor_class || m.donor_level) !== "—" ? GOLD_ACCENT : "rgba(26,19,17,0.6)" }}>
+                    {donorLevelLabel(m.donor_class || m.donor_level)}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={m.status} />
                   </td>
-                  <td className="px-4 py-3 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                    {m.last_payment_date ? (
-                      <div>
-                        <div>{formatDate(m.last_payment_date)}</div>
-                        {m.last_payment_amount != null && (
-                          <div className="font-semibold" style={{ color: WARM_BLACK }}>${parseFloat(m.last_payment_amount).toFixed(2)}</div>
-                        )}
-                      </div>
-                    ) : "—"}
+                  <td className="px-4 py-3 font-body text-[12px] whitespace-nowrap" style={{ color: "rgba(26,19,17,0.6)" }}>
+                    {m.last_payment_amount != null && m.last_payment_date
+                      ? <span>${parseFloat(m.last_payment_amount).toFixed(0)} <span style={{ color: "rgba(26,19,17,0.3)" }}>·</span> {fmtShortDate(m.last_payment_date)}</span>
+                      : "—"}
                   </td>
-                  <td className="px-4 py-3 font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                    {formatDate(m.expiration_date)}
+                  <td className="px-4 py-3 font-body text-[13px] font-semibold whitespace-nowrap" style={{ color: renewalColor(m.renewal_due_date) }}>
+                    {fmtShortDate(m.renewal_due_date) || <span style={{ color: "rgba(26,19,17,0.3)", fontWeight: "normal" }}>—</span>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">

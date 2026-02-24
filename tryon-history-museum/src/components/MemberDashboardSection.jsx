@@ -13,13 +13,15 @@ const MUTED_RED = "#A8584F";
 const NAVY = "#1B2A4A";
 
 function getRoleBadge(appRole, member) {
-  if (appRole === "admin") return { label: "Museum Administrator", bg: NAVY, color: "#FAF7F4", accent: NAVY };
-  if (appRole === "board_member") return { label: "Board Member", bg: NAVY, color: "#FAF7F4", accent: NAVY };
-  if (member?.donor_class === "steward") return { label: "Steward", bg: "rgba(107,79,29,0.1)", color: "#6B4F1D", accent: "#6B4F1D" };
-  if (member?.donor_class === "patron") return { label: "Patron", bg: "rgba(196,163,90,0.12)", color: "#8B6914", accent: GOLD_ACCENT };
-  if (member?.donor_class === "donor") return { label: "Donor", bg: "rgba(196,163,90,0.08)", color: GOLD_ACCENT, accent: GOLD_ACCENT };
-  if (member?.membership_tier === "family" || member?.effective_access_tier === "family") return { label: "Family Member", bg: "rgba(26,19,17,0.04)", color: WARM_BLACK, accent: MUTED_RED };
-  return { label: "Member", bg: "rgba(26,19,17,0.04)", color: WARM_BLACK, accent: MUTED_RED };
+  if (appRole === "admin") return { label: "Museum Administrator", bg: NAVY, color: "#FAF7F4", accent: NAVY, thankYou: null };
+  if (appRole === "board_member") return { label: "Board Member", bg: NAVY, color: "#FAF7F4", accent: NAVY, thankYou: null };
+  const dl = member?.donor_level;
+  if (dl === "fitzgerald") return { label: "Fitzgerald Donor", bg: "rgba(107,79,29,0.1)", color: "#6B4F1D", accent: "#6B4F1D", thankYou: "Your extraordinary generosity makes Tryon\u2019s story possible." };
+  if (dl === "pacolet") return { label: "Pacolet Donor", bg: "rgba(107,79,29,0.08)", color: "#6B4F1D", accent: "#6B4F1D", thankYou: "Thank you for your generous support of Tryon\u2019s story." };
+  if (dl === "simone") return { label: "Simone Donor", bg: "rgba(196,163,90,0.12)", color: "#8B6914", accent: GOLD_ACCENT, thankYou: "Thank you for your generous support of Tryon\u2019s story." };
+  if (dl === "gillette") return { label: "Gillette Donor", bg: "rgba(196,163,90,0.08)", color: GOLD_ACCENT, accent: GOLD_ACCENT, thankYou: "Thank you for your generous support of Tryon\u2019s story." };
+  if (member?.membership_tier === "family" || member?.effective_access_tier === "family") return { label: "Family Member", bg: "rgba(26,19,17,0.04)", color: WARM_BLACK, accent: MUTED_RED, thankYou: null };
+  return { label: "Member", bg: "rgba(26,19,17,0.04)", color: WARM_BLACK, accent: MUTED_RED, thankYou: null };
 }
 
 function formatDate(dateStr) {
@@ -232,17 +234,24 @@ export default function MemberDashboardSection() {
               >
                 Your Membership
               </div>
-              <span
-                className="inline-block font-body text-[11px] font-semibold uppercase px-3.5 py-1.5 rounded-sm"
-                style={{
-                  letterSpacing: "0.1em",
-                  background: badge.bg,
-                  color: badge.color,
-                  border: `1px solid ${badge.accent}22`,
-                }}
-              >
-                {badge.label}
-              </span>
+              <div className="text-right">
+                <span
+                  className="inline-block font-body text-[11px] font-semibold uppercase px-3.5 py-1.5 rounded-sm"
+                  style={{
+                    letterSpacing: "0.1em",
+                    background: badge.bg,
+                    color: badge.color,
+                    border: `1px solid ${badge.accent}22`,
+                  }}
+                >
+                  {badge.label}
+                </span>
+                {badge.thankYou && (
+                  <p className="font-body text-[12px] italic mt-1.5 mb-0" style={{ color: "rgba(26,19,17,0.45)" }}>
+                    {badge.thankYou}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
@@ -357,31 +366,29 @@ export default function MemberDashboardSection() {
           </div>
         </FadeIn>
 
-        {/* Donor badge */}
-        {(member.donor_class === "donor" || member.donor_class === "patron" || member.donor_class === "steward") && (
+        {/* Donor level badge */}
+        {member.donor_level && member.donor_level !== "none" && (
           <FadeIn delay={0.15}>
             <div
               className="p-5 md:p-7 mb-6 flex items-center gap-4"
               style={{
-                background: member.donor_class === "steward" ? "rgba(107,79,29,0.03)" : "#FFFDF9",
-                border: member.donor_class === "steward" ? "1px solid rgba(107,79,29,0.15)" : "1px solid rgba(196,163,90,0.2)",
+                background: member.donor_level === "fitzgerald" || member.donor_level === "pacolet" ? "rgba(107,79,29,0.03)" : "#FFFDF9",
+                border: member.donor_level === "fitzgerald" || member.donor_level === "pacolet" ? "1px solid rgba(107,79,29,0.15)" : "1px solid rgba(196,163,90,0.2)",
               }}
             >
-              <span className="text-2xl flex-shrink-0">{member.donor_class === "steward" ? "★" : "✦"}</span>
+              <span className="text-2xl flex-shrink-0">{member.donor_level === "fitzgerald" ? "★" : "✦"}</span>
               <div>
                 <div
                   className="font-body text-[12px] uppercase font-semibold mb-1"
-                  style={{ letterSpacing: "0.15em", color: member.donor_class === "steward" ? "#6B4F1D" : GOLD_ACCENT }}
+                  style={{ letterSpacing: "0.15em", color: member.donor_level === "fitzgerald" || member.donor_level === "pacolet" ? "#6B4F1D" : GOLD_ACCENT }}
                 >
-                  {member.donor_class === "steward" ? "Steward" : member.donor_class === "patron" ? "Patron" : "Donor"}
+                  {badge.label}
                 </div>
                 <p
                   className="font-body text-[14px] m-0"
                   style={{ color: "rgba(26,19,17,0.6)" }}
                 >
-                  {member.donor_class === "steward"
-                    ? "Your extraordinary generosity shapes the future of our museum. Thank you."
-                    : "Thank you for your generous support."}
+                  {badge.thankYou}
                 </p>
               </div>
             </div>
@@ -515,11 +522,11 @@ export default function MemberDashboardSection() {
               style={{ color: "rgba(26,19,17,0.6)" }}
             >
               {member.effective_access_tier === "family"
-                ? member.donor_class === "steward"
+                ? member.donor_level === "fitzgerald"
                   ? "Our highest level of recognition — all Family benefits, priority invitations, and our deepest gratitude for your extraordinary support of Tryon\u2019s story."
-                  : member.donor_class === "patron"
+                  : member.donor_level === "pacolet"
                   ? "All Family benefits plus our deepest gratitude for your generous support of Tryon\u2019s story."
-                  : member.donor_class === "donor"
+                  : member.donor_level === "simone" || member.donor_level === "gillette"
                   ? "All Individual benefits for your household, plus guest passes and event priority — with our thanks for your generous support."
                   : "All Individual benefits for your household, plus guest passes and event priority."
                 : "Member pricing on tickets, access to members-only events, newsletter, 10% gift shop discount."}

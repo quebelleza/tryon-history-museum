@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { computeMembership } from "@/lib/membershipPricing";
+import { computeMembership, DONOR_LEVEL_LABELS } from "@/lib/membershipPricing";
 
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
@@ -16,22 +16,12 @@ const fieldStyle = {
   color: WARM_BLACK,
 };
 
-const readOnlyFieldStyle = {
-  ...fieldStyle,
-  background: "rgba(196,163,90,0.06)",
-  color: "rgba(26,19,17,0.55)",
-};
-
 const labelCls = "block font-body text-[10px] uppercase mb-1.5 font-semibold";
 const labelStyle = { letterSpacing: "0.15em", color: MUTED_RED };
 
 function tierLabel(t) {
   if (!t) return "—";
   return t.charAt(0).toUpperCase() + t.slice(1);
-}
-function donorLabel(d) {
-  if (!d || d === "none") return "None";
-  return d.charAt(0).toUpperCase() + d.slice(1);
 }
 function fmtDate(dateStr) {
   if (!dateStr) return "—";
@@ -50,6 +40,12 @@ function formatPhone(value) {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
+const PAYMENT_TYPE_LABELS = {
+  new_member: "New Member",
+  renewal: "Renewal",
+  donation: "Donation",
+};
+
 const defaultForm = {
   first_name: "",
   last_name: "",
@@ -65,18 +61,18 @@ const defaultForm = {
 export default function AdminNewMemberSection() {
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
+  const [paymentType, setPaymentType] = useState("new_member");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
   const [paymentMethod, setPaymentMethod] = useState("check");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Live computation from pricing utility
   const computed = useMemo(() => {
     const amt = parseFloat(paymentAmount) || 0;
     if (amt <= 0) return null;
-    return computeMembership(amt, paymentDate);
-  }, [paymentAmount, paymentDate]);
+    return computeMembership(amt, paymentDate, paymentType);
+  }, [paymentAmount, paymentDate, paymentType]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -95,6 +91,7 @@ export default function AdminNewMemberSection() {
       payment_amount: amt > 0 ? amt : undefined,
       payment_date: amt > 0 ? paymentDate : undefined,
       payment_method: amt > 0 ? paymentMethod : undefined,
+      payment_type: amt > 0 ? paymentType : undefined,
     };
 
     const res = await fetch("/api/admin/members", {
@@ -114,10 +111,13 @@ export default function AdminNewMemberSection() {
   }
 
   const hasPayment = (parseFloat(paymentAmount) || 0) > 0;
+  const isDonation = paymentType === "donation";
+
   const summaryColor = computed
-    ? computed.belowMinimum ? DEEP_RED
-      : computed.donorClass === "steward" ? "#6B4F1D"
-      : computed.donorClass === "patron" || computed.donorClass === "donor" ? GOLD_ACCENT
+    ? computed.isDonation ? GOLD_ACCENT
+      : computed.belowMinimum ? DEEP_RED
+      : computed.donorLevel === "fitzgerald" || computed.donorLevel === "pacolet" ? "#6B4F1D"
+      : computed.donorLevel === "simone" || computed.donorLevel === "gillette" ? GOLD_ACCENT
       : "#2D6A4F"
     : null;
 
@@ -270,9 +270,22 @@ export default function AdminNewMemberSection() {
             Payment & Membership
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
             <div>
-              <label className={labelCls} style={labelStyle}>Last Payment Date</label>
+              <label className={labelCls} style={labelStyle}>Payment Type *</label>
+              <select
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value)}
+                className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer"
+                style={fieldStyle}
+              >
+                <option value="new_member">New Member</option>
+                <option value="renewal">Renewal</option>
+                <option value="donation">Donation</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>Payment Date</label>
               <input
                 type="date"
                 value={paymentDate}
@@ -315,16 +328,20 @@ export default function AdminNewMemberSection() {
             <div
               className="p-5 md:p-6"
               style={{
-                background: computed.belowMinimum ? "rgba(123,45,38,0.03)" : "rgba(196,163,90,0.04)",
+                background: computed.belowMinimum ? "rgba(123,45,38,0.03)" : isDonation ? "rgba(196,163,90,0.03)" : "rgba(196,163,90,0.04)",
                 border: `1px solid ${summaryColor}18`,
                 borderLeft: `3px solid ${summaryColor}`,
               }}
             >
               <div className="font-body text-[11px] uppercase mb-3 font-semibold" style={{ letterSpacing: "0.12em", color: summaryColor }}>
-                Membership Summary
+                {isDonation ? "Donation Summary" : "Membership Summary"}
               </div>
 
               <div className="space-y-1.5 mb-3">
+                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                  <span>Payment Type</span>
+                  <span className="font-semibold" style={{ color: WARM_BLACK }}>{PAYMENT_TYPE_LABELS[paymentType]}</span>
+                </div>
                 <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
                   <span>Payment Date</span>
                   <span style={{ color: WARM_BLACK }}>{fmtDate(paymentDate)}</span>
@@ -337,33 +354,55 @@ export default function AdminNewMemberSection() {
 
               <div className="my-3" style={{ borderTop: "1px solid rgba(26,19,17,0.08)" }} />
 
-              <div className="space-y-1.5 mb-3">
-                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                  <span>Membership Fee ({computed.pricingLabel})</span>
-                  <span style={{ color: WARM_BLACK }}>{fmtCurrency(computed.membershipFee)}</span>
+              {isDonation ? (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                    <span>Recorded as</span>
+                    <span className="font-semibold" style={{ color: GOLD_ACCENT }}>Pure Donation</span>
+                  </div>
+                  <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                    <span>Full Amount</span>
+                    <span className="font-semibold" style={{ color: WARM_BLACK }}>{fmtCurrency(paymentAmount)}</span>
+                  </div>
+                  <div className="mt-2">
+                    <p className="font-body text-[12px] m-0" style={{ color: "rgba(26,19,17,0.4)" }}>
+                      No membership tier change · No renewal date update
+                    </p>
+                  </div>
                 </div>
-                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                  <span>Additional Donation</span>
-                  <span style={{ color: computed.additionalDonation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{fmtCurrency(computed.additionalDonation)}</span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5 mb-3">
+                    <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      <span>Membership Fee ({tierLabel(computed.membershipTier)})</span>
+                      <span style={{ color: WARM_BLACK }}>{fmtCurrency(computed.membershipFee)}</span>
+                    </div>
+                    <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      <span>Donation Amount</span>
+                      <span style={{ color: computed.additionalDonation > 0 ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>{fmtCurrency(computed.additionalDonation)}</span>
+                    </div>
+                  </div>
 
-              <div className="my-3" style={{ borderTop: "1px solid rgba(26,19,17,0.08)" }} />
+                  <div className="my-3" style={{ borderTop: "1px solid rgba(26,19,17,0.08)" }} />
 
-              <div className="space-y-1.5">
-                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                  <span>Tier</span>
-                  <span className="font-semibold" style={{ color: WARM_BLACK }}>{tierLabel(computed.membershipTier)} Membership</span>
-                </div>
-                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                  <span>Donor Class</span>
-                  <span style={{ color: WARM_BLACK }}>{donorLabel(computed.donorClass)}</span>
-                </div>
-                <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
-                  <span>Membership Valid Through</span>
-                  <span style={{ color: WARM_BLACK }}>{fmtDate(computed.expirationDate)}</span>
-                </div>
-              </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      <span>Membership Tier</span>
+                      <span className="font-semibold" style={{ color: WARM_BLACK }}>{tierLabel(computed.membershipTier)}</span>
+                    </div>
+                    <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      <span>Donor Level</span>
+                      <span className="font-semibold" style={{ color: computed.donorLevelLabel ? GOLD_ACCENT : "rgba(26,19,17,0.4)" }}>
+                        {computed.donorLevelLabel || "None"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                      <span>Renewal Due</span>
+                      <span style={{ color: WARM_BLACK }}>{fmtDate(computed.renewalDueDate)}</span>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {computed.belowMinimum && (
                 <div className="mt-3 p-3" style={{ background: "rgba(123,45,38,0.05)" }}>

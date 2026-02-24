@@ -53,33 +53,23 @@ export async function POST(request) {
 
     // Compute new membership details
     const today = new Date().toISOString().split("T")[0];
-    const computed = computeMembership(amountPaid, today);
-
-    // Extend expiration: from today + 1 year (or from current expiration if still active)
-    let baseDate = new Date();
-    if (member.expiration_date) {
-      const currentExp = new Date(member.expiration_date + "T12:00:00");
-      if (currentExp > baseDate) {
-        baseDate = currentExp;
-      }
-    }
-    baseDate.setFullYear(baseDate.getFullYear() + 1);
-    const newExpiration = baseDate.toISOString().split("T")[0];
+    const computed = computeMembership(amountPaid, today, "renewal");
 
     // Update member record
+    const updateFields = {
+      membership_tier: computed.membershipTier || tier,
+      status: "active",
+      renewal_due_date: computed.renewalDueDate,
+      last_payment_date: today,
+      last_payment_amount: amountPaid,
+      membership_fee: computed.membershipFee,
+      additional_donation: computed.additionalDonation,
+      donor_level: computed.donorLevel,
+    };
+
     await supabase
       .from("members")
-      .update({
-        membership_tier: tier,
-        status: "active",
-        expiration_date: newExpiration,
-        last_payment_date: today,
-        last_payment_amount: amountPaid,
-        membership_fee: computed.membershipFee,
-        additional_donation: computed.additionalDonation,
-        donor_class: computed.donorClass,
-        member_label: computed.memberLabel,
-      })
+      .update(updateFields)
       .eq("id", memberId);
 
     // Create payment record
@@ -91,7 +81,6 @@ export async function POST(request) {
       payment_type: "renewal",
       membership_fee: computed.membershipFee,
       additional_donation: computed.additionalDonation,
-      payment_year: new Date().getFullYear(),
       notes: `Stripe session ${session.id}`,
     });
 
@@ -99,8 +88,8 @@ export async function POST(request) {
     if (member.email) {
       const { subject, html } = renewalConfirmationEmail({
         firstName: member.first_name,
-        tier,
-        expirationDate: formatDate(newExpiration),
+        tier: computed.membershipTier || tier,
+        expirationDate: formatDate(computed.renewalDueDate),
       });
 
       try {

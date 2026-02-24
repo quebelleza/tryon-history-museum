@@ -32,11 +32,26 @@ function StatusBadge({ status }) {
   );
 }
 
+function fmtShortDate(dateStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr + "T12:00:00");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${mm}/${dd}/${yy}`;
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  return Math.ceil((new Date(dateStr + "T12:00:00") - new Date()) / 86400000);
+}
+
 export default function AdminDashboardSection() {
   const [stats, setStats] = useState(null);
   const [expiring, setExpiring] = useState([]);
   const [expired, setExpired] = useState([]);
   const [patrons, setPatrons] = useState([]);
+  const [renewals, setRenewals] = useState([]);
   const [emailLogs, setEmailLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendingReminder, setSendingReminder] = useState(null);
@@ -47,8 +62,8 @@ export default function AdminDashboardSection() {
         fetch("/api/admin/stats"),
         fetch("/api/admin/members?status=expiring_soon&perPage=10&sortBy=expiration_date&sortDir=asc"),
         fetch("/api/admin/members?status=expired&perPage=10&sortBy=expiration_date&sortDir=desc"),
-        fetch("/api/admin/members?donorClass=patron&perPage=20"),
-        fetch("/api/admin/members?donorClass=steward&perPage=20"),
+        fetch("/api/admin/members?donorClass=simone&perPage=20"),
+        fetch("/api/admin/members?donorClass=pacolet&perPage=20"),
         fetch("/api/admin/email-logs"),
       ]);
       const [statsData, expiringData, expiredData, patronsData, stewardsData] = await Promise.all([
@@ -64,6 +79,23 @@ export default function AdminDashboardSection() {
       setExpired(expiredData.members || []);
       setPatrons([...(stewardsData.members || []), ...(patronsData.members || [])]);
       setEmailLogs(logsData.logs || []);
+
+      // Build renewals list: members with renewal_due_date within 60 days
+      const allMembers = [...(expiringData.members || []), ...(expiredData.members || [])];
+      // Also fetch active members sorted by renewal_due_date to capture those within 60 days
+      const renewalRes = await fetch("/api/admin/members?sortBy=renewal_due_date&sortDir=asc&perPage=25");
+      const renewalData = await renewalRes.json();
+      const now = new Date();
+      const sixtyDaysOut = new Date(now.getTime() + 60 * 86400000);
+      const renewalMembers = (renewalData.members || [])
+        .filter((m) => {
+          if (!m.renewal_due_date) return false;
+          const rd = new Date(m.renewal_due_date + "T12:00:00");
+          return rd <= sixtyDaysOut;
+        })
+        .sort((a, b) => new Date(a.renewal_due_date) - new Date(b.renewal_due_date));
+      setRenewals(renewalMembers.slice(0, 15));
+
       setLoading(false);
     }
     load();
@@ -280,6 +312,64 @@ export default function AdminDashboardSection() {
             View All Patrons →
           </Link>
         </div>
+      </div>
+
+      {/* Upcoming Renewals */}
+      <div className="mt-10 p-6" style={{ background: "#FFFDF9", border: "1px solid rgba(196,163,90,0.15)" }}>
+        <div className="font-body text-[11px] uppercase mb-4 font-semibold" style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}>
+          Upcoming Renewals (Next 60 Days)
+        </div>
+        {renewals.length === 0 ? (
+          <p className="font-body text-[13px]" style={{ color: "rgba(26,19,17,0.4)" }}>
+            No renewals due in the next 60 days.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(123,45,38,0.08)" }}>
+                  {["Member", "Renewal Due", "Days Left", "Last Payment", ""].map((h) => (
+                    <th key={h} className="text-left font-body text-[10px] uppercase font-semibold px-3 py-2" style={{ letterSpacing: "0.1em", color: MUTED_RED }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {renewals.map((m) => {
+                  const days = daysUntil(m.renewal_due_date);
+                  const dayColor = days != null ? (days < 0 ? DEEP_RED : days <= 30 ? "#B8860B" : "#2D6A4F") : "rgba(26,19,17,0.4)";
+                  return (
+                    <tr key={m.id} style={{ borderBottom: "1px solid rgba(123,45,38,0.04)" }}>
+                      <td className="px-3 py-2">
+                        <Link href={`/admin/members/${m.id}`} className="font-body text-[13px] font-semibold no-underline hover:underline" style={{ color: WARM_BLACK }}>
+                          {m.first_name} {m.last_name}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2 font-body text-[13px] font-semibold" style={{ color: dayColor }}>
+                        {fmtShortDate(m.renewal_due_date)}
+                      </td>
+                      <td className="px-3 py-2 font-body text-[13px] font-semibold" style={{ color: dayColor }}>
+                        {days != null ? (days < 0 ? `${Math.abs(days)}d overdue` : `${days}d`) : "—"}
+                      </td>
+                      <td className="px-3 py-2 font-body text-[12px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                        {m.last_payment_amount != null ? `$${parseFloat(m.last_payment_amount).toFixed(0)}` : "—"}
+                      </td>
+                      <td className="px-3 py-2">
+                        <button
+                          onClick={() => handleSendReminder(m.id)}
+                          disabled={sendingReminder === m.id}
+                          className="font-body text-[10px] uppercase font-semibold px-2 py-1 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-default whitespace-nowrap"
+                          style={{ color: "#B8860B", border: "1px solid rgba(184,134,11,0.3)", letterSpacing: "0.05em" }}
+                        >
+                          {sendingReminder === m.id ? "Sending…" : "Send Reminder"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Email Log */}

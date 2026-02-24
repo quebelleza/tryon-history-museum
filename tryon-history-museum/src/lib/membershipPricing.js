@@ -1,109 +1,126 @@
 /**
- * Membership pricing utility — year-based pricing with payment splitting.
+ * Membership pricing utility — payment type aware with donor levels.
  * Used server-side (API routes) and can be imported client-side for live preview.
+ *
+ * Payment types: "new_member", "renewal", "donation"
+ *
+ * Fee schedule (new_member / renewal):
+ *   $50        → Individual, $50 fee, $0 donation, donor_level none
+ *   $51–$74    → Individual, $50 fee, remainder donation, donor_level none
+ *   $75        → Family, $75 fee, $0 donation, donor_level none
+ *   $76–$99    → Family, $75 fee, remainder donation, donor_level none
+ *   $100–$249  → Family, $75 fee, remainder donation, donor_level gillette
+ *   $250–$499  → Family, $75 fee, remainder donation, donor_level simone
+ *   $500–$999  → Family, $75 fee, remainder donation, donor_level pacolet
+ *   $1,000+    → Family, $75 fee, remainder donation, donor_level fitzgerald
+ *
+ * Donation: full amount recorded as donation, no membership changes.
  */
 
-const PRICING = {
-  2025: { individual: 35, family: 50 },
-  2026: { individual: 50, family: 75 },
-  default: { individual: 50, family: 75 },
-};
-
-function getPricingForYear(year) {
-  return PRICING[year] || PRICING.default;
-}
+const INDIVIDUAL_FEE = 50;
+const FAMILY_FEE = 75;
 
 /**
- * Compute membership details from a payment amount and payment date.
+ * Compute membership details from a payment amount, date, and type.
  *
  * @param {number} paymentAmount - Total payment amount
  * @param {string} paymentDate - ISO date string (YYYY-MM-DD)
+ * @param {string} [paymentType="new_member"] - "new_member" | "renewal" | "donation"
  * @returns {object} Computed membership fields
  */
-export function computeMembership(paymentAmount, paymentDate) {
+export function computeMembership(paymentAmount, paymentDate, paymentType = "new_member") {
   const amt = parseFloat(paymentAmount) || 0;
   const date = paymentDate ? new Date(paymentDate + "T12:00:00") : new Date();
-  const year = date.getFullYear();
-  const pricing = getPricingForYear(year);
+  const renewalDueDate = formatDatePlusYear(date);
 
-  // Determine tier based on year-specific thresholds
-  let membershipTier;
-  let membershipFee;
-
-  if (amt >= pricing.family) {
-    membershipTier = "family";
-    membershipFee = pricing.family;
-  } else if (amt >= pricing.individual) {
-    membershipTier = "individual";
-    membershipFee = pricing.individual;
-  } else {
-    // Below minimum
+  // ── Donation: full amount, no membership changes ──
+  if (paymentType === "donation") {
     return {
+      isDonation: true,
+      membershipTier: null,
+      membershipFee: 0,
+      additionalDonation: amt,
+      donorLevel: null,
+      donorLevelLabel: null,
+      renewalDueDate: null,
+      membershipStartDate: null,
+      status: null,
+      belowMinimum: false,
+      note: null,
+    };
+  }
+
+  // ── New Member / Renewal ──
+  if (amt < INDIVIDUAL_FEE) {
+    return {
+      isDonation: false,
       membershipTier: "individual",
       membershipFee: amt,
       additionalDonation: 0,
-      donorClass: "none",
-      effectiveAccessTier: "individual",
-      memberLabel: "member",
-      expirationDate: formatExpiration(date),
-      status: "pending",
-      pricingYear: year,
-      pricingLabel: `${year}`,
+      donorLevel: "none",
+      donorLevelLabel: null,
+      renewalDueDate,
+      membershipStartDate: paymentType === "new_member" ? paymentDate : null,
+      status: "active",
       belowMinimum: true,
-      note: "Payment below minimum — please verify.",
+      note: `Payment below $${INDIVIDUAL_FEE} minimum — please verify.`,
     };
+  }
+
+  let membershipTier;
+  let membershipFee;
+
+  if (amt >= FAMILY_FEE) {
+    membershipTier = "family";
+    membershipFee = FAMILY_FEE;
+  } else {
+    membershipTier = "individual";
+    membershipFee = INDIVIDUAL_FEE;
   }
 
   const additionalDonation = Math.round((amt - membershipFee) * 100) / 100;
 
-  // Donor class based on total payment amount (same thresholds regardless of year)
-  let donorClass = "none";
-  if (amt >= 1000) donorClass = "steward";
-  else if (amt >= 250) donorClass = "patron";
-  else if (amt >= 76) donorClass = "donor";
-
-  // Effective access tier
-  const effectiveAccessTier =
-    donorClass !== "none" || membershipTier === "family" ? "family" : "individual";
-
-  // Member label
-  let memberLabel = "member";
-  if (donorClass === "steward") memberLabel = "steward";
-  else if (donorClass === "patron") memberLabel = "patron";
-  else if (donorClass === "donor") memberLabel = "donor";
-
-  // Expiration: 1 year from payment date
-  const expirationDate = formatExpiration(date);
-
-  // Tier label for display
-  const tierWord = membershipTier === "family" ? "Family" : "Individual";
-  const pricingLabel = `${year} ${tierWord}`;
+  // Donor level based on total payment amount
+  let donorLevel = "none";
+  let donorLevelLabel = null;
+  if (amt >= 1000) { donorLevel = "fitzgerald"; donorLevelLabel = "Fitzgerald"; }
+  else if (amt >= 500) { donorLevel = "pacolet"; donorLevelLabel = "Pacolet"; }
+  else if (amt >= 250) { donorLevel = "simone"; donorLevelLabel = "Simone"; }
+  else if (amt >= 100) { donorLevel = "gillette"; donorLevelLabel = "Gillette"; }
 
   return {
+    isDonation: false,
     membershipTier,
     membershipFee,
     additionalDonation,
-    donorClass,
-    effectiveAccessTier,
-    memberLabel,
-    expirationDate,
+    donorLevel,
+    donorLevelLabel,
+    renewalDueDate,
+    membershipStartDate: paymentType === "new_member" ? paymentDate : null,
     status: "active",
-    pricingYear: year,
-    pricingLabel,
     belowMinimum: false,
     note: null,
   };
 }
 
-function formatExpiration(date) {
+function formatDatePlusYear(date) {
   const exp = new Date(date);
   exp.setFullYear(exp.getFullYear() + 1);
   return exp.toISOString().split("T")[0];
 }
 
+/** Donor level display labels */
+export const DONOR_LEVEL_LABELS = {
+  none: null,
+  gillette: "Gillette",
+  simone: "Simone",
+  pacolet: "Pacolet",
+  fitzgerald: "Fitzgerald",
+};
+
 /**
- * Get the pricing schedule for a given year (for display).
+ * Get the static fee schedule (for display).
  */
-export function getPricing(year) {
-  return getPricingForYear(year);
+export function getFeeSchedule() {
+  return { individual: INDIVIDUAL_FEE, family: FAMILY_FEE };
 }

@@ -302,15 +302,16 @@ export default function AdminMemberDetailSection({ memberId }) {
             )}
           </div>
           <div>
-            <label className={labelCls} style={labelStyle}>Donor Class</label>
+            <label className={labelCls} style={labelStyle}>Donor Level</label>
             {ro ? (
-              <input type="text" readOnly value={tierLabel(member.donor_class)} className="w-full font-body text-sm px-3 py-2 outline-none" style={readOnlyStyle} />
+              <input type="text" readOnly value={({none: "None", gillette: "Gillette", simone: "Simone", pacolet: "Pacolet", fitzgerald: "Fitzgerald"})[member.donor_class] || "None"} className="w-full font-body text-sm px-3 py-2 outline-none" style={readOnlyStyle} />
             ) : (
               <select value={member.donor_class || "none"} onChange={(e) => handleChange("donor_class", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer" style={fieldStyle}>
                 <option value="none">None</option>
-                <option value="donor">Donor</option>
-                <option value="patron">Patron</option>
-                <option value="steward">Steward</option>
+                <option value="gillette">Gillette ($100–$249)</option>
+                <option value="simone">Simone ($250–$499)</option>
+                <option value="pacolet">Pacolet ($500–$999)</option>
+                <option value="fitzgerald">Fitzgerald ($1,000+)</option>
               </select>
             )}
           </div>
@@ -345,8 +346,58 @@ export default function AdminMemberDetailSection({ memberId }) {
         </div>
       </div>
 
-      {/* Board assignment (patron/steward) */}
-      {(member.donor_class === "patron" || member.donor_class === "steward") && (
+      {/* Membership Timeline */}
+      <div className="p-6 md:p-8 mb-6" style={{ background: "#FFFDF9", border: "1px solid rgba(196,163,90,0.15)" }}>
+        <div className="font-body text-[11px] uppercase mb-4 font-semibold" style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}>
+          Membership Timeline
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div>
+            <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Membership Start</div>
+            <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.membership_start_date)}</div>
+          </div>
+          <div>
+            <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Last Payment</div>
+            <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>
+              {member.last_payment_amount != null && member.last_payment_date
+                ? `$${parseFloat(member.last_payment_amount).toFixed(2)} · ${formatDate(member.last_payment_date)}`
+                : "—"}
+            </div>
+          </div>
+          <div>
+            <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Renewal Due</div>
+            <div className="font-body text-[14px] font-semibold" style={{ color: member.renewal_due_date ? (member.days_until_renewal != null && member.days_until_renewal < 0 ? DEEP_RED : member.days_until_renewal <= 60 ? "#B8860B" : "#2D6A4F") : WARM_BLACK }}>
+              {formatDate(member.renewal_due_date)}
+            </div>
+          </div>
+          <div>
+            <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Days Until Renewal</div>
+            <div className="font-body text-[14px] font-semibold" style={{ color: member.days_until_renewal != null ? (member.days_until_renewal < 0 ? DEEP_RED : member.days_until_renewal <= 60 ? "#B8860B" : "#2D6A4F") : "rgba(26,19,17,0.4)" }}>
+              {member.days_until_renewal != null
+                ? member.days_until_renewal < 0
+                  ? `Overdue by ${Math.abs(member.days_until_renewal)} days`
+                  : `${member.days_until_renewal} days`
+                : "—"}
+            </div>
+          </div>
+          <div>
+            <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Donor Level</div>
+            {member.donor_level && member.donor_level !== "none" ? (
+              <span
+                className="inline-block font-body text-[12px] font-semibold uppercase px-3 py-1 rounded-sm"
+                style={{ letterSpacing: "0.1em", background: "rgba(196,163,90,0.1)", color: GOLD_ACCENT }}
+              >
+                {({ gillette: "Gillette", simone: "Simone", pacolet: "Pacolet", fitzgerald: "Fitzgerald" })[member.donor_level] || "—"}
+              </span>
+            ) : (
+              <div className="font-body text-[14px]" style={{ color: "rgba(26,19,17,0.4)" }}>None</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Board assignment (simone+ donor levels) */}
+      {(member.donor_class === "simone" || member.donor_class === "pacolet" || member.donor_class === "fitzgerald") && (
         <div className="p-6 md:p-8 mb-6" style={{ background: "#FFFDF9", border: "1px solid rgba(196,163,90,0.15)" }}>
           <div className="font-body text-[11px] uppercase mb-4 font-semibold" style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}>
             Board Assignment

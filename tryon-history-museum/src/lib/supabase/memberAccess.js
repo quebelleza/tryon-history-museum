@@ -2,7 +2,7 @@ import { createClient } from "./client";
 
 /**
  * Client-side hook-style function to check member access.
- * Returns { isLoggedIn, isActiveMember, tier, donorClass, expirationDate, member }
+ * Returns { isLoggedIn, isActiveMember, tier, donorClass, donorLevel, expirationDate, member }
  */
 export async function getMemberAccess() {
   const supabase = createClient();
@@ -17,6 +17,7 @@ export async function getMemberAccess() {
       isActiveMember: false,
       tier: null,
       donorClass: null,
+      donorLevel: null,
       expirationDate: null,
       member: null,
     };
@@ -34,6 +35,7 @@ export async function getMemberAccess() {
       isActiveMember: false,
       tier: null,
       donorClass: null,
+      donorLevel: null,
       expirationDate: null,
       member: null,
     };
@@ -47,6 +49,7 @@ export async function getMemberAccess() {
     isActiveMember,
     tier: member.effective_access_tier,
     donorClass: member.donor_class,
+    donorLevel: member.donor_level || member.donor_class,
     expirationDate: member.expiration_date,
     member,
   };

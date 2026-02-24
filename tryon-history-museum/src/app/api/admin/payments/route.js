@@ -22,5 +22,16 @@ export async function POST(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Belt-and-suspenders: explicitly sync last_payment fields to member
+  if (data.member_id && data.payment_date && data.amount != null) {
+    await supabase
+      .from("members")
+      .update({
+        last_payment_date: data.payment_date,
+        last_payment_amount: data.amount,
+      })
+      .eq("id", data.member_id);
+  }
+
   return NextResponse.json({ payment: data });
 }
