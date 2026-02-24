@@ -15,6 +15,13 @@ function formatDate(dateStr) {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
+function formatPhone(value) {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 function StatusBadge({ status }) {
   const styles = {
     active: { bg: "rgba(45,106,79,0.1)", color: "#2D6A4F", label: "Active" },
@@ -268,7 +275,7 @@ export default function AdminMemberDetailSection({ memberId }) {
           </div>
           <div>
             <label className={labelCls} style={labelStyle}>Phone</label>
-            <input type="text" readOnly={ro} value={member.phone || ""} onChange={(e) => handleChange("phone", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
+            <input type="text" readOnly={ro} value={member.phone || ""} onChange={(e) => handleChange("phone", formatPhone(e.target.value))} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} placeholder="(828) 555-1234" />
           </div>
           <div>
             <label className={labelCls} style={labelStyle}>Membership Tier</label>
@@ -308,16 +315,28 @@ export default function AdminMemberDetailSection({ memberId }) {
             )}
           </div>
           <div>
-            <label className={labelCls} style={labelStyle}>Join Date</label>
-            <input type={ro ? "text" : "date"} readOnly={ro} value={ro ? formatDate(member.join_date) : (member.join_date || "")} onChange={(e) => handleChange("join_date", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
+            <label className={labelCls} style={labelStyle}>Start Date</label>
+            <input type={ro ? "text" : "date"} readOnly={ro} value={ro ? formatDate(member.start_date) : (member.start_date || "")} onChange={(e) => handleChange("start_date", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
           </div>
           <div>
             <label className={labelCls} style={labelStyle}>Expiration Date</label>
             <input type={ro ? "text" : "date"} readOnly={ro} value={ro ? formatDate(member.expiration_date) : (member.expiration_date || "")} onChange={(e) => handleChange("expiration_date", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className={labelCls} style={labelStyle}>Address</label>
-            <input type="text" readOnly={ro} value={member.address || ""} onChange={(e) => handleChange("address", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
+            <label className={labelCls} style={labelStyle}>Street Address</label>
+            <input type="text" readOnly={ro} value={member.street_address || ""} onChange={(e) => handleChange("street_address", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
+          </div>
+          <div>
+            <label className={labelCls} style={labelStyle}>City</label>
+            <input type="text" readOnly={ro} value={member.city || ""} onChange={(e) => handleChange("city", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
+          </div>
+          <div>
+            <label className={labelCls} style={labelStyle}>State</label>
+            <input type="text" readOnly={ro} value={member.state || ""} onChange={(e) => handleChange("state", ro ? e.target.value : e.target.value.toUpperCase().slice(0, 2))} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} maxLength={2} placeholder="NC" />
+          </div>
+          <div>
+            <label className={labelCls} style={labelStyle}>Zip Code</label>
+            <input type="text" readOnly={ro} value={member.zip_code || ""} onChange={(e) => handleChange("zip_code", ro ? e.target.value : e.target.value.replace(/\D/g, "").slice(0, 5))} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} maxLength={5} placeholder="28782" />
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={labelCls} style={labelStyle}>Notes</label>

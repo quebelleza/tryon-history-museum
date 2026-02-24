@@ -43,12 +43,22 @@ function fmtCurrency(v) {
   return "$" + n.toFixed(2);
 }
 
+function formatPhone(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 const defaultForm = {
   first_name: "",
   last_name: "",
   email: "",
   phone: "",
-  address: "",
+  street_address: "",
+  city: "",
+  state: "",
+  zip_code: "",
   notes: "",
 };
 
@@ -81,7 +91,7 @@ export default function AdminNewMemberSection() {
 
     const payload = {
       ...form,
-      join_date: paymentDate,
+      start_date: paymentDate,
       payment_amount: amt > 0 ? amt : undefined,
       payment_date: amt > 0 ? paymentDate : undefined,
       payment_method: amt > 0 ? paymentMethod : undefined,
@@ -195,19 +205,54 @@ export default function AdminNewMemberSection() {
               <input
                 type="text"
                 value={form.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
+                onChange={(e) => handleChange("phone", formatPhone(e.target.value))}
+                className="w-full font-body text-sm px-3 py-2 outline-none"
+                style={fieldStyle}
+                placeholder="(828) 555-1234"
+              />
+            </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className={labelCls} style={labelStyle}>Street Address</label>
+              <input
+                type="text"
+                value={form.street_address}
+                onChange={(e) => handleChange("street_address", e.target.value)}
                 className="w-full font-body text-sm px-3 py-2 outline-none"
                 style={fieldStyle}
               />
             </div>
-            <div className="sm:col-span-2">
-              <label className={labelCls} style={labelStyle}>Address</label>
+            <div>
+              <label className={labelCls} style={labelStyle}>City</label>
               <input
                 type="text"
-                value={form.address}
-                onChange={(e) => handleChange("address", e.target.value)}
+                value={form.city}
+                onChange={(e) => handleChange("city", e.target.value)}
                 className="w-full font-body text-sm px-3 py-2 outline-none"
                 style={fieldStyle}
+              />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>State</label>
+              <input
+                type="text"
+                value={form.state}
+                onChange={(e) => handleChange("state", e.target.value.toUpperCase().slice(0, 2))}
+                className="w-full font-body text-sm px-3 py-2 outline-none"
+                style={fieldStyle}
+                maxLength={2}
+                placeholder="NC"
+              />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>Zip Code</label>
+              <input
+                type="text"
+                value={form.zip_code}
+                onChange={(e) => handleChange("zip_code", e.target.value.replace(/\D/g, "").slice(0, 5))}
+                className="w-full font-body text-sm px-3 py-2 outline-none"
+                style={fieldStyle}
+                maxLength={5}
+                placeholder="28782"
               />
             </div>
           </div>
