@@ -281,8 +281,8 @@ export default function AdminMembersSection() {
                       ? <span>${parseFloat(m.last_payment_amount).toFixed(0)} <span style={{ color: "rgba(26,19,17,0.3)" }}>·</span> {fmtShortDate(m.last_payment_date)}</span>
                       : "—"}
                   </td>
-                  <td className="px-4 py-3 font-body text-[13px] font-semibold whitespace-nowrap" style={{ color: renewalColor(m.renewal_due_date) }}>
-                    {fmtShortDate(m.renewal_due_date) || <span style={{ color: "rgba(26,19,17,0.3)", fontWeight: "normal" }}>—</span>}
+                  <td className="px-4 py-3 font-body text-[13px] font-semibold whitespace-nowrap" style={{ color: renewalColor(m.renewal_due_date || m.expiration_date) }}>
+                    {fmtShortDate(m.renewal_due_date || m.expiration_date) || <span style={{ color: "rgba(26,19,17,0.3)", fontWeight: "normal" }}>—</span>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">

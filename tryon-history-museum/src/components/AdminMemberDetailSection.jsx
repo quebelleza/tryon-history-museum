@@ -120,13 +120,23 @@ export default function AdminMemberDetailSection({ memberId }) {
   }, [memberId]);
 
   function handleChange(field, value) {
-    setMember((prev) => ({ ...prev, [field]: value }));
+    setMember((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === "expiration_date") updated.renewal_due_date = value;
+      if (field === "renewal_due_date") updated.expiration_date = value;
+      return updated;
+    });
     setSaved(false);
   }
 
   async function handleSave() {
     setSaving(true);
-    const cleaned = { ...member, email: member.email?.trim() || null };
+    const cleaned = {
+      ...member,
+      email: member.email?.trim() || null,
+      renewal_due_date: member.expiration_date || member.renewal_due_date,
+      expiration_date: member.expiration_date || member.renewal_due_date,
+    };
     const body = isBoardMember ? { member_label: cleaned.member_label } : cleaned;
     const res = await fetch(`/api/admin/members/${memberId}`, {
       method: "PATCH",
@@ -431,8 +441,8 @@ export default function AdminMemberDetailSection({ memberId }) {
           </div>
           <div>
             <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Renewal Due</div>
-            <div className="font-body text-[14px] font-semibold" style={{ color: member.renewal_due_date ? (member.days_until_renewal != null && member.days_until_renewal < 0 ? DEEP_RED : member.days_until_renewal <= 60 ? "#B8860B" : "#2D6A4F") : WARM_BLACK }}>
-              {formatDate(member.renewal_due_date)}
+            <div className="font-body text-[14px] font-semibold" style={{ color: (member.renewal_due_date || member.expiration_date) ? (member.days_until_renewal != null && member.days_until_renewal < 0 ? DEEP_RED : member.days_until_renewal <= 60 ? "#B8860B" : "#2D6A4F") : WARM_BLACK }}>
+              {formatDate(member.renewal_due_date || member.expiration_date)}
             </div>
           </div>
           <div>
@@ -516,7 +526,7 @@ export default function AdminMemberDetailSection({ memberId }) {
             </div>
             <div>
               <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Valid Through</div>
-              <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.expiration_date)}</div>
+              <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.renewal_due_date || member.expiration_date)}</div>
             </div>
           </div>
         </div>
