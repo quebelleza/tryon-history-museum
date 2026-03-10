@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import FadeIn from "./FadeIn";
+import { Home, Mic, Bus, UtensilsCrossed } from "lucide-react";
 import { getMemberAccess } from "@/lib/supabase/memberAccess";
 
 const DEEP_RED = "#7B2D26";
@@ -43,10 +44,10 @@ const pricingTiers = [
 ];
 
 const tourHighlights = [
-  { icon: "🏠", text: "6 stunning modernist homes, including Tryon Presbyterian Church featured for its modernist design" },
-  { icon: "🎙️", text: "Expert docent guides at each home" },
-  { icon: "🚌", text: "Hassle-free bus transportation between all stops" },
-  { icon: "🍽️", text: "Catered lunch included" },
+  { icon: Home, text: "6 stunning modernist homes, including Tryon Presbyterian Church featured for its modernist design" },
+  { icon: Mic, text: "Expert docent guides at each home" },
+  { icon: Bus, text: "Hassle-free bus transportation between all stops" },
+  { icon: UtensilsCrossed, text: "Catered lunch included" },
 ];
 
 const logistics = [
@@ -238,7 +239,7 @@ export default function ModernistHomeTourSection() {
                     border: "1px solid rgba(123,45,38,0.06)",
                   }}
                 >
-                  <span className="text-2xl flex-shrink-0 mt-0.5">{item.icon}</span>
+                  <item.icon size={28} strokeWidth={1.5} color="#B8956A" className="flex-shrink-0 mt-0.5" />
                   <p
                     className="font-body text-[15px] leading-[1.65] m-0"
                     style={{ color: "rgba(26,19,17,0.65)" }}
