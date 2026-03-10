@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request) {
   const supabase = createClient()
   await supabase.from('members').select('id').limit(1)
