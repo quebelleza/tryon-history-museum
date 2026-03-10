@@ -27,11 +27,6 @@ const architects = [
     /* {PLACEHOLDER — replace with final bio} */
     bio: "A beloved Asheville-based architect whose work bridges Appalachian vernacular and modernist discipline.",
   },
-  {
-    name: "Bill Moore",
-    /* {PLACEHOLDER — replace with final bio} */
-    bio: "Distinguished for residential work that honors both craft and restraint.",
-  },
 ];
 
 const pricingTiers = [
