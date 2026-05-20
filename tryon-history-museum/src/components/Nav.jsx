@@ -29,7 +29,7 @@ const navItems = [
   {
     label: "About",
     children: [
-      { name: "Our Story", href: "/#about" },
+      { name: "Our Story", href: "/about/our-story" },
       { name: "Board of Directors", href: "/board" },
       { name: "Contact Us", href: "/contact" },
     ],
