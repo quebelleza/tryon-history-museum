@@ -1,6 +1,5 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
-import VisitSection from "@/components/VisitSection";
 import AboutSection from "@/components/AboutSection";
 import EventsSection from "@/components/EventsSection";
 import SupportSection from "@/components/SupportSection";
@@ -25,7 +24,6 @@ export default async function Home() {
       <OrganizationJsonLd />
       <Nav />
       <Hero siteSettings={siteSettings} />
-      <VisitSection siteSettings={siteSettings} />
       <AboutSection />
       <EventsSection events={sanityEvents} />
       <SupportSection sanityTiers={sanityTiers} />

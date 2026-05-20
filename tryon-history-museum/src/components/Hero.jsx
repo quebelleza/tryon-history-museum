@@ -87,7 +87,7 @@ export default function Hero({ siteSettings }) {
           </p>
           <div className="flex flex-wrap gap-3 md:gap-4 mt-6 md:mt-10 animate-fade-up animation-delay-900">
             <a
-              href="#visit"
+              href="/visit"
               className="font-body text-[12px] md:text-[13px] font-semibold uppercase no-underline transition-all hover:brightness-110"
               style={{
                 letterSpacing: "0.12em",
@@ -136,7 +136,7 @@ export default function Hero({ siteSettings }) {
               {todayHours}
             </div>
           </div>
-          <a href="#visit" className="no-underline font-body text-xs" style={{ color: GOLD_ACCENT }}>
+          <a href="/visit" className="no-underline font-body text-xs" style={{ color: GOLD_ACCENT }}>
             See all hours
           </a>
         </div>
@@ -168,7 +168,7 @@ export default function Hero({ siteSettings }) {
           style={{ color: "rgba(255,255,255,0.5)" }}
         >
           Open Wed–Sat &middot;{" "}
-          <a href="#visit" className="no-underline" style={{ color: GOLD_ACCENT }}>
+          <a href="/visit" className="no-underline" style={{ color: GOLD_ACCENT }}>
             See all hours
           </a>
         </div>

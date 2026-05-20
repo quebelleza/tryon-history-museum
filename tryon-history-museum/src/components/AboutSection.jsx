@@ -63,10 +63,10 @@ export default function AboutSection() {
               Our Story
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-light text-white leading-[1.15] mb-7">
-              This is Tryon&apos;s story,
+              The people who
               <br />
               <span className="italic font-semibold" style={{ color: GOLD_ACCENT }}>
-                told by its people
+                made this place.
               </span>
             </h2>
             <p
