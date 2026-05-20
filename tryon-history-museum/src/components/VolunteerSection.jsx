@@ -7,14 +7,46 @@ const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
 const MUTED_RED = "#A8584F";
+const DEEP_CRIMSON = "#8B1A1A";
+const CREAM = "#FAF8F5";
 
 const VOLUNTEER_AREAS = [
-  { key: "docent", label: "Docent / Museum Volunteer", icon: "\uD83C\uDFDB\uFE0F", desc: "Share Tryon\u2019s story with visitors as a knowledgeable guide" },
-  { key: "exhibits", label: "Exhibits & Archiving", icon: "\uD83D\uDDC2\uFE0F", desc: "Help preserve and catalog our growing collection" },
-  { key: "coordination", label: "Volunteer Coordination / Scheduling", icon: "\uD83D\uDCCB", desc: "Help organize and schedule our volunteer community" },
-  { key: "visitor_center", label: "Visitor Center / Gift Shop", icon: "\uD83D\uDECD\uFE0F", desc: "Welcome visitors and support the gift shop" },
-  { key: "events", label: "Special Events", icon: "\uD83C\uDFAA", desc: "Lend your energy to tours, lectures, and community events" },
-  { key: "other", label: "Not Sure / Something Else", icon: "\u2728", desc: "Tell us about yourself and we\u2019ll find the right fit" },
+  {
+    key: "docent",
+    label: "Docent / Museum Volunteer",
+    icon: "\uD83C\uDFDB\uFE0F",
+    desc: "Our docents are the heart of the museum experience. Working Wednesday through Saturday in three-hour shifts, docents welcome visitors, guide them through exhibits, and share the stories that bring Tryon\u2019s history to life. We ask for a commitment of two shifts per month \u2014 enough to stay connected without overwhelming your schedule. Training provided.",
+  },
+  {
+    key: "exhibits",
+    label: "Exhibits & Archiving",
+    icon: "\uD83D\uDDC2\uFE0F",
+    desc: "Do you love digging into old records, photographs, and documents? Our exhibits and archiving volunteers assist with cataloguing artifacts, supporting exhibit development, and helping expand the museum\u2019s historical record. Ideal for detail-oriented volunteers with an interest in local history, genealogy, or archival work.",
+  },
+  {
+    key: "coordination",
+    label: "Volunteer Coordination / Scheduling",
+    icon: "\uD83D\uDCCB",
+    desc: "If you\u2019re organized, communicative, and energized by helping others find their place, this role keeps the museum running smoothly. You\u2019ll help schedule docent shifts, coordinate event volunteers, and serve as a friendly first point of contact for new volunteers joining the team.",
+  },
+  {
+    key: "visitor_center",
+    label: "Visitor Center / Gift Shop",
+    icon: "\uD83D\uDECD\uFE0F",
+    desc: "The museum gift shop is a meaningful part of the visitor experience \u2014 and revenue from it directly supports our programs. Gift shop volunteers assist visitors with purchases, maintain displays, and help keep inventory organized. A good fit for someone who enjoys conversation and takes pride in the details.",
+  },
+  {
+    key: "events",
+    label: "Special Events",
+    icon: "\uD83C\uDFAA",
+    desc: "From the Tales of Tryon lecture series to fundraising events and community gatherings, our events volunteers make it all run smoothly. You\u2019ll help with setup, guest welcome, and day-of logistics \u2014 and you\u2019ll represent the museum at Tryon functions like 4th Fridays, where your presence reminds the community that history is alive and well on Maple Street.",
+  },
+  {
+    key: "other",
+    label: "Not Sure / Something Else",
+    icon: "\u2728",
+    desc: "Not sure where you fit yet? That\u2019s a good sign \u2014 it means you\u2019re curious. Tell us a little about yourself in the form below, and we\u2019ll help you find a role that matches your interests, schedule, and skills.",
+  },
 ];
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -109,7 +141,7 @@ export default function VolunteerSection() {
       <section
         className="pt-40 pb-16 md:pt-48 md:pb-20 relative overflow-hidden"
         style={{
-          background: `linear-gradient(160deg, ${WARM_BLACK} 0%, #5C1F1A 50%, ${DEEP_RED} 100%)`,
+          background: `linear-gradient(160deg, ${WARM_BLACK} 0%, ${DEEP_CRIMSON} 55%, ${DEEP_RED} 100%)`,
         }}
       >
         <div
@@ -127,18 +159,20 @@ export default function VolunteerSection() {
             >
               Get Involved
             </div>
-            <h1 className="font-display text-4xl md:text-6xl font-light text-white leading-[1.1] mb-6">
-              Become a{" "}
-              <span className="italic font-semibold">Volunteer</span>
+            <h1
+              className="font-display text-4xl md:text-6xl font-light leading-[1.1] mb-6"
+              style={{ color: CREAM }}
+            >
+              The people who keep
+              <br />
+              <span className="italic font-semibold">Tryon&apos;s story alive.</span>
             </h1>
             <p
-              className="font-body text-[17px] leading-relaxed max-w-[600px] m-0"
-              style={{ color: "rgba(255,255,255,0.6)" }}
+              className="font-body text-[17px] leading-relaxed max-w-[560px] m-0"
+              style={{ color: "rgba(250,248,245,0.78)" }}
             >
-              Help us keep Tryon&apos;s story alive. The Tryon History Museum runs on
-              the passion and dedication of volunteers like you. Whether you love
-              sharing history with visitors, helping behind the scenes, or lending
-              your talents to special events &mdash; there&apos;s a place for you here.
+              Every exhibit, every lecture, every visitor who leaves knowing
+              something they didn&apos;t before &mdash; that&apos;s your work too.
             </p>
           </FadeIn>
         </div>
@@ -165,10 +199,11 @@ export default function VolunteerSection() {
             {VOLUNTEER_AREAS.map((area, i) => (
               <FadeIn key={area.key} delay={i * 0.06}>
                 <div
-                  className="p-6 md:p-7 h-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                  className="p-6 md:p-7 h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                   style={{
                     background: "#FFFDF9",
                     border: "1px solid rgba(123,45,38,0.08)",
+                    borderTop: `3px solid ${GOLD_ACCENT}`,
                   }}
                 >
                   <div className="text-2xl mb-3">{area.icon}</div>
@@ -179,14 +214,100 @@ export default function VolunteerSection() {
                     {area.label}
                   </div>
                   <p
-                    className="font-body text-[14px] leading-[1.6] m-0"
-                    style={{ color: "rgba(26,19,17,0.55)" }}
+                    className="font-body text-[14px] leading-[1.75] m-0"
+                    style={{ color: "rgba(26,19,17,0.62)" }}
                   >
                     {area.desc}
                   </p>
                 </div>
               </FadeIn>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Perks & Benefits */}
+      <section className="py-20 md:py-28" style={{ background: DEEP_CRIMSON }}>
+        <div className="max-w-[1200px] mx-auto px-5 md:px-8">
+          <FadeIn>
+            <div
+              className="font-body text-[11px] uppercase mb-4"
+              style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
+            >
+              What You Get
+            </div>
+            <h2
+              className="font-display text-3xl md:text-4xl font-light mb-12 md:mb-16"
+              style={{ color: CREAM }}
+            >
+              We take care of our people.
+            </h2>
+          </FadeIn>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
+            <FadeIn delay={0.1}>
+              <h3
+                className="font-display text-[24px] font-semibold mb-7"
+                style={{ color: GOLD_ACCENT }}
+              >
+                Docents &amp; Volunteers
+              </h3>
+              <ul className="space-y-4 m-0 p-0 list-none">
+                {[
+                  "Invitation to the Annual Volunteer Appreciation Event",
+                  "Invitation to the Annual Meeting",
+                  "10% discount on Gift Shop purchases",
+                  "Advance notice of museum events and programming",
+                  "The satisfaction of work that genuinely matters",
+                ].map((item) => (
+                  <li key={item} className="flex items-baseline gap-3">
+                    <span
+                      className="flex-shrink-0 font-body text-base"
+                      style={{ color: GOLD_ACCENT }}
+                    >
+                      &mdash;
+                    </span>
+                    <span
+                      className="font-body text-[15px] leading-[1.75]"
+                      style={{ color: "rgba(250,248,245,0.85)" }}
+                    >
+                      {item}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </FadeIn>
+            <FadeIn delay={0.15}>
+              <h3
+                className="font-display text-[24px] font-semibold mb-7"
+                style={{ color: GOLD_ACCENT }}
+              >
+                Board Members
+              </h3>
+              <ul className="space-y-4 m-0 p-0 list-none">
+                {[
+                  "All docent and volunteer perks",
+                  "Recognition on the museum website and print materials",
+                  "Invitation to board dinners and strategic planning sessions",
+                  "A direct role in shaping the museum\u2019s future",
+                  "The particular honor of stewardship",
+                ].map((item) => (
+                  <li key={item} className="flex items-baseline gap-3">
+                    <span
+                      className="flex-shrink-0 font-body text-base"
+                      style={{ color: GOLD_ACCENT }}
+                    >
+                      &mdash;
+                    </span>
+                    <span
+                      className="font-body text-[15px] leading-[1.75]"
+                      style={{ color: "rgba(250,248,245,0.85)" }}
+                    >
+                      {item}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </FadeIn>
           </div>
         </div>
       </section>
@@ -553,13 +674,13 @@ export default function VolunteerSection() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="w-full font-body text-[14px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-60 disabled:cursor-default"
+                  className="w-full font-body text-[14px] font-semibold uppercase cursor-pointer transition-all hover:brightness-90 disabled:opacity-60 disabled:cursor-default"
                   style={{
                     letterSpacing: "0.12em",
-                    color: WARM_BLACK,
-                    background: GOLD_ACCENT,
+                    color: CREAM,
+                    background: DEEP_CRIMSON,
                     padding: "16px 36px",
-                    border: "none",
+                    border: `1.5px solid rgba(196,163,90,0.4)`,
                   }}
                 >
                   {status === "sending" ? "Submitting\u2026" : "Submit Volunteer Interest Form"}
