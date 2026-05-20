@@ -53,8 +53,8 @@ export default async function OurStoryPage() {
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden"
-        style={{ height: "72vh", minHeight: 500 }}
+        className="pt-40 pb-16 md:pt-48 md:pb-24 relative overflow-hidden"
+        style={{ minHeight: 520 }}
       >
         <Image
           src="/images/museum-rendering.jpg"
@@ -66,30 +66,25 @@ export default async function OurStoryPage() {
         />
         <div
           className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(42,42,42,0.82) 0%, rgba(42,42,42,0.55) 60%, rgba(42,42,42,0.35) 100%)",
-          }}
+          style={{ background: "rgba(42,42,42,0.88)" }}
         />
-        <div className="absolute inset-0 flex flex-col justify-end">
-          <div className="max-w-[1200px] mx-auto px-5 md:px-8 pb-16 md:pb-24 w-full">
-            <div
-              className="font-body text-[11px] uppercase tracking-[0.35em] mb-6"
-              style={{ color: GOLD }}
-            >
-              Our Story
-            </div>
-            <h1
-              className="font-display font-light leading-[1.1] max-w-3xl m-0"
-              style={{ fontSize: "clamp(30px, 5vw, 62px)", color: CREAM }}
-            >
-              A town this storied deserved
-              <br />
-              <span className="italic font-semibold">
-                a place to keep its stories.
-              </span>
-            </h1>
+        <div className="relative z-10 max-w-[1200px] mx-auto px-5 md:px-8 w-full">
+          <div
+            className="font-body text-[11px] uppercase tracking-[0.35em] mb-6"
+            style={{ color: GOLD }}
+          >
+            Our Story
           </div>
+          <h1
+            className="font-display font-light leading-[1.1] max-w-3xl m-0"
+            style={{ fontSize: "clamp(30px, 5vw, 62px)", color: CREAM }}
+          >
+            A town this storied deserved
+            <br />
+            <span className="italic font-semibold">
+              a place to keep its stories.
+            </span>
+          </h1>
         </div>
       </section>
 
