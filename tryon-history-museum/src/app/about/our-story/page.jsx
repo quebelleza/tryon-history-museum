@@ -19,7 +19,7 @@ const CHARCOAL = "#2A2A2A";
 const pillars = [
   {
     heading: "The Full Arc of Tryon\u2019s Story",
-    body: "From Cherokee heritage and the surveyor William Tryon, through the railroad age that put this mountain town on the map, to the artists and authors and equestrians who followed \u2014 we preserve the whole of it.",
+    body: "From Cherokee heritage and the earliest settlements in these Blue Ridge foothills, through the railroad age that put this mountain town on the map, to the artists and authors and equestrians who followed \u2014 we preserve the stories, the artifacts, and the exhibits that hold it all together.",
   },
   {
     heading: "The People Who Made It",
@@ -124,7 +124,7 @@ export default async function OurStoryPage() {
                 style={{ fontSize: 17, color: "rgba(42,42,42,0.78)" }}
               >
                 <p className="m-0">
-                  In August 2013, a group of concerned Tryon residents gathered
+                  In August 2013, a group of Tryon residents gathered
                   with a shared conviction: that this town&apos;s story was too
                   important to leave untold — and too particular to be told by
                   anyone but the people who had lived it.
