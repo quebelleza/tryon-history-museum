@@ -584,14 +584,8 @@ export default function TalesOfTryonSection() {
           }}
         />
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 py-20 md:py-28">
-          <div
-            className="text-xs tracking-[0.3em] uppercase text-amber-200/80 mb-6"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
-            An archive of the Tryon History Museum lecture series
-          </div>
           <h1
-            className="text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-8 max-w-5xl"
+            className="text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-6 max-w-5xl"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontWeight: 500,
@@ -599,6 +593,12 @@ export default function TalesOfTryonSection() {
           >
             Tales of <span className="italic text-amber-200/90">Tryon</span>
           </h1>
+          <div
+            className="text-xs tracking-[0.3em] uppercase text-amber-200/80 mb-8"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            An archive of the Tryon History Museum lecture series
+          </div>
           <p
             className="text-lg md:text-xl text-stone-300 leading-relaxed max-w-2xl mb-10"
             style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}
