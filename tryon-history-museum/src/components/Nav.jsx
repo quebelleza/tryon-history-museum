@@ -13,26 +13,23 @@ const MUTED_RED = "#A8584F";
 
 const navItems = [
   {
-    label: "Visit",
+    label: "Explore",
     children: [
-      { name: "Hours & Admission", href: "#visit" },
-      { name: "Plan Your Visit", href: "#visit" },
+      { name: "Plan Your Visit", href: "/visit" },
+      { name: "Exhibits", href: "/exhibits" },
+      { name: "History Bits", href: "/history-bits" },
+      { name: "Tales of Tryon", href: "/tales-of-tryon" },
       { name: "Gift Shop", href: "/gift-shop" },
     ],
   },
   {
     label: "Events",
-    children: [
-      { name: "Upcoming Events", href: "/events" },
-      { name: "Tales of Tryon", href: "/events" },
-      { name: "History Bits", href: "#" },
-    ],
+    href: "/events",
   },
   {
     label: "About",
     children: [
-      { name: "Our Story", href: "#about" },
-      { name: "Exhibits", href: "/exhibits" },
+      { name: "Our Story", href: "/#about" },
       { name: "Board of Directors", href: "/board" },
       { name: "Contact Us", href: "/contact" },
     ],
@@ -40,7 +37,7 @@ const navItems = [
   {
     label: "Support",
     children: [
-      { name: "Become a Member", href: "#support" },
+      { name: "Become a Member", href: "/#support" },
       { name: "Volunteer", href: "/volunteer" },
       { name: "Donate", href: "/donate" },
     ],
@@ -113,48 +110,65 @@ export default function Nav() {
             <div
               key={item.label}
               className="relative"
-              onMouseEnter={() => setActiveDropdown(item.label)}
-              onMouseLeave={() => setActiveDropdown(null)}
+              onMouseEnter={() => item.children && setActiveDropdown(item.label)}
+              onMouseLeave={() => item.children && setActiveDropdown(null)}
             >
-              <button
-                aria-expanded={activeDropdown === item.label}
-                aria-haspopup="true"
-                className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold"
-                style={{
-                  letterSpacing: "0.12em",
-                  color: scrolled
-                    ? "rgba(250,247,244,0.8)"
-                    : "rgba(255,255,255,0.85)",
-                }}
-              >
-                {item.label}
-              </button>
+              {item.href ? (
+                <a
+                  href={item.href}
+                  className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold no-underline"
+                  style={{
+                    letterSpacing: "0.12em",
+                    color: scrolled
+                      ? "rgba(250,247,244,0.8)"
+                      : "rgba(255,255,255,0.85)",
+                  }}
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <button
+                  aria-expanded={activeDropdown === item.label}
+                  aria-haspopup="true"
+                  className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold"
+                  style={{
+                    letterSpacing: "0.12em",
+                    color: scrolled
+                      ? "rgba(250,247,244,0.8)"
+                      : "rgba(255,255,255,0.85)",
+                  }}
+                >
+                  {item.label}
+                </button>
+              )}
               {/* Dropdown */}
-              <div
-                className="absolute top-full -left-4 min-w-[200px] transition-all duration-300"
-                style={{
-                  background: WARM_BLACK,
-                  border: "1px solid rgba(123,45,38,0.25)",
-                  padding:
-                    activeDropdown === item.label ? "16px 24px" : "0 24px",
-                  opacity: activeDropdown === item.label ? 1 : 0,
-                  maxHeight: activeDropdown === item.label ? 300 : 0,
-                  overflow: "hidden",
-                  pointerEvents:
-                    activeDropdown === item.label ? "auto" : "none",
-                }}
-              >
-                {item.children.map((child) => (
-                  <a
-                    key={child.name}
-                    href={child.href}
-                    className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
-                    style={{ color: "rgba(250,247,244,0.7)" }}
-                  >
-                    {child.name}
-                  </a>
-                ))}
-              </div>
+              {item.children && (
+                <div
+                  className="absolute top-full -left-4 min-w-[200px] transition-all duration-300"
+                  style={{
+                    background: WARM_BLACK,
+                    border: "1px solid rgba(123,45,38,0.25)",
+                    padding:
+                      activeDropdown === item.label ? "16px 24px" : "0 24px",
+                    opacity: activeDropdown === item.label ? 1 : 0,
+                    maxHeight: activeDropdown === item.label ? 300 : 0,
+                    overflow: "hidden",
+                    pointerEvents:
+                      activeDropdown === item.label ? "auto" : "none",
+                  }}
+                >
+                  {item.children.map((child) => (
+                    <a
+                      key={child.name}
+                      href={child.href}
+                      className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
+                      style={{ color: "rgba(250,247,244,0.7)" }}
+                    >
+                      {child.name}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {/* Auth controls */}
@@ -283,17 +297,28 @@ export default function Nav() {
               >
                 {item.label}
               </div>
-              {item.children.map((child) => (
+              {item.href ? (
                 <a
-                  key={child.name}
-                  href={child.href}
+                  href={item.href}
                   className="block font-body text-sm no-underline py-1.5"
                   style={{ color: "rgba(250,247,244,0.6)" }}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {child.name}
+                  {item.label}
                 </a>
-              ))}
+              ) : (
+                item.children.map((child) => (
+                  <a
+                    key={child.name}
+                    href={child.href}
+                    className="block font-body text-sm no-underline py-1.5"
+                    style={{ color: "rgba(250,247,244,0.6)" }}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {child.name}
+                  </a>
+                ))
+              )}
             </div>
           ))}
           {/* Mobile auth controls */}

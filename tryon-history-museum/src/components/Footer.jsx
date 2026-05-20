@@ -6,27 +6,35 @@ const MUTED_RED = "#A8584F";
 
 const footerLinks = [
   {
-    heading: "Visit",
+    heading: "Explore",
     links: [
-      { name: "Hours & Admission", href: "#visit" },
-      { name: "Plan Your Visit", href: "#visit" },
-      { name: "Gift Shop", href: "#" },
+      { name: "Plan Your Visit", href: "/visit" },
+      { name: "Exhibits", href: "/exhibits" },
+      { name: "History Bits", href: "/history-bits" },
+      { name: "Tales of Tryon", href: "/tales-of-tryon" },
+      { name: "Gift Shop", href: "/gift-shop" },
+    ],
+  },
+  {
+    heading: "Events",
+    links: [
+      { name: "Upcoming Events", href: "/events" },
     ],
   },
   {
     heading: "About",
     links: [
-      { name: "Our Story", href: "#about" },
+      { name: "Our Story", href: "/#about" },
       { name: "Board of Directors", href: "/board" },
-      { name: "Contact Us", href: "#" },
+      { name: "Contact Us", href: "/contact" },
     ],
   },
   {
     heading: "Support",
     links: [
-      { name: "Become a Member", href: "#support" },
-      { name: "Volunteer", href: "#" },
-      { name: "Donate", href: "#" },
+      { name: "Become a Member", href: "/#support" },
+      { name: "Volunteer", href: "/volunteer" },
+      { name: "Donate", href: "/donate" },
     ],
   },
 ];
@@ -41,7 +49,7 @@ export default function Footer({ siteSettings }) {
   return (
     <footer aria-label="Site footer" className="py-16 md:pt-16 md:pb-10" style={{ background: WARM_BLACK }}>
       <div className="max-w-[1200px] mx-auto px-5 md:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-12">
           {/* Identity */}
           <div>
             <div

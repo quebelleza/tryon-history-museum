@@ -29,13 +29,6 @@ const fallbackEvents = [
     type: "Presentation",
     desc: "Discover the remarkable life and practice of one of Tryon\u2019s most beloved physicians.",
   },
-  {
-    date: "May 16",
-    title: "Modernist Home Tour",
-    type: "Home Tour",
-    desc: "A rare look inside 6 stunning modernist homes \u2014 with expert docent guides, bus transportation, and lunch included.",
-    href: "/events/modernist-home-tour",
-  },
 ];
 
 function formatSanityDate(dateStr) {
