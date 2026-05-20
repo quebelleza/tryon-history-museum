@@ -583,7 +583,7 @@ export default function TalesOfTryonSection() {
               "radial-gradient(circle at 20% 30%, rgba(184,149,106,0.4), transparent 50%), radial-gradient(circle at 80% 70%, rgba(44,85,48,0.3), transparent 50%)",
           }}
         />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-12 py-20 md:py-28">
+        <div className="relative max-w-7xl mx-auto px-6 md:px-12 pt-36 pb-20 md:pt-44 md:pb-28">
           <h1
             className="text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-6 max-w-5xl"
             style={{
