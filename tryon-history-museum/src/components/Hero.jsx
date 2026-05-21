@@ -99,7 +99,7 @@ export default function Hero({ siteSettings }) {
               Plan Your Visit
             </a>
             <a
-              href="#about"
+              href="/about/our-story"
               className="font-body text-[12px] md:text-[13px] font-semibold uppercase no-underline transition-all hover:bg-white/10"
               style={{
                 letterSpacing: "0.12em",
