@@ -71,7 +71,7 @@ const boardMembers = [
     name: "Colin Thompson",
     title: "Board Member",
     term: "2028",
-    photo: null,
+    photo: "/board/colin-thompson.png",
     bio: "Colin Thompson is an Upstate South Carolina native with deep family roots in Western North Carolina and the Tryon area. After spending his career leading teams and organizations across both corporate and small business environments, Colin returned to Tryon over a year ago to take over and be a thoughtful steward of his family home. He joined the Tryon History Museum Board as its newest\u2014and youngest\u2014member, proudly lowering the average age of the Board by about a decade and underscoring the importance of service and stewardship at every stage of life. Colin is honored to serve and is committed to helping preserve and share the region\u2019s rich history for future generations.",
   },
 ];
