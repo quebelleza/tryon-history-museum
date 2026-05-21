@@ -136,7 +136,7 @@ export default function SupportSection({ sanityTiers }) {
             style={{ borderTop: "1px solid rgba(196,163,90,0.1)" }}
           >
             <a
-              href="#"
+              href="/volunteer"
               className="font-body text-[13px] font-semibold uppercase no-underline transition-colors hover:!text-tryon-gold"
               style={{
                 letterSpacing: "0.12em",
@@ -146,7 +146,7 @@ export default function SupportSection({ sanityTiers }) {
               Become a Volunteer →
             </a>
             <a
-              href="#"
+              href="/donate"
               className="font-body text-[13px] font-semibold uppercase no-underline transition-colors hover:!text-tryon-gold"
               style={{
                 letterSpacing: "0.12em",
