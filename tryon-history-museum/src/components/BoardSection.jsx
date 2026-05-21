@@ -64,7 +64,7 @@ const boardMembers = [
     name: "Dr. Warren Carson",
     title: "Board Member",
     term: "2028",
-    photo: "/board/warren-carson.jpg",
+    photo: "/board/warren-carson.png",
     bio: "Dr. Warren Carson is a native of Tryon, having grown up on the Eastside of town. His deep knowledge of, and long-standing civic involvement in, the African American community is essential to the Museum\u2019s mission to fully and faithfully tell Tryon\u2019s history. Dr. Carson is retired after a distinguished career as an administrator and professor at USC Upstate. He continues to serve the town with dedication and generosity as President of the Roseland Community Center in Tryon, where he helps provide a vital gathering place for the community and meaningful opportunities for children. A trusted voice and invaluable resource, Dr. Carson brings both lived experience and historical insight\u2014particularly regarding Tryon\u2019s Eastside\u2014ensuring that these stories are preserved, honored, and shared for generations to come.",
   },
   {
