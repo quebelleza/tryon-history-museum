@@ -56,7 +56,7 @@ const boardMembers = [
     name: "Cinda Austin",
     title: "Board Member",
     term: "2027",
-    photo: null,
+    photo: "/board/cinda-austin.png",
     bio: "Cinda left big city life and settled into Tryon 17 years ago. Her main interest is in bringing people together through local agriculture and food which was served in historic hotels and homes over our history. She served as the Food Coordinator for the very successful Farm-To-Trade event put on by TDDA. She is closely involved in promoting our local wineries. Her motto is \u201cEvery Table has a Story.\u201d Cinda is excited to help promote our local history by joining the board.",
   },
 
