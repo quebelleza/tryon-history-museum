@@ -1,20 +1,76 @@
 "use client";
 
+import { useState } from "react";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
-const MUTED_RED = "#A8584F";
 
 const donationTiers = [
-  { amount: 25, label: "Friend", description: "Help us keep the lights on and the doors open." },
-  { amount: 50, label: "Supporter", description: "Fund educational materials and exhibit upkeep." },
-  { amount: 250, label: "Patron", description: "Support special programs and community events." },
-  { amount: 500, label: "Benefactor", description: "Make a lasting impact on Tryon's heritage preservation." },
+  { amount: 50, label: "Friend", description: "Help us keep the lights on and the doors open." },
+  { amount: 100, label: "Gillette Circle", description: "Fund educational materials and exhibit care." },
+  { amount: 250, label: "Nina Simone Circle", description: "Support special programs and community events." },
+  { amount: 500, label: "Pacolet Society", description: "Make a lasting impact on Tryon's heritage preservation." },
+  { amount: 1000, label: "Fitzgerald Society", description: "Champion Tryon's history at the highest level." },
 ];
 
 export default function DonateSection() {
+  const [selectedAmount, setSelectedAmount] = useState(null);
+  const [customActive, setCustomActive] = useState(false);
+  const [customAmount, setCustomAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  function selectPreset(amount) {
+    setSelectedAmount(amount);
+    setCustomActive(false);
+    setCustomAmount("");
+    setError("");
+  }
+
+  function activateCustom() {
+    setSelectedAmount(null);
+    setCustomActive(true);
+    setError("");
+  }
+
+  function handleCustomChange(e) {
+    const val = e.target.value.replace(/[^0-9]/g, "");
+    setCustomAmount(val);
+    setError("");
+  }
+
+  const effectiveAmount = customActive
+    ? parseInt(customAmount, 10) || 0
+    : selectedAmount || 0;
+
+  async function handleDonate() {
+    if (!effectiveAmount || effectiveAmount < 1) {
+      setError("Please select or enter a donation amount of at least $1.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/stripe/create-donation-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: effectiveAmount * 100 }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error || "Something went wrong. Please try again.");
+        setLoading(false);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
+  }
+
   return (
     <>
       {/* Header */}
@@ -75,99 +131,135 @@ export default function DonateSection() {
             </div>
           </FadeIn>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
-            {donationTiers.map((tier, i) => (
-              <FadeIn key={tier.amount} delay={i * 0.08}>
-                <div
-                  className="p-6 md:p-8 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                  style={{
-                    background: "#FFFDF9",
-                    border: "1px solid rgba(123,45,38,0.08)",
-                  }}
-                >
-                  <div
-                    className="font-display text-3xl font-semibold mb-1"
-                    style={{ color: DEEP_RED }}
+          {/* Preset tier cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+            {donationTiers.map((tier, i) => {
+              const isSelected = !customActive && selectedAmount === tier.amount;
+              return (
+                <FadeIn key={tier.amount} delay={i * 0.08}>
+                  <button
+                    type="button"
+                    onClick={() => selectPreset(tier.amount)}
+                    className="w-full text-left p-6 md:p-8 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    style={{
+                      background: isSelected ? "rgba(123,45,38,0.04)" : "#FFFDF9",
+                      border: isSelected
+                        ? `2px solid ${DEEP_RED}`
+                        : "2px solid rgba(123,45,38,0.08)",
+                      cursor: "pointer",
+                    }}
                   >
-                    ${tier.amount}
-                  </div>
-                  <div
-                    className="font-body text-[11px] uppercase mb-3"
-                    style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-                  >
-                    {tier.label}
-                  </div>
-                  <p
-                    className="font-body text-[14px] leading-relaxed m-0"
-                    style={{ color: "rgba(26,19,17,0.6)" }}
-                  >
-                    {tier.description}
-                  </p>
-                </div>
-              </FadeIn>
-            ))}
+                    <div
+                      className="font-display text-3xl font-semibold mb-1"
+                      style={{ color: DEEP_RED }}
+                    >
+                      ${tier.amount.toLocaleString()}
+                    </div>
+                    <div
+                      className="font-body text-[11px] uppercase mb-3"
+                      style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                    >
+                      {tier.label}
+                    </div>
+                    <p
+                      className="font-body text-[14px] leading-relaxed m-0"
+                      style={{ color: "rgba(26,19,17,0.6)" }}
+                    >
+                      {tier.description}
+                    </p>
+                  </button>
+                </FadeIn>
+              );
+            })}
           </div>
 
-          {/* Stripe placeholder */}
-          <FadeIn delay={0.3}>
-            <div
-              className="p-8 md:p-12 text-center"
+          {/* Custom amount */}
+          <FadeIn delay={0.28}>
+            <button
+              type="button"
+              onClick={activateCustom}
+              className="w-full text-left p-6 md:p-8 transition-all duration-200 mb-8"
               style={{
-                background: "#FFFDF9",
-                border: "1px solid rgba(123,45,38,0.08)",
+                background: customActive ? "rgba(123,45,38,0.04)" : "#FFFDF9",
+                border: customActive
+                  ? `2px solid ${DEEP_RED}`
+                  : "2px solid rgba(123,45,38,0.08)",
+                cursor: "pointer",
               }}
             >
               <div
-                className="font-display text-2xl font-semibold mb-4"
-                style={{ color: WARM_BLACK }}
+                className="font-body text-[11px] uppercase mb-3"
+                style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
               >
-                Online Donations Coming Soon
+                Choose Your Own Amount
               </div>
-              <p
-                className="font-body text-[15px] leading-relaxed max-w-[480px] mx-auto mb-6"
-                style={{ color: "rgba(26,19,17,0.6)" }}
-              >
-                We&apos;re setting up secure online payment processing. In the
-                meantime, you can donate by mail or in person at the museum.
-              </p>
-
-              <div
-                className="p-6 max-w-[400px] mx-auto mb-6"
-                style={{
-                  background: "#FAF7F4",
-                  border: "1px solid rgba(123,45,38,0.06)",
-                }}
-              >
-                <div
-                  className="font-body text-[10px] uppercase mb-2"
-                  style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                >
-                  Mail Donations To
+              {customActive ? (
+                <div className="flex items-center gap-1">
+                  <span
+                    className="font-display text-3xl font-semibold"
+                    style={{ color: DEEP_RED }}
+                  >
+                    $
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={customAmount}
+                    onChange={handleCustomChange}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="0"
+                    autoFocus
+                    className="font-display text-3xl font-semibold bg-transparent outline-none border-b-2 w-full"
+                    style={{
+                      color: DEEP_RED,
+                      borderColor: DEEP_RED,
+                      caretColor: DEEP_RED,
+                    }}
+                  />
                 </div>
+              ) : (
                 <p
-                  className="font-body text-[15px] leading-relaxed m-0"
-                  style={{ color: WARM_BLACK }}
+                  className="font-body text-[14px] leading-relaxed m-0"
+                  style={{ color: "rgba(26,19,17,0.6)" }}
                 >
-                  Tryon History Museum
-                  <br />
-                  26 Maple Street
-                  <br />
-                  Tryon, NC 28782
+                  Enter any amount you&apos;d like to give.
                 </p>
-              </div>
+              )}
+            </button>
+          </FadeIn>
 
-              <a
-                href="mailto:info@tryonhistorymuseum.org?subject=Donation%20Inquiry"
-                className="inline-block font-body text-[13px] font-semibold uppercase no-underline transition-all hover:brightness-110"
+          {/* Submit */}
+          <FadeIn delay={0.35}>
+            <div className="text-center">
+              {error && (
+                <p
+                  className="font-body text-[14px] mb-4"
+                  style={{ color: DEEP_RED }}
+                >
+                  {error}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={handleDonate}
+                disabled={loading || effectiveAmount < 1}
+                className="inline-block font-body text-[13px] font-semibold uppercase transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
                   letterSpacing: "0.12em",
                   color: WARM_BLACK,
                   background: GOLD_ACCENT,
-                  padding: "14px 36px",
+                  padding: "14px 48px",
+                  border: "none",
+                  cursor: loading || effectiveAmount < 1 ? "not-allowed" : "pointer",
                 }}
               >
-                Email Us About Donating
-              </a>
+                {loading
+                  ? "Redirecting…"
+                  : effectiveAmount >= 1
+                  ? `Donate $${effectiveAmount.toLocaleString()}`
+                  : "Select an Amount"}
+              </button>
             </div>
           </FadeIn>
 

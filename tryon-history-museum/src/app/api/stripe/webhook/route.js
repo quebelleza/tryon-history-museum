@@ -29,7 +29,6 @@ export async function POST(request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const memberId = session.metadata?.member_id;
-    const tier = session.metadata?.membership_tier || "individual";
     const amountPaid = (session.amount_total || 0) / 100;
 
     if (!memberId) {
@@ -57,7 +56,7 @@ export async function POST(request) {
 
     // Update member record
     const updateFields = {
-      membership_tier: computed.membershipTier || tier,
+      membership_tier: "individual",
       status: "active",
       renewal_due_date: computed.renewalDueDate,
       last_payment_date: today,
@@ -90,7 +89,7 @@ export async function POST(request) {
     if (member.email) {
       const { subject, html } = renewalConfirmationEmail({
         firstName: member.first_name,
-        tier: computed.membershipTier || tier,
+        tier: "individual",
         expirationDate: formatDate(computed.renewalDueDate),
       });
 

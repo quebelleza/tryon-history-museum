@@ -194,7 +194,6 @@ export default function AdminMembersSection() {
         >
           <option value="">All Tiers</option>
           <option value="individual">Individual</option>
-          <option value="family">Family</option>
         </select>
         <select
           value={donorFilter}

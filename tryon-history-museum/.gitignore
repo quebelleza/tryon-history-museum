@@ -25,6 +25,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# data exports — contain real member data, never commit
+/backups/
+
 # vercel
 .vercel
 

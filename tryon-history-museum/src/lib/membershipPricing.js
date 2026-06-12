@@ -6,9 +6,7 @@
  *
  * Fee schedule (new_member / renewal):
  *   $50        → Individual, $50 fee, $0 donation, donor_level none, label member
- *   $51–$74    → Individual, $50 fee, remainder donation, donor_level none, label member
- *   $75        → Family, $75 fee, $0 donation, donor_level none, label member
- *   $76–$99    → Family, $75 fee, remainder donation, donor_level none, label member
+ *   $51–$99    → Individual, $50 fee, remainder donation, donor_level none, label member
  *   $100–$249  → Individual, $50 fee, remainder donation, donor_level gillette, label gillette
  *   $250–$499  → Individual, $50 fee, remainder donation, donor_level simone, label simone
  *   $500–$999  → Individual, $50 fee, remainder donation, donor_level pacolet, label pacolet
@@ -18,7 +16,6 @@
  */
 
 const INDIVIDUAL_FEE = 50;
-const FAMILY_FEE = 75;
 
 /**
  * Compute membership details from a payment amount, date, and type.
@@ -78,21 +75,9 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
   else if (amt >= 250) { donorLevel = "simone"; donorLevelLabel = "Simone"; memberLabel = "simone"; }
   else if (amt >= 100) { donorLevel = "gillette"; donorLevelLabel = "Gillette"; memberLabel = "gillette"; }
 
-  // Named donor levels ($100+) use Individual base fee ($50)
-  // Non-donor payments use Family fee ($75) if amount covers it
-  let membershipTier;
-  let membershipFee;
-
-  if (donorLevel !== "none") {
-    membershipTier = "individual";
-    membershipFee = INDIVIDUAL_FEE;
-  } else if (amt >= FAMILY_FEE) {
-    membershipTier = "family";
-    membershipFee = FAMILY_FEE;
-  } else {
-    membershipTier = "individual";
-    membershipFee = INDIVIDUAL_FEE;
-  }
+  // All memberships are Individual at $50; amounts above $50 accrue as additional donation
+  const membershipTier = "individual";
+  const membershipFee = INDIVIDUAL_FEE;
 
   const additionalDonation = Math.round((amt - membershipFee) * 100) / 100;
 
@@ -131,5 +116,5 @@ export const DONOR_LEVEL_LABELS = {
  * Get the static fee schedule (for display).
  */
 export function getFeeSchedule() {
-  return { individual: INDIVIDUAL_FEE, family: FAMILY_FEE };
+  return { individual: INDIVIDUAL_FEE };
 }

@@ -29,7 +29,6 @@ export default function RenewalSection() {
   const router = useRouter();
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTier, setSelectedTier] = useState("individual");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -54,7 +53,6 @@ export default function RenewalSection() {
       }
 
       setMember(data);
-      setSelectedTier(data.membership_tier || "individual");
       setLoading(false);
     }
     load();
@@ -65,7 +63,7 @@ export default function RenewalSection() {
     const res = await fetch("/api/stripe/create-checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tier: selectedTier }),
+      body: JSON.stringify({}),
     });
 
     if (res.ok) {
@@ -102,22 +100,6 @@ export default function RenewalSection() {
   }
 
   const stat = statusLabel(member.status);
-  const tiers = [
-    {
-      key: "individual",
-      label: "Individual Membership",
-      price: "$50",
-      period: "per year",
-      desc: "Member pricing, members-only events, newsletter, 10% gift shop discount.",
-    },
-    {
-      key: "family",
-      label: "Family Membership",
-      price: "$75",
-      period: "per year",
-      desc: "All Individual benefits for your household, plus guest passes and event priority.",
-    },
-  ];
 
   return (
     <section className="pt-40 pb-20 md:pt-48 md:pb-28 min-h-[70vh]" style={{ background: "#FAF7F4" }}>
@@ -162,41 +144,6 @@ export default function RenewalSection() {
               <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.expiration_date)}</div>
             </div>
           </div>
-        </div>
-
-        {/* Tier selection */}
-        <div className="font-body text-[11px] uppercase mb-4" style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}>
-          Choose Your Renewal
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          {tiers.map((t) => {
-            const isSelected = selectedTier === t.key;
-            return (
-              <button
-                key={t.key}
-                onClick={() => setSelectedTier(t.key)}
-                className="text-left p-6 cursor-pointer transition-all duration-200"
-                style={{
-                  background: isSelected ? "rgba(196,163,90,0.06)" : "#FFFDF9",
-                  border: isSelected ? `2px solid ${GOLD_ACCENT}` : "1px solid rgba(123,45,38,0.08)",
-                  outline: "none",
-                }}
-              >
-                <div className="flex items-baseline justify-between mb-2">
-                  <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>{t.label}</div>
-                  {isSelected && (
-                    <span className="font-body text-[10px] uppercase font-semibold px-2 py-0.5" style={{ background: "rgba(196,163,90,0.15)", color: GOLD_ACCENT, letterSpacing: "0.08em" }}>
-                      Selected
-                    </span>
-                  )}
-                </div>
-                <div className="font-display text-2xl font-bold mb-2" style={{ color: isSelected ? GOLD_ACCENT : WARM_BLACK }}>
-                  {t.price}<span className="font-body text-[13px] font-normal ml-1" style={{ color: "rgba(26,19,17,0.4)" }}>/{t.period}</span>
-                </div>
-                <p className="font-body text-[13px] m-0" style={{ color: "rgba(26,19,17,0.6)" }}>{t.desc}</p>
-              </button>
-            );
-          })}
         </div>
 
         {/* Renew button */}

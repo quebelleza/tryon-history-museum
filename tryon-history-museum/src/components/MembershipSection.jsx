@@ -1,41 +1,51 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
-const MUTED_RED = "#A8584F";
 const NAVY = "#1B2A4A";
 
-const tiers = [
-  {
-    name: "Individual",
-    price: "$50",
-    period: "per year",
-    benefits: [
-      "Member pricing on tickets",
-      "Access to members-only events",
-      "Museum newsletter",
-      "10% gift shop discount",
-    ],
-  },
-  {
-    name: "Family",
-    price: "$75",
-    period: "per year",
-    benefits: [
-      "All Individual perks for your household",
-      "Guest passes",
-      "Event priority registration",
-      "Museum newsletter",
-      "10% gift shop discount",
-    ],
-  },
+const BENEFITS = [
+  "Member pricing on tickets",
+  "Access to members-only events",
+  "Museum newsletter",
+  "10% gift shop discount",
 ];
 
 export default function MembershipSection() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleJoinNow() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (res.status === 401) {
+        window.location.href = "/login?next=/member/renew";
+        return;
+      }
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error || "Something went wrong. Please try again.");
+        setLoading(false);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
+  }
+
   return (
     <>
       {/* ─── Hero ─── */}
@@ -74,82 +84,92 @@ export default function MembershipSection() {
         </div>
       </section>
 
-      {/* ─── Tier Cards ─── */}
+      {/* ─── Membership Card ─── */}
       <section className="py-20 md:py-28" style={{ background: "#FAF7F4" }}>
-        <div className="max-w-[900px] mx-auto px-5 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {tiers.map((tier, i) => (
-              <FadeIn key={tier.name} delay={i * 0.1}>
-                <div
-                  className="p-8 md:p-10 h-full flex flex-col"
-                  style={{
-                    background: "#FFFDF9",
-                    border: "1px solid rgba(123,45,38,0.08)",
-                  }}
+        <div className="max-w-[540px] mx-auto px-5 md:px-8">
+          <FadeIn>
+            <div
+              className="p-8 md:p-10 flex flex-col"
+              style={{
+                background: "#FFFDF9",
+                border: "1px solid rgba(123,45,38,0.08)",
+              }}
+            >
+              <div
+                className="font-body text-[11px] uppercase mb-4"
+                style={{ letterSpacing: "0.25em", color: GOLD_ACCENT }}
+              >
+                Annual Membership
+              </div>
+              <div className="flex items-baseline gap-2 mb-4">
+                <span
+                  className="font-display text-5xl font-semibold"
+                  style={{ color: DEEP_RED }}
                 >
-                  <div
-                    className="font-body text-[11px] uppercase mb-4"
-                    style={{ letterSpacing: "0.25em", color: GOLD_ACCENT }}
-                  >
-                    Membership
-                  </div>
-                  <h2
-                    className="font-display text-2xl md:text-3xl font-semibold mb-2"
-                    style={{ color: WARM_BLACK }}
-                  >
-                    {tier.name}
-                  </h2>
-                  <div className="flex items-baseline gap-2 mb-6">
+                  $50
+                </span>
+                <span
+                  className="font-body text-[13px]"
+                  style={{ color: "rgba(26,19,17,0.45)" }}
+                >
+                  per year
+                </span>
+              </div>
+
+              <p
+                className="font-body text-[15px] leading-[1.7] mb-8"
+                style={{ color: "rgba(26,19,17,0.6)" }}
+              >
+                Annual membership is $50 and supports everything we do —
+                exhibits, programs, and the ongoing work of preserving
+                Tryon&apos;s story.
+              </p>
+
+              <div className="space-y-3 mb-8">
+                {BENEFITS.map((benefit, j) => (
+                  <div key={j} className="flex items-start gap-3">
                     <span
-                      className="font-display text-4xl font-semibold"
-                      style={{ color: DEEP_RED }}
+                      className="text-sm mt-0.5 flex-shrink-0"
+                      style={{ color: GOLD_ACCENT }}
                     >
-                      {tier.price}
+                      ✦
                     </span>
                     <span
-                      className="font-body text-[13px]"
-                      style={{ color: "rgba(26,19,17,0.45)" }}
+                      className="font-body text-[14px] leading-[1.6]"
+                      style={{ color: "rgba(26,19,17,0.65)" }}
                     >
-                      {tier.period}
+                      {benefit}
                     </span>
                   </div>
+                ))}
+              </div>
 
-                  <div className="space-y-3 flex-1 mb-8">
-                    {tier.benefits.map((benefit, j) => (
-                      <div key={j} className="flex items-start gap-3">
-                        <span
-                          className="text-sm mt-0.5 flex-shrink-0"
-                          style={{ color: GOLD_ACCENT }}
-                        >
-                          ✦
-                        </span>
-                        <span
-                          className="font-body text-[14px] leading-[1.6]"
-                          style={{ color: "rgba(26,19,17,0.65)" }}
-                        >
-                          {benefit}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+              {error && (
+                <p
+                  className="font-body text-[14px] mb-4"
+                  style={{ color: DEEP_RED }}
+                >
+                  {error}
+                </p>
+              )}
 
-                  {/* {TODO: connect to Stripe in Phase 5} */}
-                  <button
-                    className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110"
-                    style={{
-                      letterSpacing: "0.12em",
-                      color: WARM_BLACK,
-                      background: GOLD_ACCENT,
-                      padding: "14px 36px",
-                      border: "none",
-                    }}
-                  >
-                    Join Now
-                  </button>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+              <button
+                type="button"
+                onClick={handleJoinNow}
+                disabled={loading}
+                className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  letterSpacing: "0.12em",
+                  color: WARM_BLACK,
+                  background: GOLD_ACCENT,
+                  padding: "14px 36px",
+                  border: "none",
+                }}
+              >
+                {loading ? "Redirecting…" : "Become a Member"}
+              </button>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -174,7 +194,7 @@ export default function MembershipSection() {
                 className="font-body text-[15px] leading-[1.7] m-0"
                 style={{ color: "rgba(26,19,17,0.6)" }}
               >
-                Donors contributing $100 or more annually receive Family-level
+                Donors contributing $100 or more annually receive full
                 membership benefits as our thank-you.
               </p>
             </div>
