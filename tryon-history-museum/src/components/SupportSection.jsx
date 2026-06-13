@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
@@ -13,19 +14,6 @@ const tiers = [
     price: "$50",
     perks:
       "Free admission, newsletter, 10% gift shop discount, member-only events",
-  },
-  {
-    name: "Family",
-    price: "$75",
-    perks:
-      "All individual perks for your household, guest passes, event priority",
-  },
-  {
-    name: "Patron",
-    price: "$250",
-    perks:
-      "All family perks, private tours, name on donor wall, exclusive events",
-    featured: true,
   },
 ];
 
@@ -70,13 +58,12 @@ export default function SupportSection({ sanityTiers }) {
               style={{ color: "rgba(255,255,255,0.6)" }}
             >
               Your membership directly supports the preservation of Tryon&apos;s
-              heritage and helps us grow into the future. Every level makes a
-              difference.
+              heritage and helps us grow into the future.
             </p>
           </FadeIn>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-[380px] mx-auto">
           {displayTiers.map((tier, i) => (
             <FadeIn key={tier.name} delay={i * 0.12}>
               <div
@@ -109,21 +96,19 @@ export default function SupportSection({ sanityTiers }) {
                 >
                   {tier.perks}
                 </p>
-                <a
-                  href="#"
+                <Link
+                  href="/membership"
                   className="inline-block font-body text-xs font-semibold uppercase no-underline transition-all hover:brightness-110"
                   style={{
                     letterSpacing: "0.14em",
-                    color: tier.featured ? WARM_BLACK : "#fff",
-                    background: tier.featured ? GOLD_ACCENT : "transparent",
-                    border: tier.featured
-                      ? "none"
-                      : "1px solid rgba(255,255,255,0.25)",
+                    color: "#fff",
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.25)",
                     padding: "12px 28px",
                   }}
                 >
                   Join Now
-                </a>
+                </Link>
               </div>
             </FadeIn>
           ))}

@@ -37,7 +37,7 @@ const navItems = [
   {
     label: "Support",
     children: [
-      { name: "Become a Member", href: "/#support" },
+      { name: "Become a Member", href: "/membership" },
       { name: "Volunteer", href: "/volunteer" },
       { name: "Donate", href: "/donate" },
     ],

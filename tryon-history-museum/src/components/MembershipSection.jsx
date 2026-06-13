@@ -17,22 +17,34 @@ const BENEFITS = [
 ];
 
 export default function MembershipSection() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleJoinNow() {
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const trimFirst = firstName.trim();
+    const trimLast = lastName.trim();
+    const trimEmail = email.trim();
+
+    if (!trimFirst) { setError("First name is required."); return; }
+    if (!trimLast) { setError("Last name is required."); return; }
+    if (!trimEmail) { setError("Email address is required."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/stripe/create-checkout", {
+      const res = await fetch("/api/stripe/create-member-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ firstName: trimFirst, lastName: trimLast, email: trimEmail }),
       });
-      if (res.status === 401) {
-        window.location.href = "/login?next=/member/renew";
-        return;
-      }
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -144,30 +156,103 @@ export default function MembershipSection() {
                 ))}
               </div>
 
-              {error && (
-                <p
-                  className="font-body text-[14px] mb-4"
-                  style={{ color: DEEP_RED }}
-                >
-                  {error}
-                </p>
-              )}
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label
+                      htmlFor="mem-firstName"
+                      className="block font-body text-[10px] uppercase mb-1.5"
+                      style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
+                    >
+                      First Name
+                    </label>
+                    <input
+                      id="mem-firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      className="w-full font-body text-[14px] outline-none"
+                      style={{
+                        border: "1px solid rgba(26,19,17,0.15)",
+                        padding: "10px 12px",
+                        background: "#FAF7F4",
+                        color: WARM_BLACK,
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="mem-lastName"
+                      className="block font-body text-[10px] uppercase mb-1.5"
+                      style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
+                    >
+                      Last Name
+                    </label>
+                    <input
+                      id="mem-lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                      className="w-full font-body text-[14px] outline-none"
+                      style={{
+                        border: "1px solid rgba(26,19,17,0.15)",
+                        padding: "10px 12px",
+                        background: "#FAF7F4",
+                        color: WARM_BLACK,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <label
+                    htmlFor="mem-email"
+                    className="block font-body text-[10px] uppercase mb-1.5"
+                    style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    id="mem-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full font-body text-[14px] outline-none"
+                    style={{
+                      border: "1px solid rgba(26,19,17,0.15)",
+                      padding: "10px 12px",
+                      background: "#FAF7F4",
+                      color: WARM_BLACK,
+                    }}
+                  />
+                </div>
 
-              <button
-                type="button"
-                onClick={handleJoinNow}
-                disabled={loading}
-                className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  letterSpacing: "0.12em",
-                  color: WARM_BLACK,
-                  background: GOLD_ACCENT,
-                  padding: "14px 36px",
-                  border: "none",
-                }}
-              >
-                {loading ? "Redirecting…" : "Become a Member"}
-              </button>
+                {error && (
+                  <p
+                    className="font-body text-[13px] mb-4"
+                    style={{ color: DEEP_RED }}
+                  >
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    letterSpacing: "0.12em",
+                    color: WARM_BLACK,
+                    background: GOLD_ACCENT,
+                    padding: "14px 36px",
+                    border: "none",
+                  }}
+                >
+                  {loading ? "Redirecting…" : "Continue to Payment"}
+                </button>
+              </form>
             </div>
           </FadeIn>
         </div>
