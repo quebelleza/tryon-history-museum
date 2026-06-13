@@ -85,28 +85,36 @@ export async function POST(request) {
               subject,
               html,
             });
-            await supabase.from("email_log").insert({
-              member_id: existingMember.id,
-              email_type: "renewal_confirmation",
-              sent_to: existingMember.email,
-              status: sendError ? "failed" : "sent",
-              resend_id: sendData?.id || null,
-            });
+            try {
+              await supabase.from("email_log").insert({
+                member_id: existingMember.id,
+                email_type: "renewal_confirmation",
+                sent_to: existingMember.email,
+                status: sendError ? "failed" : "sent",
+                resend_id: sendData?.id || null,
+              });
+            } catch (logErr) {
+              console.error("[stripe-webhook] email_log insert failed:", logErr.message);
+            }
           } catch (emailErr) {
             console.error("[stripe-webhook] Email send error:", emailErr.message);
-            await supabase.from("email_log").insert({
-              member_id: existingMember.id,
-              email_type: "renewal_confirmation",
-              sent_to: existingMember.email,
-              status: "error",
-              resend_id: null,
-            });
+            try {
+              await supabase.from("email_log").insert({
+                member_id: existingMember.id,
+                email_type: "renewal_confirmation",
+                sent_to: existingMember.email,
+                status: "error",
+                resend_id: null,
+              });
+            } catch (logErr) {
+              console.error("[stripe-webhook] email_log insert failed:", logErr.message);
+            }
           }
         }
       } else {
         // Brand new member
         const computed = computeMembership(amountPaid, today, "new_member");
-        const { data: newMember } = await supabase.from("members").insert({
+        const { data: newMember, error: insertError } = await supabase.from("members").insert({
           first_name: firstName,
           last_name: lastName,
           email,
@@ -123,6 +131,11 @@ export async function POST(request) {
           member_label: "member",
           member_source: "online",
         }).select().single();
+
+        if (insertError) {
+          console.error("[stripe-webhook] Member insert error:", JSON.stringify(insertError));
+          return NextResponse.json({ received: true });
+        }
 
         if (newMember) {
           await supabase.from("membership_payments").insert({
@@ -148,22 +161,30 @@ export async function POST(request) {
                 subject,
                 html,
               });
-              await supabase.from("email_log").insert({
-                member_id: newMember.id,
-                email_type: "welcome",
-                sent_to: email,
-                status: sendError ? "failed" : "sent",
-                resend_id: sendData?.id || null,
-              });
+              try {
+                await supabase.from("email_log").insert({
+                  member_id: newMember.id,
+                  email_type: "welcome",
+                  sent_to: email,
+                  status: sendError ? "failed" : "sent",
+                  resend_id: sendData?.id || null,
+                });
+              } catch (logErr) {
+                console.error("[stripe-webhook] email_log insert failed:", logErr.message);
+              }
             } catch (emailErr) {
               console.error("[stripe-webhook] Welcome email error:", emailErr.message);
-              await supabase.from("email_log").insert({
-                member_id: newMember.id,
-                email_type: "welcome",
-                sent_to: email,
-                status: "error",
-                resend_id: null,
-              });
+              try {
+                await supabase.from("email_log").insert({
+                  member_id: newMember.id,
+                  email_type: "welcome",
+                  sent_to: email,
+                  status: "error",
+                  resend_id: null,
+                });
+              } catch (logErr) {
+                console.error("[stripe-webhook] email_log insert failed:", logErr.message);
+              }
             }
           }
         }
