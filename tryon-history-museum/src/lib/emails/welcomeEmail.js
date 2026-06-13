@@ -1,7 +1,10 @@
 /**
  * Welcome Email — sent to new members after their first Stripe payment.
  */
-export function welcomeEmail({ firstName, expirationDate }) {
+export function welcomeEmail({ firstName, expirationDate, amount }) {
+  const amountFormatted = amount != null
+    ? `$${Number(amount).toFixed(2)}`
+    : "$50.00";
   return {
     subject: "Welcome to the Tryon History Museum",
     html: `
@@ -32,6 +35,37 @@ export function welcomeEmail({ firstName, expirationDate }) {
             <p style="font-family:Georgia,serif;font-size:16px;color:#1A1311;line-height:1.7;margin:0 0 28px;">
               Your support helps us preserve and share the stories of this community. We're glad you're part of it.
             </p>
+            <!-- Receipt block -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td style="background:#F5F2EE;border:1px solid rgba(26,19,17,0.1);padding:24px 28px;">
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;color:#1A1311;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 16px;">Membership Receipt</p>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Organization</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">Tryon History Museum</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Federal Tax ID</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">47-1736984</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Description</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">Annual Membership — Tryon History Museum</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Amount paid</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-align:right;padding:3px 0;">${amountFormatted}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Membership valid through</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">${expirationDate}</td>
+                    </tr>
+                  </table>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(26,19,17,0.5);line-height:1.6;margin:16px 0 0;">The Tryon History Museum is a 501(c)(3) nonprofit organization. In exchange for your ${amountFormatted} membership contribution, you received the following benefits: free admission, museum newsletter, 10% gift shop discount, and members-only events. Please consult your tax advisor regarding the deductible portion of your contribution.</p>
+                </td>
+              </tr>
+            </table>
             <!-- Button -->
             <table cellpadding="0" cellspacing="0">
               <tr>

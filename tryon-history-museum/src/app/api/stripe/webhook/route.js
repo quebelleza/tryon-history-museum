@@ -153,6 +153,7 @@ export async function POST(request) {
             const { subject, html } = welcomeEmail({
               firstName,
               expirationDate: formatDate(computed.renewalDueDate),
+              amount: amountPaid,
             });
             try {
               const { data: sendData, error: sendError } = await resend.emails.send({
