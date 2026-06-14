@@ -15,7 +15,7 @@ export default async function VisitPage() {
   const siteSettings = await getSiteSettings();
 
   return (
-    <main id="main-content">
+    <main id="main-content" style={{ background: "#1A1311" }}>
       <Nav />
       <div className="pt-24 md:pt-28">
         <VisitSection siteSettings={siteSettings} />
