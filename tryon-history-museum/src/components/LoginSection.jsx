@@ -36,7 +36,7 @@ export default function LoginSection() {
       );
     } else {
       setStatus("idle");
-      const role = data?.user?.user_metadata?.role;
+      const role = data?.user?.app_metadata?.role;
       router.push(role === 'admin' ? '/admin/dashboard' : '/member/dashboard');
       router.refresh();
     }

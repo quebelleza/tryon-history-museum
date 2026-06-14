@@ -51,7 +51,7 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [accountOpen, setAccountOpen] = useState(false);
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const isAdmin = user?.app_metadata?.role === 'admin';
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
