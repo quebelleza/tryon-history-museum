@@ -51,6 +51,7 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [accountOpen, setAccountOpen] = useState(false);
+  const isAdmin = user?.app_metadata?.role === 'admin';
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -208,8 +209,17 @@ export default function Nav() {
                   className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
                   style={{ color: "rgba(250,247,244,0.7)" }}
                 >
-                  Member Dashboard
+                  Account Management
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin/dashboard"
+                    className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
+                    style={{ color: "rgba(250,247,244,0.7)" }}
+                  >
+                    Museum Admin
+                  </Link>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="block w-full text-left bg-transparent border-none cursor-pointer font-body text-sm py-2 transition-colors hover:!text-tryon-gold"
@@ -230,7 +240,7 @@ export default function Nav() {
                   : "rgba(255,255,255,0.85)",
               }}
             >
-              Member Login
+              Sign In
             </Link>
           )}
           <a
@@ -337,8 +347,18 @@ export default function Nav() {
                   style={{ color: "rgba(250,247,244,0.6)" }}
                   onClick={() => setMobileOpen(false)}
                 >
-                  Member Dashboard
+                  Account Management
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin/dashboard"
+                    className="block font-body text-sm no-underline py-1.5"
+                    style={{ color: "rgba(250,247,244,0.6)" }}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Museum Admin
+                  </Link>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="block bg-transparent border-none cursor-pointer font-body text-sm py-1.5 px-0"
@@ -354,7 +374,7 @@ export default function Nav() {
                 style={{ color: "rgba(250,247,244,0.6)" }}
                 onClick={() => setMobileOpen(false)}
               >
-                Member Login
+                Sign In
               </Link>
             )}
           </div>
