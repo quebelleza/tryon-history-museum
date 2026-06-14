@@ -50,6 +50,7 @@ const defaultForm = {
   first_name: "",
   last_name: "",
   email: "",
+  spouse_partner_name: "",
   phone: "",
   street_address: "",
   city: "",
@@ -198,6 +199,17 @@ export default function AdminNewMemberSection() {
                 onChange={(e) => handleChange("email", e.target.value)}
                 className="w-full font-body text-sm px-3 py-2 outline-none"
                 style={fieldStyle}
+              />
+            </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className={labelCls} style={labelStyle}>Spouse / Partner Name</label>
+              <input
+                type="text"
+                value={form.spouse_partner_name}
+                onChange={(e) => handleChange("spouse_partner_name", e.target.value)}
+                className="w-full font-body text-sm px-3 py-2 outline-none"
+                style={fieldStyle}
+                placeholder="Optional"
               />
             </div>
             <div>
