@@ -24,7 +24,7 @@ export default function LoginSection() {
     setErrorMsg("");
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -36,7 +36,8 @@ export default function LoginSection() {
       );
     } else {
       setStatus("idle");
-      router.push("/member/dashboard");
+      const role = data?.user?.user_metadata?.role;
+      router.push(role === 'admin' ? '/admin/dashboard' : '/member/dashboard');
       router.refresh();
     }
   }
