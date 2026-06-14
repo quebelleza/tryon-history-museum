@@ -23,7 +23,7 @@ export default async function HistoryBitsPage() {
 
       {/* ─── Hero ─── */}
       <section
-        className="pt-24 pb-12 md:pt-28 md:pb-16 relative overflow-hidden"
+        className="pt-32 pb-12 md:pt-40 md:pb-16 relative overflow-hidden"
         style={{ background: "#1A1311" }}
       >
         <div

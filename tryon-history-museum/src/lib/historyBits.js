@@ -19,7 +19,6 @@ export const historyBits = [
     image: "https://images.squarespace-cdn.com/content/v1/63d97c255bc4c8084c6e5e50/1680291209552-4NEUPCAIA90YFOYC3IEP/33.jpg",
     images: [
       "https://images.squarespace-cdn.com/content/v1/63d97c255bc4c8084c6e5e50/fc275bd8-6a6b-4f38-8429-30f539de83e3/22.jpg",
-      "https://images.squarespace-cdn.com/content/v1/63d97c255bc4c8084c6e5e50/870b6fae-05da-4ccd-b3e0-3aa480c019b1/33.jpg",
       "https://images.squarespace-cdn.com/content/v1/63d97c255bc4c8084c6e5e50/130d75ff-83ab-4792-97fd-54f34ccb57f5/44.jpg",
     ],
     body: `Carter Brown arrived in Tryon in 1917 and that was the time that the horse became important to Tryon for reasons other than transportation.
