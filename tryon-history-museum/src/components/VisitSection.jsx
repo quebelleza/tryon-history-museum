@@ -5,6 +5,7 @@ import FadeIn from "./FadeIn";
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
 const MUTED_RED = "#A8584F";
+const GOLD_ACCENT = "#C4A35A";
 
 const fallbackHours = [
   { day: "Wednesday", time: "1:00 PM – 4:00 PM" },
@@ -46,7 +47,44 @@ function getDisplayData(siteSettings) {
 export default function VisitSection({ siteSettings }) {
   const { hours, street, cityStateZip, phone, email, mapUrl, visitorNote, admissionNote } = getDisplayData(siteSettings);
   return (
-    <section id="visit" className="bg-tryon-cream py-24 md:py-28">
+    <>
+      {/* ─── Hero ─── */}
+      <section
+        className="pt-40 pb-20 md:pt-48 md:pb-28 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(160deg, #1B2A4A 0%, #2A3D66 50%, #1B2A4A 100%)",
+        }}
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)",
+          }}
+        />
+        <div className="max-w-[1200px] mx-auto px-5 md:px-8 relative z-10">
+          <FadeIn>
+            <div
+              className="font-body text-[11px] uppercase mb-4"
+              style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
+            >
+              Tryon History Museum &amp; Visitor Center
+            </div>
+            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-light text-white leading-[1.05] mb-4">
+              Plan Your <span className="italic font-semibold">Visit</span>
+            </h1>
+            <p
+              className="font-body text-[17px] md:text-[18px] leading-[1.8] max-w-[580px] m-0"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              Open Wednesday through Saturday. Free admission &mdash;
+              donations gratefully accepted.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section id="visit" className="bg-tryon-cream py-24 md:py-28">
       <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-start">
           {/* Left: Hours */}
@@ -174,5 +212,6 @@ export default function VisitSection({ siteSettings }) {
         </div>
       </div>
     </section>
+    </>
   );
 }
