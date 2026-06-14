@@ -348,6 +348,10 @@ export default function AdminMemberDetailSection({ memberId }) {
             <label className={labelCls} style={labelStyle}>Email</label>
             <input type="email" readOnly={ro} value={member.email || ""} onChange={(e) => handleChange("email", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} />
           </div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className={labelCls} style={labelStyle}>Spouse / Partner Name</label>
+            <input type="text" readOnly={ro} value={member.spouse_partner_name || ""} onChange={(e) => handleChange("spouse_partner_name", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} placeholder="Optional" />
+          </div>
           <div>
             <label className={labelCls} style={labelStyle}>Phone</label>
             <input type="text" readOnly={ro} value={member.phone || ""} onChange={(e) => handleChange("phone", formatPhone(e.target.value))} className="w-full font-body text-sm px-3 py-2 outline-none" style={ro ? readOnlyStyle : fieldStyle} placeholder="(828) 555-1234" />
