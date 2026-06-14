@@ -50,9 +50,9 @@ export default function VisitSection({ siteSettings }) {
     <>
       {/* ─── Hero ─── */}
       <section
-        className="pt-40 pb-20 md:pt-48 md:pb-28 relative overflow-hidden"
+        className="pt-24 pb-20 md:pt-28 md:pb-28 relative overflow-hidden"
         style={{
-          background: "linear-gradient(160deg, #1B2A4A 0%, #2A3D66 50%, #1B2A4A 100%)",
+          background: "rgba(26,19,17,0.97)",
         }}
       >
         <div
