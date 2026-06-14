@@ -30,10 +30,22 @@ export default function Hero({ siteSettings }) {
   return (
     <section
       className="relative min-h-[480px] md:min-h-[600px] h-screen flex items-end overflow-hidden pt-24 md:pt-28"
-      style={{
-        background: `linear-gradient(160deg, ${WARM_BLACK} 0%, ${DARK_RED} 50%, ${DEEP_RED} 100%)`,
-      }}
     >
+      {/* Photo background */}
+      <img
+        src="/images/trade-street-1946.jpg"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+      />
+      {/* Gradient overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(160deg, ${WARM_BLACK} 0%, ${DARK_RED} 50%, ${DEEP_RED} 100%)`,
+          opacity: 0.85,
+        }}
+      />
       {/* Texture overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -172,6 +184,21 @@ export default function Hero({ siteSettings }) {
             See all hours
           </a>
         </div>
+      </div>
+
+      {/* Photo credit */}
+      <div
+        className="absolute font-body pointer-events-none"
+        style={{
+          bottom: "16px",
+          right: "16px",
+          fontSize: "10px",
+          color: "rgba(255,255,255,0.35)",
+          letterSpacing: "0.05em",
+          zIndex: 5,
+        }}
+      >
+        Trade Street &middot; Tryon, NC &middot; c. 1946
       </div>
     </section>
   );
