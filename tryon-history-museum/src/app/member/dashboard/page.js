@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function MemberDashboardPage() {
   return (
-    <main id="main-content">
+    <main id="main-content" style={{ background: "#1A1311" }}>
       <BreadcrumbJsonLd
         items={[
           { name: "Home", href: "/" },
