@@ -46,8 +46,8 @@ export async function updateSession(request) {
     return NextResponse.redirect(url);
   }
 
-  // --- Admin/board_member on /login or /member/dashboard → send to /admin/dashboard ---
-  if (hasAdminAccess && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/member/dashboard")) {
+  // --- Admin/board_member on /login → send to /admin/dashboard ---
+  if (hasAdminAccess && request.nextUrl.pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/dashboard";
     return NextResponse.redirect(url);
