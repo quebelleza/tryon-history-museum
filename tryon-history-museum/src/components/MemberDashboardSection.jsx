@@ -64,13 +64,6 @@ function tierLabel(tier) {
   return tier.charAt(0).toUpperCase() + tier.slice(1);
 }
 
-const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "profile", label: "My Profile" },
-  { id: "transactions", label: "Payment History" },
-  { id: "benefits", label: "Benefits" },
-];
-
 export default function MemberDashboardSection() {
   const router = useRouter();
   const [member, setMember] = useState(null);
@@ -103,7 +96,7 @@ export default function MemberDashboardSection() {
         return;
       }
 
-      setUserRole(user.app_metadata?.role || "member");
+      setUserRole(user.app_metadata?.role || null);
 
       const { data, error: dbError } = await supabase
         .from("members")
@@ -318,7 +311,7 @@ export default function MemberDashboardSection() {
                     letterSpacing: "0.1em",
                     background: credBadge.bg,
                     color: credBadge.color,
-                    border: "1px solid rgba(255,255,255,0.15)",
+                    border: "1px solid rgba(255,255,255,0.1)",
                   }}
                 >
                   {credBadge.label}
@@ -340,22 +333,25 @@ export default function MemberDashboardSection() {
             </button>
           </div>
 
-          {/* Tab bar */}
+          {/* Tab navigation */}
           <div
-            className="flex mt-8 overflow-x-auto"
-            style={{ borderBottom: "1px solid rgba(250,247,244,0.1)" }}
+            className="flex gap-0 mt-8 border-b"
+            style={{ borderColor: "rgba(255,255,255,0.1)" }}
           >
-            {TABS.map((tab) => (
+            {[
+              { key: "overview", label: "Overview" },
+              { key: "profile", label: "My Profile" },
+              { key: "transactions", label: "Transactions" },
+              { key: "benefits", label: "Benefits" },
+            ].map((tab) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className="flex-shrink-0 font-body text-[12px] uppercase cursor-pointer transition-colors px-5 py-3"
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className="font-body text-[12px] uppercase px-5 py-3 bg-transparent border-none cursor-pointer transition-all"
                 style={{
-                  letterSpacing: "0.12em",
-                  background: "transparent",
-                  border: "none",
-                  borderBottom: activeTab === tab.id ? `2px solid ${GOLD_ACCENT}` : "2px solid transparent",
-                  color: activeTab === tab.id ? GOLD_ACCENT : "rgba(250,247,244,0.5)",
+                  letterSpacing: "0.1em",
+                  color: activeTab === tab.key ? GOLD_ACCENT : "rgba(255,255,255,0.45)",
+                  borderBottom: activeTab === tab.key ? `2px solid ${GOLD_ACCENT}` : "2px solid transparent",
                   marginBottom: "-1px",
                 }}
               >
@@ -366,48 +362,20 @@ export default function MemberDashboardSection() {
         </div>
       </section>
 
-      {/* Tab content */}
+      {/* Content area */}
       <section style={{ background: "#FAF7F4", minHeight: "60vh" }}>
-        <div className="max-w-[900px] mx-auto px-5 md:px-8 py-10">
+        <div className="max-w-[900px] mx-auto px-5 md:px-8 py-12">
 
-          {/* OVERVIEW */}
+          {/* OVERVIEW TAB */}
           {activeTab === "overview" && (
-            <FadeIn>
+            <div className="space-y-6">
+
+              {/* Membership status card */}
               <div
-                className="p-7 md:p-10 mb-6"
+                className="p-7 md:p-10"
                 style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
               >
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                  <div
-                    className="font-body text-[11px] uppercase"
-                    style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-                  >
-                    Your Membership
-                  </div>
-                  <span
-                    className="inline-block font-body text-[11px] font-semibold uppercase px-3.5 py-1.5"
-                    style={{
-                      letterSpacing: "0.1em",
-                      background: stat.color + "18",
-                      color: stat.color,
-                      border: `1px solid ${stat.color}33`,
-                    }}
-                  >
-                    {stat.text}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-4">
-                  <div>
-                    <div
-                      className="font-body text-[10px] uppercase mb-1"
-                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                    >
-                      Membership Tier
-                    </div>
-                    <div className="font-display text-xl font-semibold" style={{ color: WARM_BLACK }}>
-                      {tierLabel(member.effective_access_tier || member.membership_tier)}
-                    </div>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   <div>
                     <div
                       className="font-body text-[10px] uppercase mb-1"
@@ -424,20 +392,56 @@ export default function MemberDashboardSection() {
                       className="font-body text-[10px] uppercase mb-1"
                       style={{ letterSpacing: "0.2em", color: MUTED_RED }}
                     >
+                      Status
+                    </div>
+                    <div className="font-display text-xl font-semibold" style={{ color: stat.color }}>
+                      {stat.text}
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      className="font-body text-[10px] uppercase mb-1"
+                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                    >
+                      Member Since
+                    </div>
+                    <div className="font-display text-xl font-semibold" style={{ color: WARM_BLACK }}>
+                      {formatDate(member.membership_start_date)}
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      className="font-body text-[10px] uppercase mb-1"
+                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                    >
                       Valid Through
                     </div>
                     <div className="font-display text-xl font-semibold" style={{ color: WARM_BLACK }}>
-                      {formatDate(member.renewal_due_date || member.expiration_date)}
+                      {formatDate(member.renewal_due_date)}
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      className="font-body text-[10px] uppercase mb-1"
+                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                    >
+                      Member ID
+                    </div>
+                    <div className="font-display text-xl font-semibold" style={{ color: WARM_BLACK }}>
+                      {member.member_id || "—"}
                     </div>
                   </div>
                 </div>
-                {(stat.text === "Expiring Soon" || stat.text === "Overdue") && (
+
+                {(stat.text === "Expiring Soon" || stat.text === "Overdue" || stat.text === "Inactive") && (
                   <div
-                    className="p-5 mt-4"
-                    style={{ background: "rgba(184,134,11,0.06)", border: "1px solid rgba(184,134,11,0.15)" }}
+                    className="mt-6 p-5"
+                    style={{ background: "rgba(123,45,38,0.04)", border: "1px solid rgba(123,45,38,0.12)" }}
                   >
-                    <p className="font-body text-[14px] leading-[1.6] mb-3 m-0" style={{ color: "#8B6914" }}>
-                      Your membership expires soon. Renew now to keep your benefits.
+                    <p className="font-body text-[14px] leading-[1.6] mb-3 m-0" style={{ color: DEEP_RED }}>
+                      {stat.text === "Expiring Soon"
+                        ? "Your membership expires soon. Renew now to keep your benefits."
+                        : "Your membership has lapsed. Renew today to restore your access."}
                     </p>
                     <Link
                       href="/member/renew"
@@ -448,30 +452,11 @@ export default function MemberDashboardSection() {
                     </Link>
                   </div>
                 )}
-                {stat.text === "Inactive" && (
-                  <div
-                    className="p-5 mt-4"
-                    style={{ background: "rgba(123,45,38,0.04)", border: "1px solid rgba(123,45,38,0.12)" }}
-                  >
-                    <p className="font-body text-[14px] leading-[1.6] mb-3 m-0" style={{ color: DEEP_RED }}>
-                      Your membership has expired. Renew today to restore your member access.
-                    </p>
-                    <Link
-                      href="/member/renew"
-                      className="inline-block font-body text-[12px] font-semibold uppercase no-underline transition-all hover:brightness-110"
-                      style={{ letterSpacing: "0.12em", color: WARM_BLACK, background: GOLD_ACCENT, padding: "10px 24px" }}
-                    >
-                      Renew Now
-                    </Link>
-                  </div>
-                )}
               </div>
 
+              {/* Admin access card */}
               {hasAdminAccess && (
-                <div
-                  className="p-6 md:p-8 mb-6"
-                  style={{ background: NAVY, border: "1px solid rgba(27,42,74,0.3)" }}
-                >
+                <div className="p-6 md:p-8" style={{ background: NAVY }}>
                   <div
                     className="font-body text-[11px] uppercase mb-2 font-semibold"
                     style={{ letterSpacing: "0.2em", color: "rgba(250,247,244,0.5)" }}
@@ -494,226 +479,213 @@ export default function MemberDashboardSection() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              {/* Quick links */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { label: "Members-Only Events", href: "/events", desc: "View upcoming events" },
-                  { label: "My Profile", tab: "profile", desc: "Edit your profile" },
-                  { label: "Contact the Museum", href: "/contact", desc: "Get in touch" },
-                ].map((link) =>
-                  link.tab ? (
-                    <button
-                      key={link.label}
-                      onClick={() => setActiveTab(link.tab)}
-                      className="block text-left w-full p-5 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-                      style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-                    >
-                      <div className="font-body text-[13px] font-semibold mb-1" style={{ color: WARM_BLACK }}>
-                        {link.label}
-                      </div>
-                      <div className="font-body text-[12px]" style={{ color: "rgba(26,19,17,0.45)" }}>
-                        {link.desc}
-                      </div>
-                    </button>
-                  ) : (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className="block no-underline p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-                      style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-                    >
-                      <div className="font-body text-[13px] font-semibold mb-1" style={{ color: WARM_BLACK }}>
-                        {link.label}
-                      </div>
-                      <div className="font-body text-[12px]" style={{ color: "rgba(26,19,17,0.45)" }}>
-                        {link.desc}
-                      </div>
-                    </Link>
-                  )
-                )}
+                  { label: "My Profile", desc: "Update your information", action: () => setActiveTab("profile") },
+                  { label: "Transactions", desc: "View payment history", action: () => setActiveTab("transactions") },
+                  { label: "Member Benefits", desc: "Discounts & events", action: () => setActiveTab("benefits") },
+                ].map((link) => (
+                  <button
+                    key={link.label}
+                    onClick={link.action}
+                    className="block w-full text-left no-underline p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-none"
+                    style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
+                  >
+                    <div className="font-body text-[13px] font-semibold mb-1" style={{ color: WARM_BLACK }}>
+                      {link.label}
+                    </div>
+                    <div className="font-body text-[12px]" style={{ color: "rgba(26,19,17,0.45)" }}>
+                      {link.desc}
+                    </div>
+                  </button>
+                ))}
               </div>
-            </FadeIn>
+            </div>
           )}
 
-          {/* PROFILE */}
+          {/* PROFILE TAB */}
           {activeTab === "profile" && profileForm && (
-            <FadeIn>
-              <form onSubmit={handleProfileSave}>
+            <div className="space-y-8">
+
+              {/* Member ID display */}
+              <div
+                className="p-6"
+                style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
+              >
                 <div
-                  className="font-body text-[11px] uppercase mb-5"
+                  className="font-body text-[10px] uppercase mb-1"
+                  style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                >
+                  Museum Member ID
+                </div>
+                <div className="font-display text-2xl font-semibold" style={{ color: WARM_BLACK }}>
+                  {member.member_id || "—"}
+                </div>
+                <p className="font-body text-[12px] mt-1 m-0" style={{ color: "rgba(26,19,17,0.4)" }}>
+                  Use this ID when contacting the museum about your membership.
+                </p>
+              </div>
+
+              {/* Profile edit form */}
+              <form onSubmit={handleProfileSave} className="space-y-6">
+                <div
+                  className="font-body text-[11px] uppercase mb-4"
                   style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
                 >
-                  Contact Information
+                  Personal Information
                 </div>
-                <div
-                  className="p-7 md:p-9 mb-8"
-                  style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
-                    <div>
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.first_name}
-                        onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.last_name}
-                        onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
-                    <div>
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={profileForm.email}
-                        readOnly
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{
-                          border: "1px solid rgba(123,45,38,0.08)",
-                          background: "rgba(26,19,17,0.03)",
-                          color: "rgba(26,19,17,0.4)",
-                          cursor: "not-allowed",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        Phone
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.phone}
-                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-5">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
                     <label
-                      className="font-body text-[10px] uppercase block mb-1.5"
-                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                      className="block font-body text-[11px] uppercase mb-2"
+                      style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
                     >
-                      Spouse / Partner Name
+                      First Name
                     </label>
                     <input
                       type="text"
-                      value={profileForm.spouse_partner_name}
-                      onChange={(e) => setProfileForm({ ...profileForm, spouse_partner_name: e.target.value })}
-                      className="w-full font-body text-sm px-3 py-2 outline-none"
-                      placeholder="Optional"
-                      style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
+                      value={profileForm.first_name}
+                      onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
+                      className="w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
                     />
                   </div>
-                  <div className="mb-5">
+                  <div>
                     <label
-                      className="font-body text-[10px] uppercase block mb-1.5"
-                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                      className="block font-body text-[11px] uppercase mb-2"
+                      style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
                     >
-                      Street Address
+                      Last Name
                     </label>
                     <input
                       type="text"
-                      value={profileForm.street_address}
-                      onChange={(e) => setProfileForm({ ...profileForm, street_address: e.target.value })}
-                      className="w-full font-body text-sm px-3 py-2 outline-none"
-                      style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
+                      value={profileForm.last_name}
+                      onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
+                      className="w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
                     />
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.city}
-                        onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.state}
-                        onChange={(e) => setProfileForm({ ...profileForm, state: e.target.value })}
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="font-body text-[10px] uppercase block mb-1.5"
-                        style={{ letterSpacing: "0.2em", color: MUTED_RED }}
-                      >
-                        Zip Code
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.zip_code}
-                        onChange={(e) => setProfileForm({ ...profileForm, zip_code: e.target.value })}
-                        className="w-full font-body text-sm px-3 py-2 outline-none"
-                        style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
-                      />
-                    </div>
                   </div>
                 </div>
 
-                <div
-                  className="font-body text-[11px] uppercase mb-5"
-                  style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-                >
-                  Email Preferences
+                <div>
+                  <label
+                    className="block font-body text-[11px] uppercase mb-2"
+                    style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
+                  >
+                    Spouse / Partner Name{" "}
+                    <span style={{ color: "rgba(26,19,17,0.4)", textTransform: "none", letterSpacing: 0 }}>
+                      (optional)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.spouse_partner_name}
+                    onChange={(e) => setProfileForm({ ...profileForm, spouse_partner_name: e.target.value })}
+                    className="w-full font-body text-sm px-4 py-3 outline-none"
+                    style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                  />
                 </div>
-                <div
-                  className="p-7 md:p-9 mb-6"
-                  style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-                >
+
+                <div>
+                  <label
+                    className="block font-body text-[11px] uppercase mb-2"
+                    style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={profileForm.email}
+                    disabled
+                    className="w-full font-body text-sm px-4 py-3 outline-none"
+                    style={{ background: "rgba(26,19,17,0.03)", color: "rgba(26,19,17,0.4)", border: "1px solid rgba(123,45,38,0.08)" }}
+                  />
+                  <p className="font-body text-[11px] mt-1.5" style={{ color: "rgba(26,19,17,0.4)" }}>
+                    To change your email address, contact us at{" "}
+                    <a href="mailto:info@tryonhistorymuseum.org" style={{ color: DEEP_RED }}>
+                      info@tryonhistorymuseum.org
+                    </a>
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    className="block font-body text-[11px] uppercase mb-2"
+                    style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    className="w-full font-body text-sm px-4 py-3 outline-none"
+                    style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div
+                    className="font-body text-[11px] uppercase"
+                    style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                  >
+                    Mailing Address
+                  </div>
+                  <input
+                    type="text"
+                    value={profileForm.street_address}
+                    placeholder="Street Address"
+                    onChange={(e) => setProfileForm({ ...profileForm, street_address: e.target.value })}
+                    className="w-full font-body text-sm px-4 py-3 outline-none"
+                    style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                  />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <input
+                      type="text"
+                      value={profileForm.city}
+                      placeholder="City"
+                      onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
+                      className="col-span-2 sm:col-span-1 w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                    />
+                    <input
+                      type="text"
+                      value={profileForm.state}
+                      placeholder="State"
+                      onChange={(e) => setProfileForm({ ...profileForm, state: e.target.value })}
+                      className="w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                    />
+                    <input
+                      type="text"
+                      value={profileForm.zip_code}
+                      placeholder="ZIP Code"
+                      onChange={(e) => setProfileForm({ ...profileForm, zip_code: e.target.value })}
+                      className="w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div
+                    className="font-body text-[11px] uppercase"
+                    style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                  >
+                    Email Preferences
+                  </div>
+                  <p className="font-body text-[13px]" style={{ color: "rgba(26,19,17,0.6)" }}>
+                    Choose which emails you&apos;d like to receive from the museum.
+                  </p>
                   {[
-                    { key: "email_newsletter", label: "Newsletter" },
+                    { key: "email_newsletter", label: "Museum Newsletter" },
                     { key: "email_event_announcements", label: "Event Announcements" },
                     { key: "email_membership_reminders", label: "Membership Reminders" },
-                    { key: "email_member_events", label: "Members-Only Events" },
+                    { key: "email_member_events", label: "Members-Only Event Invitations" },
                   ].map((pref) => (
-                    <label key={pref.key} className="flex items-center gap-3 mb-4 cursor-pointer last:mb-0">
+                    <label key={pref.key} className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={profileForm[pref.key]}
@@ -729,138 +701,122 @@ export default function MemberDashboardSection() {
                 </div>
 
                 {profileError && (
-                  <p className="font-body text-[13px] mb-4" style={{ color: DEEP_RED }}>
+                  <p className="font-body text-[13px]" style={{ color: DEEP_RED }}>
                     {profileError}
                   </p>
                 )}
                 {profileSaved && (
-                  <p className="font-body text-[13px] mb-4" style={{ color: "#2D6A4F" }}>
+                  <p className="font-body text-[13px]" style={{ color: "#2D6A4F" }}>
                     Profile saved successfully.
                   </p>
                 )}
+
                 <button
                   type="submit"
                   disabled={profileSaving}
-                  className="font-body text-[12px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{
-                    letterSpacing: "0.12em",
-                    color: WARM_BLACK,
-                    background: GOLD_ACCENT,
-                    padding: "12px 32px",
-                    border: "none",
-                  }}
+                  className="font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-60"
+                  style={{ letterSpacing: "0.12em", color: WARM_BLACK, background: GOLD_ACCENT, padding: "14px 36px", border: "none" }}
                 >
                   {profileSaving ? "Saving…" : "Save Changes"}
                 </button>
               </form>
 
-              <div
-                className="font-body text-[11px] uppercase mb-5 mt-12"
-                style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-              >
-                Change Password
-              </div>
-              <form
-                onSubmit={handlePasswordChange}
-                className="p-7 md:p-9 mb-10"
-                style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-4">
+              {/* Password change */}
+              <div className="pt-8 border-t" style={{ borderColor: "rgba(123,45,38,0.08)" }}>
+                <div
+                  className="font-body text-[11px] uppercase mb-6"
+                  style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                >
+                  Change Password
+                </div>
+                <form onSubmit={handlePasswordChange} className="space-y-5 max-w-[440px]">
                   <div>
                     <label
-                      className="font-body text-[10px] uppercase block mb-1.5"
-                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                      className="block font-body text-[11px] uppercase mb-2"
+                      style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
                     >
                       New Password
                     </label>
                     <input
                       type="password"
                       value={pwForm.password}
+                      minLength={8}
                       onChange={(e) => setPwForm({ ...pwForm, password: e.target.value })}
-                      className="w-full font-body text-sm px-3 py-2 outline-none"
-                      style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
+                      className="w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
                     />
                   </div>
                   <div>
                     <label
-                      className="font-body text-[10px] uppercase block mb-1.5"
-                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                      className="block font-body text-[11px] uppercase mb-2"
+                      style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
                     >
-                      Confirm Password
+                      Confirm New Password
                     </label>
                     <input
                       type="password"
                       value={pwForm.confirm}
                       onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
-                      className="w-full font-body text-sm px-3 py-2 outline-none"
-                      style={{ border: "1px solid rgba(123,45,38,0.15)", background: "#fff", color: WARM_BLACK }}
+                      className="w-full font-body text-sm px-4 py-3 outline-none"
+                      style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
                     />
                   </div>
-                </div>
-                {pwError && (
-                  <p className="font-body text-[13px] mb-3" style={{ color: DEEP_RED }}>
-                    {pwError}
-                  </p>
-                )}
-                {pwSaved && (
-                  <p className="font-body text-[13px] mb-3" style={{ color: "#2D6A4F" }}>
-                    Password updated successfully.
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  disabled={pwSaving}
-                  className="font-body text-[12px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{
-                    letterSpacing: "0.12em",
-                    color: WARM_BLACK,
-                    background: GOLD_ACCENT,
-                    padding: "12px 32px",
-                    border: "none",
-                  }}
-                >
-                  {pwSaving ? "Updating…" : "Update Password"}
-                </button>
-              </form>
-            </FadeIn>
+                  {pwError && (
+                    <p className="font-body text-[13px]" style={{ color: DEEP_RED }}>
+                      {pwError}
+                    </p>
+                  )}
+                  {pwSaved && (
+                    <p className="font-body text-[13px]" style={{ color: "#2D6A4F" }}>
+                      Password updated successfully.
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={pwSaving}
+                    className="font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-60"
+                    style={{ letterSpacing: "0.12em", color: "#FAF7F4", background: DEEP_RED, padding: "12px 28px", border: "none" }}
+                  >
+                    {pwSaving ? "Updating…" : "Update Password"}
+                  </button>
+                </form>
+              </div>
+            </div>
           )}
 
-          {/* TRANSACTIONS */}
+          {/* TRANSACTIONS TAB */}
           {activeTab === "transactions" && (
-            <FadeIn>
+            <div>
               <div
-                className="font-body text-[11px] uppercase mb-5"
+                className="font-body text-[11px] uppercase mb-6"
                 style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
               >
                 Payment History
               </div>
               {txLoading ? (
                 <p className="font-body text-[14px]" style={{ color: "rgba(26,19,17,0.5)" }}>
-                  Loading…
+                  Loading transactions…
                 </p>
               ) : transactions.length === 0 ? (
-                <div
-                  className="p-8 text-center"
-                  style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-                >
-                  <p className="font-body text-[14px]" style={{ color: "rgba(26,19,17,0.45)" }}>
-                    No payment history found.
-                  </p>
-                </div>
+                <p className="font-body text-[14px]" style={{ color: "rgba(26,19,17,0.5)" }}>
+                  No transactions on record yet.
+                </p>
               ) : (
-                <div style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}>
-                  {transactions.map((tx, i) => (
+                <div className="space-y-3">
+                  {transactions.map((tx) => (
                     <div
                       key={tx.id}
-                      className="flex flex-wrap items-center justify-between gap-3 px-6 py-4"
-                      style={{
-                        borderBottom: i < transactions.length - 1 ? "1px solid rgba(123,45,38,0.06)" : "none",
-                      }}
+                      className="flex items-center justify-between p-5"
+                      style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
                     >
                       <div>
-                        <div className="font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>
-                          {tx.payment_type
-                            ? tx.payment_type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+                        <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>
+                          {tx.payment_type === "new_member"
+                            ? "New Membership"
+                            : tx.payment_type === "renewal"
+                            ? "Membership Renewal"
+                            : tx.payment_type === "donation"
+                            ? "Donation"
                             : "Payment"}
                         </div>
                         <div className="font-body text-[12px] mt-0.5" style={{ color: "rgba(26,19,17,0.45)" }}>
@@ -868,64 +824,76 @@ export default function MemberDashboardSection() {
                         </div>
                       </div>
                       <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>
-                        ${Number(tx.amount || tx.payment_amount || 0).toFixed(2)}
+                        ${parseFloat(tx.amount).toFixed(2)}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </FadeIn>
+            </div>
           )}
 
-          {/* BENEFITS */}
+          {/* BENEFITS TAB */}
           {activeTab === "benefits" && (
-            <FadeIn>
-              <div
-                className="font-body text-[11px] uppercase mb-5"
-                style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-              >
-                Your Benefits
-              </div>
-              <div
-                className="p-7 md:p-9 mb-6"
-                style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
-              >
-                <div className="font-display text-lg font-semibold mb-4" style={{ color: WARM_BLACK }}>
-                  {tierLabel(member.effective_access_tier || member.membership_tier)} Membership
+            <div className="space-y-8">
+              <div>
+                <div
+                  className="font-body text-[11px] uppercase mb-5"
+                  style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                >
+                  Your Member Benefits
                 </div>
-                <ul className="space-y-3 list-none p-0 m-0">
-                  {[
-                    "Free admission to the museum",
-                    "10% discount at the museum gift shop",
-                    "Invitations to members-only events",
-                    "Quarterly newsletter",
-                    ...(member.effective_access_tier === "family" || member.membership_tier === "family"
-                      ? ["Free admission for your entire household", "Guest passes for select special events"]
-                      : []),
-                  ].map((benefit) => (
-                    <li
-                      key={benefit}
-                      className="flex items-center gap-3 font-body text-[14px]"
-                      style={{ color: "rgba(26,19,17,0.7)" }}
-                    >
-                      <span style={{ color: GOLD_ACCENT, fontSize: "10px" }}>✦</span>
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
+                <div className="p-7" style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}>
+                  <ul className="space-y-3 m-0 p-0 list-none">
+                    {[
+                      "Free admission to all regular museum hours",
+                      "10% discount in the museum gift shop",
+                      "Access to members-only events and programs",
+                      "Museum newsletter delivered to your inbox",
+                      "Priority notification for special exhibitions",
+                    ].map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-3">
+                        <span style={{ color: GOLD_ACCENT }}>✶</span>
+                        <span className="font-body text-[14px]" style={{ color: "rgba(26,19,17,0.7)" }}>
+                          {benefit}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div
-                className="p-5"
-                style={{ background: "rgba(196,163,90,0.06)", border: "1px solid rgba(196,163,90,0.2)" }}
-              >
-                <p className="font-body text-[13px] leading-[1.7] m-0" style={{ color: "rgba(26,19,17,0.6)" }}>
-                  Membership valid through:{" "}
-                  <strong style={{ color: WARM_BLACK }}>
-                    {formatDate(member.renewal_due_date || member.expiration_date)}
-                  </strong>
-                </p>
+
+              <div>
+                <div
+                  className="font-body text-[11px] uppercase mb-5"
+                  style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                >
+                  Member Discount
+                </div>
+                <div className="p-7" style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}>
+                  <div className="font-display text-2xl font-semibold mb-2" style={{ color: DEEP_RED }}>
+                    10% Off
+                  </div>
+                  <p className="font-body text-[14px] leading-[1.7] m-0" style={{ color: "rgba(26,19,17,0.6)" }}>
+                    Show your Member ID ({member.member_id}) at the gift shop to receive your 10% member discount.
+                  </p>
+                </div>
               </div>
-            </FadeIn>
+
+              <div>
+                <div
+                  className="font-body text-[11px] uppercase mb-5"
+                  style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+                >
+                  Upcoming Members-Only Events
+                </div>
+                <div className="p-7" style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}>
+                  <p className="font-body text-[14px] m-0" style={{ color: "rgba(26,19,17,0.5)" }}>
+                    Members-only events will be listed here as they are scheduled. Keep an eye on your email for invitations.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
         </div>
