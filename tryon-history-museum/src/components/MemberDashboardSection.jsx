@@ -290,7 +290,7 @@ export default function MemberDashboardSection() {
   return (
     <>
       {/* Hero section */}
-      <section style={{ background: WARM_BLACK, paddingTop: "6rem", paddingBottom: "2rem" }}>
+      <section className="pt-32 pb-0 md:pt-40" style={{ background: WARM_BLACK }}>
         <div className="max-w-[900px] mx-auto px-5 md:px-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
