@@ -54,7 +54,7 @@ export async function updateSession(request) {
   }
 
   // --- Unauthenticated users away from /member routes ---
-  if (!user && request.nextUrl.pathname.startsWith("/member")) {
+  if (!user && request.nextUrl.pathname.startsWith("/member/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
