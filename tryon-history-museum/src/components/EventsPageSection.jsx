@@ -4,6 +4,19 @@ import Link from "next/link";
 import FadeIn from "./FadeIn";
 
 const DEEP_RED = "#7B2D26";
+
+const STATIC_EVENTS = [
+  {
+    _id: "nc-rev-war-static",
+    title: "NC and the Revolutionary War",
+    date: "2026-07-23",
+    eventType: "Tales of Tryon",
+    description: "Join filmmaker John Oliver for an evening exploration of North Carolina's pivotal role in the Revolutionary War — and the stories that connect Tryon's own landscape to the birth of a nation.",
+    time: "Doors 4:00 pm · Lecture 5:00 pm",
+    location: "Holy Cross Episcopal Church · Tryon NC",
+    slug: { current: "nc-revolutionary-war" },
+  },
+];
 const WARM_BLACK = "#1A1311";
 const GOLD_ACCENT = "#C4A35A";
 const MUTED_RED = "#A8584F";
@@ -95,8 +108,15 @@ function EventCard({ event, isPast }) {
 export default function EventsPageSection({ events }) {
   const today = new Date().toISOString().split("T")[0];
 
-  const upcoming = (events || []).filter((e) => e.date >= today);
-  const past = (events || []).filter((e) => e.date < today).reverse();
+  const sanityEvents = events || [];
+  const sanitySlugSet = new Set(sanityEvents.map((e) => e.slug?.current).filter(Boolean));
+  const mergedEvents = [
+    ...STATIC_EVENTS.filter((e) => !sanitySlugSet.has(e.slug?.current)),
+    ...sanityEvents,
+  ];
+
+  const upcoming = mergedEvents.filter((e) => e.date >= today);
+  const past = mergedEvents.filter((e) => e.date < today).reverse();
 
   const hasNoEvents = upcoming.length === 0 && past.length === 0;
 

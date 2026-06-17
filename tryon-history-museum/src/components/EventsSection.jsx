@@ -14,7 +14,7 @@ const fallbackEvents = [
     title: "NC and the Revolutionary War",
     type: "Tales of Tryon",
     desc: "Join historian John Oliver for an evening exploration of North Carolina's pivotal role in the Revolutionary War — and the stories that connect Tryon's own landscape to the birth of a nation.",
-    href: null,
+    href: "/events/nc-revolutionary-war",
     membersOnly: false,
   },
   {
