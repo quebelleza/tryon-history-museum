@@ -1,25 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function NCRevWarSection() {
   const [calOpen, setCalOpen] = useState(false);
+  const calWrapperRef = useRef(null);
 
   useEffect(() => {
-    function handleClick() { setCalOpen(false); }
+    function handleMouseDown(e) {
+      if (calWrapperRef.current && !calWrapperRef.current.contains(e.target)) {
+        setCalOpen(false);
+      }
+    }
     function handleKeyDown(e) {
       if (e.key === "Escape") setCalOpen(false);
     }
-    document.addEventListener("click", handleClick);
+    document.addEventListener("mousedown", handleMouseDown);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [])
 
   return (
     <div className={styles.page}>
@@ -86,12 +91,12 @@ export default function NCRevWarSection() {
           Stay Updated on Facebook
         </a>
 
-        <div className={styles.calWrapper}>
+        <div className={styles.calWrapper} ref={calWrapperRef}>
           <button
             className={styles.btnCal}
             aria-expanded={calOpen}
             aria-haspopup="true"
-            onClick={(e) => { e.stopPropagation(); setCalOpen((o) => !o); }}
+            onClick={() => setCalOpen((o) => !o)}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             Add to Calendar
