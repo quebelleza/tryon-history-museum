@@ -11,7 +11,7 @@ const GOLD_ACCENT = "#C4A35A";
 const fallbackEvents = [
   {
     date: "Jul 23",
-    title: "Tales of Tryon: NC and the Revolutionary War",
+    title: "NC and the Revolutionary War",
     type: "Tales of Tryon",
     desc: "Join historian John Oliver for an evening exploration of North Carolina's pivotal role in the Revolutionary War — and the stories that connect Tryon's own landscape to the birth of a nation.",
     href: null,
@@ -19,15 +19,15 @@ const fallbackEvents = [
   },
   {
     date: "Sep 9",
-    title: "Tales of Tryon: Ellettra",
+    title: "Elettra",
     type: "Tales of Tryon",
-    desc: "A fascinating evening dedicated to Ellettra, one of Tryon's most intriguing public figures. Join us for an intimate look at a life that left its mark on this small mountain town.",
+    desc: "A fascinating evening dedicated to Elettra, one of Tryon's most intriguing public figures. Join us for an intimate look at a life that left its mark on this small mountain town.",
     href: null,
     membersOnly: false,
   },
   {
     date: "Nov 11",
-    title: "Tales of Tryon: Appalachian Music with Jamie Laval",
+    title: "Appalachian Music with Jamie Laval",
     type: "Tales of Tryon",
     desc: "Celtic artist Jamie Laval brings the sounds of Appalachia to life in an evening celebrating the musical heritage of our mountain region. A night of story, song, and history.",
     href: null,
