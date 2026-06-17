@@ -12,6 +12,52 @@ function formatDate(dateStr) {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
+function buildNotificationEmail({ type, name, email, amount, memberId, date }) {
+  const formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
+  const typeLabel =
+    type === "new_member" ? "New Membership" :
+    type === "renewal" ? "Membership Renewal" :
+    type === "donation" ? "Donation" : "Payment";
+
+  return {
+    subject: `[THM] ${typeLabel} — ${name} — ${formattedAmount}`,
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #1A1311; margin-bottom: 8px;">${typeLabel} Received</h2>
+        <p style="color: #666; margin-top: 0; margin-bottom: 24px; font-size: 14px;">${date}</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px; width: 140px;">Type</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${typeLabel}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Name</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Email</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${email}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Amount</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px; font-weight: bold;">${formattedAmount}</td>
+          </tr>
+          ${memberId ? `
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Member ID</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${memberId}</td>
+          </tr>` : ""}
+        </table>
+        <p style="margin-top: 24px; font-size: 12px; color: #aaa;">
+          This is an automated notification from the Tryon History Museum website. Log in to the
+          <a href="https://tryonhistorymuseum.org/admin/dashboard" style="color: #7B2D26;">admin dashboard</a>
+          to view full details.
+        </p>
+      </div>
+    `,
+  };
+}
+
 export async function POST(request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -32,6 +78,33 @@ export async function POST(request) {
     const amountPaid = (session.amount_total || 0) / 100;
     const today = new Date().toISOString().split("T")[0];
     const supabase = createAdminClient();
+
+    // ── Donation ──
+    if (session.metadata?.payment_type === "donation") {
+      const donorEmail = session.customer_email || session.customer_details?.email || "unknown";
+      const donorName = session.customer_details?.name || "Anonymous";
+
+      try {
+        const { subject, html } = buildNotificationEmail({
+          type: "donation",
+          name: donorName,
+          email: donorEmail,
+          amount: amountPaid,
+          memberId: null,
+          date: today,
+        });
+        await resend.emails.send({
+          from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+          to: ["info@tryonhistorymuseum.org", "wanda@tdowntowntryon.org"],
+          subject,
+          html,
+        });
+      } catch (notifyErr) {
+        console.error("[webhook] Donation notification error:", notifyErr.message);
+      }
+
+      return NextResponse.json({ received: true });
+    }
 
     // ── New Member (unauthenticated public signup) ──
     if (session.metadata?.payment_type === "new_member") {
@@ -71,6 +144,25 @@ export async function POST(request) {
           additional_donation: computed.additionalDonation,
           notes: `Stripe session ${session.id}`,
         });
+
+        try {
+          const { subject, html } = buildNotificationEmail({
+            type: "renewal",
+            name: `${existingMember.first_name} ${existingMember.last_name}`,
+            email: existingMember.email,
+            amount: amountPaid,
+            memberId: existingMember.member_id,
+            date: today,
+          });
+          await resend.emails.send({
+            from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+            to: ["info@tryonhistorymuseum.org", "wmay@tds.net"],
+            subject,
+            html,
+          });
+        } catch (notifyErr) {
+          console.error("[webhook] Staff notification error:", notifyErr.message);
+        }
 
         if (existingMember.email) {
           const { subject, html } = renewalConfirmationEmail({
@@ -148,6 +240,25 @@ export async function POST(request) {
             additional_donation: computed.additionalDonation,
             notes: `Stripe session ${session.id}`,
           });
+
+          try {
+            const { subject, html } = buildNotificationEmail({
+              type: "new_member",
+              name: `${firstName} ${lastName}`,
+              email,
+              amount: amountPaid,
+              memberId: newMember.member_id,
+              date: today,
+            });
+            await resend.emails.send({
+              from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+              to: ["info@tryonhistorymuseum.org", "wmay@tds.net"],
+              subject,
+              html,
+            });
+          } catch (notifyErr) {
+            console.error("[webhook] Staff notification error:", notifyErr.message);
+          }
 
           if (email) {
             const { subject, html } = welcomeEmail({
@@ -247,6 +358,26 @@ export async function POST(request) {
       additional_donation: computed.additionalDonation,
       notes: `Stripe session ${session.id}`,
     });
+
+    // Staff notification — authenticated renewal
+    try {
+      const { subject, html } = buildNotificationEmail({
+        type: "renewal",
+        name: `${member.first_name} ${member.last_name}`,
+        email: member.email,
+        amount: amountPaid,
+        memberId: member.member_id,
+        date: today,
+      });
+      await resend.emails.send({
+        from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+        to: ["info@tryonhistorymuseum.org", "wmay@tds.net"],
+        subject,
+        html,
+      });
+    } catch (notifyErr) {
+      console.error("[webhook] Staff notification error:", notifyErr.message);
+    }
 
     // Send renewal confirmation email
     if (member.email) {
