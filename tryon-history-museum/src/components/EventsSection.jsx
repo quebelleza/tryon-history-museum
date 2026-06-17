@@ -36,7 +36,7 @@ const fallbackEvents = [
   {
     date: "Fall",
     title: "At Home in Tryon",
-    type: "Special Event",
+    type: "Historic Home Tour Series",
     desc: "An intimate evening in one of Tryon's most distinctive private homes — wine, appetizers, and conversation in a setting that tells its own story. Space is very limited.",
     href: null,
     membersOnly: false,
