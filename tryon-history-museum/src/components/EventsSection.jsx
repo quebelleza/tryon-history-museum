@@ -18,7 +18,7 @@ const fallbackEvents = [
     membersOnly: false,
   },
   {
-    date: "Sep 9",
+    date: "Sep 24",
     title: "Elettra",
     type: "Tales of Tryon",
     desc: "A fascinating evening dedicated to Elettra, one of Tryon's most intriguing public figures. Join us for an intimate look at a life that left its mark on this small mountain town.",
@@ -26,7 +26,7 @@ const fallbackEvents = [
     membersOnly: false,
   },
   {
-    date: "Nov 11",
+    date: "Nov 12",
     title: "Appalachian Music with Jamie Laval",
     type: "Tales of Tryon",
     desc: "Celtic artist Jamie Laval brings the sounds of Appalachia to life in an evening celebrating the musical heritage of our mountain region. A night of story, song, and history.",
