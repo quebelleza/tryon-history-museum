@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const MEMBERSHIP_AMOUNT = 5000; // $50.00 in cents
 
@@ -35,6 +36,16 @@ export async function POST(request) {
   const cleanEmail = String(email).trim().toLowerCase();
 
   try {
+    const supabase = createAdminClient();
+    const { data: existingMember, error: memberError } = await supabase
+      .from("members")
+      .select("first_name")
+      .ilike("email", cleanEmail)
+      .single();
+
+    if (existingMember && !memberError) {
+      return NextResponse.json({ existingMember: true, firstName: existingMember.first_name });
+    }
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const origin = request.headers.get("origin") || "https://tryonhistorymuseum.org";
 

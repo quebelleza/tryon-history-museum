@@ -22,6 +22,7 @@ export default function MembershipSection() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [existingMemberName, setExistingMemberName] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -39,6 +40,7 @@ export default function MembershipSection() {
 
     setLoading(true);
     setError("");
+    setExistingMemberName(null);
     try {
       const res = await fetch("/api/stripe/create-member-checkout", {
         method: "POST",
@@ -46,7 +48,10 @@ export default function MembershipSection() {
         body: JSON.stringify({ firstName: trimFirst, lastName: trimLast, email: trimEmail }),
       });
       const data = await res.json();
-      if (data.url) {
+      if (data.existingMember) {
+        setExistingMemberName(data.firstName);
+        setLoading(false);
+      } else if (data.url) {
         window.location.href = data.url;
       } else {
         setError(data.error || "Something went wrong. Please try again.");
@@ -229,7 +234,22 @@ export default function MembershipSection() {
                   />
                 </div>
 
-                {error && (
+                {existingMemberName && (
+                  <p
+                    className="font-body text-[13px] mb-4"
+                    style={{ color: NAVY }}
+                  >
+                    Looks like {existingMemberName} already has a membership with us!{" "}
+                    <Link
+                      href="/login"
+                      className="no-underline font-semibold hover:underline"
+                      style={{ color: DEEP_RED }}
+                    >
+                      Log in to renew or view benefits →
+                    </Link>
+                  </p>
+                )}
+                {error && !existingMemberName && (
                   <p
                     className="font-body text-[13px] mb-4"
                     style={{ color: DEEP_RED }}
