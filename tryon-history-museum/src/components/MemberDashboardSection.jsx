@@ -45,6 +45,7 @@ function formatDate(dateStr) {
 
 function statusLabel(member) {
   const status = member?.status;
+  if (status === "pending") return { text: "Pending", color: "#1B2A4A" };
   const expDate = member?.renewal_due_date;
   const today = new Date();
   const exp = expDate ? new Date(expDate + "T12:00:00") : null;

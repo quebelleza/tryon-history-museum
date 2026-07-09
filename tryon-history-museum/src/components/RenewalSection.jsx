@@ -21,6 +21,7 @@ function statusLabel(status) {
     case "active": return { text: "Active", color: "#2D6A4F" };
     case "expiring_soon": return { text: "Expiring Soon", color: "#B8860B" };
     case "expired": return { text: "Expired", color: DEEP_RED };
+    case "pending": return { text: "Pending", color: "#1B2A4A" };
     default: return { text: status || "—", color: MUTED_RED };
   }
 }
