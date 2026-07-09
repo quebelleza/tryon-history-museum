@@ -370,30 +370,49 @@ export async function POST(request) {
       return NextResponse.json({ received: true });
     }
 
-    // ── Renewal (authenticated member with member_id) ──
-    const memberId = session.metadata?.member_id;
+    // ── Authenticated member checkout (new activation or renewal) ──
+    // client_reference_id is the member UUID set at checkout creation; fall back to metadata
+    const refId = session.client_reference_id || session.metadata?.member_id;
 
-    if (!memberId) {
-      console.error("[stripe-webhook] No member_id in metadata");
-      return NextResponse.json({ error: "No member_id" }, { status: 400 });
+    if (!refId) {
+      console.error("[stripe-webhook] No client_reference_id or member_id in session");
+      return NextResponse.json({ error: "No member reference" }, { status: 400 });
     }
 
-    // Get the current member
     const { data: member, error: memberError } = await supabase
       .from("members")
       .select("*")
-      .eq("id", memberId)
+      .eq("id", refId)
       .single();
 
     if (memberError || !member) {
-      console.error("[stripe-webhook] Member not found:", memberId);
+      console.error("[stripe-webhook] Member not found for ref:", refId);
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
 
-    // Compute new membership details
-    const computed = computeMembership(amountPaid, today, "renewal");
+    const isNewActivation = member.status === "pending";
+    const computed = computeMembership(amountPaid, today, isNewActivation ? "new_member" : "renewal");
 
-    // Update member record
+    // Generate THM-#### member ID for first-time activations that don't have one yet
+    let assignedMemberId = member.member_id;
+    if (isNewActivation && !assignedMemberId) {
+      const { data: topMember } = await supabase
+        .from("members")
+        .select("member_id")
+        .like("member_id", "THM-%")
+        .order("member_id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let nextNum = 1;
+      if (topMember?.member_id) {
+        const parsed = parseInt(topMember.member_id.replace("THM-", ""), 10);
+        if (!isNaN(parsed)) nextNum = parsed + 1;
+      }
+      assignedMemberId = `THM-${String(nextNum).padStart(4, "0")}`;
+    }
+
+    // Build update fields — activation sets start date and assigns member ID
     const updateFields = {
       membership_tier: "individual",
       status: "active",
@@ -407,31 +426,35 @@ export async function POST(request) {
       member_label: computed.memberLabel,
     };
 
-    await supabase
-      .from("members")
-      .update(updateFields)
-      .eq("id", memberId);
+    if (isNewActivation) {
+      updateFields.membership_start_date = today;
+      if (assignedMemberId && !member.member_id) {
+        updateFields.member_id = assignedMemberId;
+      }
+    }
 
-    // Create payment record
+    await supabase.from("members").update(updateFields).eq("id", member.id);
+
+    // Payment record
     await supabase.from("membership_payments").insert({
-      member_id: memberId,
+      member_id: member.id,
       payment_date: today,
       amount: amountPaid,
       payment_method: "stripe",
-      payment_type: "renewal",
+      payment_type: isNewActivation ? "new_member" : "renewal",
       membership_fee: computed.membershipFee,
       additional_donation: computed.additionalDonation,
       notes: `Stripe session ${session.id}`,
     });
 
-    // Staff notification — authenticated renewal
+    // Staff notification
     try {
       const { subject, html } = buildNotificationEmail({
-        type: "renewal",
+        type: isNewActivation ? "new_member" : "renewal",
         name: `${member.first_name} ${member.last_name}`,
         email: member.email,
         amount: amountPaid,
-        memberId: member.member_id,
+        memberId: assignedMemberId || member.member_id,
         date: today,
       });
       await resend.emails.send({
@@ -444,13 +467,20 @@ export async function POST(request) {
       console.error("[webhook] Staff notification error:", notifyErr.message);
     }
 
-    // Send renewal confirmation email
+    // Member email — welcome for first activation, renewal confirmation for renewals
     if (member.email) {
-      const { subject, html } = renewalConfirmationEmail({
-        firstName: member.first_name,
-        tier: "individual",
-        expirationDate: formatDate(computed.renewalDueDate),
-      });
+      const emailType = isNewActivation ? "welcome" : "renewal_confirmation";
+      const { subject, html } = isNewActivation
+        ? welcomeEmail({
+            firstName: member.first_name,
+            expirationDate: formatDate(computed.renewalDueDate),
+            amount: amountPaid,
+          })
+        : renewalConfirmationEmail({
+            firstName: member.first_name,
+            tier: "individual",
+            expirationDate: formatDate(computed.renewalDueDate),
+          });
 
       try {
         const { data: sendData, error: sendError } = await resend.emails.send({
@@ -459,10 +489,9 @@ export async function POST(request) {
           subject,
           html,
         });
-
         await supabase.from("email_log").insert({
-          member_id: memberId,
-          email_type: "renewal_confirmation",
+          member_id: member.id,
+          email_type: emailType,
           sent_to: member.email,
           status: sendError ? "failed" : "sent",
           resend_id: sendData?.id || null,
@@ -470,8 +499,8 @@ export async function POST(request) {
       } catch (emailErr) {
         console.error("[stripe-webhook] Email send error:", emailErr.message);
         await supabase.from("email_log").insert({
-          member_id: memberId,
-          email_type: "renewal_confirmation",
+          member_id: member.id,
+          email_type: emailType,
           sent_to: member.email,
           status: "error",
           resend_id: null,
