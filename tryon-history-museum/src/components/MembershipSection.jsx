@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import FadeIn from "./FadeIn";
+import { createClient } from "@/lib/supabase/client";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -70,6 +71,8 @@ export default function MembershipSection() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [existingMemberName, setExistingMemberName] = useState(null);
@@ -114,32 +117,59 @@ export default function MembershipSection() {
       setError("Please enter a valid email address.");
       return;
     }
+    if (!password || password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     setLoading(true);
     setError("");
     setExistingMemberName(null);
     try {
-      const res = await fetch("/api/stripe/create-member-checkout", {
+      // Step 1: create auth user + pending member record
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName: trimFirst,
           lastName: trimLast,
           email: trimEmail,
+          password,
           tier: selectedTierId,
           amount,
         }),
       });
       const data = await res.json();
+
       if (data.existingMember) {
         setExistingMemberName(data.firstName);
         setLoading(false);
-      } else if (data.url) {
-        window.location.href = data.url;
-      } else {
+        return;
+      }
+      if (!data.success) {
         setError(data.error || "Something went wrong. Please try again.");
         setLoading(false);
+        return;
       }
+
+      // Step 2: sign in so session is available in the next step
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: trimEmail,
+        password,
+      });
+      if (signInError) {
+        setError("Account created but sign-in failed. Please log in manually.");
+        setLoading(false);
+        return;
+      }
+
+      // Step 3: proceed to payment
+      window.location.href = "/member/renew";
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -411,7 +441,7 @@ export default function MembershipSection() {
                     />
                   </div>
                 </div>
-                <div className="mb-5">
+                <div className="mb-3">
                   <label
                     htmlFor="mem-email"
                     className="block font-body text-[10px] uppercase mb-1.5"
@@ -435,6 +465,57 @@ export default function MembershipSection() {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div>
+                    <label
+                      htmlFor="mem-password"
+                      className="block font-body text-[10px] uppercase mb-1.5"
+                      style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
+                    >
+                      Password
+                    </label>
+                    <input
+                      id="mem-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                      className="w-full font-body text-[14px] outline-none"
+                      style={{
+                        border: "1px solid rgba(26,19,17,0.15)",
+                        padding: "10px 12px",
+                        background: "#FAF7F4",
+                        color: WARM_BLACK,
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="mem-confirm"
+                      className="block font-body text-[10px] uppercase mb-1.5"
+                      style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
+                    >
+                      Confirm
+                    </label>
+                    <input
+                      id="mem-confirm"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                      className="w-full font-body text-[14px] outline-none"
+                      style={{
+                        border: "1px solid rgba(26,19,17,0.15)",
+                        padding: "10px 12px",
+                        background: "#FAF7F4",
+                        color: WARM_BLACK,
+                      }}
+                    />
+                  </div>
+                </div>
+
                 {existingMemberName && (
                   <p
                     className="font-body text-[13px] mb-4"
@@ -446,7 +527,7 @@ export default function MembershipSection() {
                       className="no-underline font-semibold hover:underline"
                       style={{ color: DEEP_RED }}
                     >
-                      Log in to renew or view benefits →
+                      Log in to view or renew →
                     </Link>
                   </p>
                 )}
@@ -472,11 +553,17 @@ export default function MembershipSection() {
                   }}
                 >
                   {loading
-                    ? "Redirecting…"
+                    ? "Creating account…"
                     : selectedTierId
-                    ? `Continue — $${amount.toLocaleString()}`
+                    ? `Create Account — $${amount.toLocaleString()}`
                     : "Select a level above"}
                 </button>
+                <p
+                  className="font-body text-[11px] text-center mt-3 m-0"
+                  style={{ color: "rgba(26,19,17,0.35)" }}
+                >
+                  You&apos;ll be redirected to a secure payment page to complete your membership.
+                </p>
               </form>
             </div>
           </FadeIn>
