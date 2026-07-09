@@ -16,7 +16,57 @@ const BENEFITS = [
   "10% gift shop discount",
 ];
 
+const TIERS = [
+  {
+    id: "membership",
+    label: "Membership",
+    priceDisplay: "$50 / year",
+    tagline: "Annual museum membership",
+    min: 50,
+    max: 50,
+    fixed: true,
+  },
+  {
+    id: "gillette",
+    label: "Gillette Circle",
+    priceDisplay: "$100–$249",
+    tagline: "Supporting member",
+    min: 100,
+    max: 249,
+    fixed: false,
+  },
+  {
+    id: "simone",
+    label: "Nina Simone Circle",
+    priceDisplay: "$250–$499",
+    tagline: "Sustaining member",
+    min: 250,
+    max: 499,
+    fixed: false,
+  },
+  {
+    id: "pacolet",
+    label: "Pacolet Society",
+    priceDisplay: "$500–$999",
+    tagline: "Patron member",
+    min: 500,
+    max: 999,
+    fixed: false,
+  },
+  {
+    id: "fitzgerald",
+    label: "Fitzgerald Society",
+    priceDisplay: "$1,000+",
+    tagline: "Benefactor",
+    min: 1000,
+    max: null,
+    fixed: false,
+  },
+];
+
 export default function MembershipSection() {
+  const [selectedTierId, setSelectedTierId] = useState(null);
+  const [amount, setAmount] = useState(50);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,12 +74,39 @@ export default function MembershipSection() {
   const [error, setError] = useState("");
   const [existingMemberName, setExistingMemberName] = useState(null);
 
+  const selectedTier = TIERS.find((t) => t.id === selectedTierId) || null;
+
+  function handleTierSelect(tierId) {
+    const tier = TIERS.find((t) => t.id === tierId);
+    setSelectedTierId(tierId);
+    setAmount(tier.min);
+    setError("");
+    setExistingMemberName(null);
+  }
+
+  function handleSliderChange(e) {
+    setAmount(Number(e.target.value));
+  }
+
+  function handleAmountInput(e) {
+    const val = parseInt(e.target.value, 10);
+    if (!isNaN(val)) setAmount(val);
+  }
+
+  function handleAmountBlur() {
+    if (!selectedTier || selectedTier.fixed) return;
+    let clamped = Math.round(Math.max(selectedTier.min, amount));
+    if (selectedTier.max !== null) clamped = Math.min(clamped, selectedTier.max);
+    setAmount(clamped);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     const trimFirst = firstName.trim();
     const trimLast = lastName.trim();
     const trimEmail = email.trim();
 
+    if (!selectedTierId) { setError("Please select a membership level."); return; }
     if (!trimFirst) { setError("First name is required."); return; }
     if (!trimLast) { setError("Last name is required."); return; }
     if (!trimEmail) { setError("Email address is required."); return; }
@@ -45,7 +122,13 @@ export default function MembershipSection() {
       const res = await fetch("/api/stripe/create-member-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName: trimFirst, lastName: trimLast, email: trimEmail }),
+        body: JSON.stringify({
+          firstName: trimFirst,
+          lastName: trimLast,
+          email: trimEmail,
+          tier: selectedTierId,
+          amount,
+        }),
       });
       const data = await res.json();
       if (data.existingMember) {
@@ -103,7 +186,7 @@ export default function MembershipSection() {
 
       {/* ─── Membership Card ─── */}
       <section className="py-20 md:py-28" style={{ background: "#FAF7F4" }}>
-        <div className="max-w-[540px] mx-auto px-5 md:px-8">
+        <div className="max-w-[560px] mx-auto px-5 md:px-8">
           <FadeIn>
             <div
               className="p-8 md:p-10 flex flex-col"
@@ -113,36 +196,14 @@ export default function MembershipSection() {
               }}
             >
               <div
-                className="font-body text-[11px] uppercase mb-4"
+                className="font-body text-[11px] uppercase mb-5"
                 style={{ letterSpacing: "0.25em", color: GOLD_ACCENT }}
               >
-                Annual Membership
-              </div>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span
-                  className="font-display text-5xl font-semibold"
-                  style={{ color: DEEP_RED }}
-                >
-                  $50
-                </span>
-                <span
-                  className="font-body text-[13px]"
-                  style={{ color: "rgba(26,19,17,0.45)" }}
-                >
-                  per year
-                </span>
+                Choose Your Level
               </div>
 
-              <p
-                className="font-body text-[15px] leading-[1.7] mb-8"
-                style={{ color: "rgba(26,19,17,0.6)" }}
-              >
-                Annual membership is $50 and supports everything we do —
-                exhibits, programs, and the ongoing work of preserving
-                Tryon&apos;s story.
-              </p>
-
-              <div className="space-y-3 mb-8">
+              {/* Benefits */}
+              <div className="space-y-2 mb-7">
                 {BENEFITS.map((benefit, j) => (
                   <div key={j} className="flex items-start gap-3">
                     <span
@@ -161,6 +222,146 @@ export default function MembershipSection() {
                 ))}
               </div>
 
+              {/* Tier picker */}
+              <div className="mb-6">
+                {TIERS.map((tier) => {
+                  const isSelected = selectedTierId === tier.id;
+                  return (
+                    <div key={tier.id} className="mb-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTierSelect(tier.id)}
+                        className="w-full text-left transition-all"
+                        style={{
+                          padding: "13px 16px",
+                          border: `1px solid ${isSelected ? DEEP_RED : "rgba(26,19,17,0.12)"}`,
+                          background: isSelected ? "rgba(123,45,38,0.04)" : "#FAF7F4",
+                          cursor: "pointer",
+                          outline: "none",
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <div
+                              className="font-body text-[13px] font-semibold"
+                              style={{ color: isSelected ? DEEP_RED : WARM_BLACK }}
+                            >
+                              {tier.label}
+                            </div>
+                            <div
+                              className="font-body text-[11px]"
+                              style={{ color: "rgba(26,19,17,0.4)" }}
+                            >
+                              {tier.tagline}
+                            </div>
+                          </div>
+                          <div
+                            className="font-display text-[16px] font-semibold flex-shrink-0"
+                            style={{ color: isSelected ? DEEP_RED : "rgba(26,19,17,0.55)" }}
+                          >
+                            {tier.priceDisplay}
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Amount control — variable tier */}
+                      {isSelected && !tier.fixed && (
+                        <div
+                          className="px-4 pt-4 pb-4"
+                          style={{
+                            border: `1px solid ${DEEP_RED}`,
+                            borderTop: "none",
+                            background: "#FFFDF9",
+                          }}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div
+                              className="font-body text-[10px] uppercase"
+                              style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.4)" }}
+                            >
+                              Your Amount
+                            </div>
+                            <div className="flex items-baseline gap-0.5">
+                              <span
+                                className="font-body text-[15px]"
+                                style={{ color: "rgba(26,19,17,0.4)" }}
+                              >
+                                $
+                              </span>
+                              <input
+                                type="number"
+                                value={amount}
+                                onChange={handleAmountInput}
+                                onBlur={handleAmountBlur}
+                                min={tier.min}
+                                max={tier.max || undefined}
+                                className="font-display text-[24px] font-semibold text-right outline-none"
+                                style={{
+                                  color: DEEP_RED,
+                                  background: "transparent",
+                                  border: "none",
+                                  borderBottom: "1px solid rgba(123,45,38,0.25)",
+                                  width: "90px",
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {tier.max !== null && (
+                            <>
+                              <input
+                                type="range"
+                                min={tier.min}
+                                max={tier.max}
+                                step={1}
+                                value={amount}
+                                onChange={handleSliderChange}
+                                className="w-full"
+                                style={{ accentColor: DEEP_RED, cursor: "pointer" }}
+                              />
+                              <div
+                                className="flex justify-between font-body text-[10px] mt-1"
+                                style={{ color: "rgba(26,19,17,0.3)" }}
+                              >
+                                <span>${tier.min.toLocaleString()}</span>
+                                <span>${tier.max.toLocaleString()}</span>
+                              </div>
+                            </>
+                          )}
+                          {tier.max === null && (
+                            <p
+                              className="font-body text-[11px] m-0"
+                              style={{ color: "rgba(26,19,17,0.4)" }}
+                            >
+                              Enter any amount of ${tier.min.toLocaleString()} or more
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Fixed tier confirmation */}
+                      {isSelected && tier.fixed && (
+                        <div
+                          className="px-4 py-3"
+                          style={{
+                            border: `1px solid ${DEEP_RED}`,
+                            borderTop: "none",
+                            background: "#FFFDF9",
+                          }}
+                        >
+                          <p
+                            className="font-body text-[12px] m-0"
+                            style={{ color: "rgba(26,19,17,0.45)" }}
+                          >
+                            Fixed annual rate — $50
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Name / email form */}
               <form onSubmit={handleSubmit} noValidate>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
@@ -260,7 +461,7 @@ export default function MembershipSection() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !selectedTierId}
                   className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     letterSpacing: "0.12em",
@@ -270,7 +471,11 @@ export default function MembershipSection() {
                     border: "none",
                   }}
                 >
-                  {loading ? "Redirecting…" : "Continue to Payment"}
+                  {loading
+                    ? "Redirecting…"
+                    : selectedTierId
+                    ? `Continue — $${amount.toLocaleString()}`
+                    : "Select a level above"}
                 </button>
               </form>
             </div>

@@ -283,9 +283,9 @@ export async function POST(request) {
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
           additional_donation: computed.additionalDonation,
-          donor_level: "none",
-          donor_class: "none",
-          member_label: "member",
+          donor_level: computed.donorLevel || "none",
+          donor_class: computed.donorLevel || "none",
+          member_label: computed.memberLabel || "member",
           member_source: "online",
         }).select().single();
 
