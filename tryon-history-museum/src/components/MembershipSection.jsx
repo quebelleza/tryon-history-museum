@@ -156,7 +156,7 @@ export default function MembershipSection() {
         return;
       }
 
-      // Step 2: sign in so session is available in the next step
+      // Step 2: sign in so session is available for the checkout call
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: trimEmail,
@@ -168,8 +168,19 @@ export default function MembershipSection() {
         return;
       }
 
-      // Step 3: proceed to payment
-      window.location.href = "/member/renew";
+      // Step 3: create Stripe checkout session and redirect directly
+      const checkoutRes = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const checkoutData = await checkoutRes.json();
+      if (!checkoutData.url) {
+        setError("Account created. Please log in to complete your payment.");
+        setLoading(false);
+        return;
+      }
+      window.location.href = checkoutData.url;
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);

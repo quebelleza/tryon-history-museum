@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import FadeIn from "./FadeIn";
@@ -82,6 +82,11 @@ export default function MemberDashboardSection() {
   const [pwError, setPwError] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [txLoading, setTxLoading] = useState(false);
+  const [submittingCheckout, setSubmittingCheckout] = useState(false);
+  const [dismissedNudge, setDismissedNudge] = useState(false);
+
+  const searchParams = useSearchParams();
+  const isWelcome = searchParams.get("welcome") === "true";
 
   useEffect(() => {
     async function loadMember() {
@@ -137,6 +142,13 @@ export default function MemberDashboardSection() {
     if (activeTab === "transactions" && member) loadTransactions();
   }, [activeTab, member]);
 
+  useEffect(() => {
+    if (member?.id) {
+      const dismissed = localStorage.getItem(`welcome_nudge_dismissed_${member.id}`);
+      if (dismissed) setDismissedNudge(true);
+    }
+  }, [member?.id]);
+
   async function loadTransactions() {
     if (transactions.length > 0) return;
     setTxLoading(true);
@@ -148,6 +160,29 @@ export default function MemberDashboardSection() {
       .order("payment_date", { ascending: false });
     setTransactions(data || []);
     setTxLoading(false);
+  }
+
+  async function handleCompletePayment() {
+    setSubmittingCheckout(true);
+    const res = await fetch("/api/stripe/create-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      const { url } = await res.json();
+      window.location.href = url;
+    } else {
+      setSubmittingCheckout(false);
+      alert("Something went wrong. Please try again.");
+    }
+  }
+
+  function dismissNudge() {
+    if (member?.id) {
+      localStorage.setItem(`welcome_nudge_dismissed_${member.id}`, "true");
+    }
+    setDismissedNudge(true);
   }
 
   async function handleSignOut() {
@@ -284,6 +319,108 @@ export default function MemberDashboardSection() {
     );
   }
 
+  // ── Pending state — account exists but payment not completed ──
+  if (member?.status === "pending") {
+    return (
+      <section
+        className="pt-40 pb-20 md:pt-48 md:pb-28 min-h-[70vh]"
+        style={{ background: "#FAF7F4" }}
+      >
+        <div className="max-w-[520px] mx-auto px-5 md:px-8">
+          <FadeIn>
+            <div
+              className="font-body text-[11px] uppercase mb-4"
+              style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
+            >
+              Almost There
+            </div>
+            <h1
+              className="font-display text-3xl md:text-4xl font-light mb-4"
+              style={{ color: WARM_BLACK }}
+            >
+              Welcome,{" "}
+              <span className="italic font-semibold">{member.first_name}.</span>
+            </h1>
+            <p
+              className="font-body text-[16px] leading-[1.8] mb-8"
+              style={{ color: "rgba(26,19,17,0.6)" }}
+            >
+              Your account is set up, but your membership isn&apos;t active yet.
+              Complete your payment below to finish joining the museum.
+            </p>
+
+            <div
+              className="p-6 mb-6"
+              style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div
+                    className="font-body text-[10px] uppercase mb-1"
+                    style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                  >
+                    Level
+                  </div>
+                  <div
+                    className="font-display text-lg font-semibold"
+                    style={{ color: WARM_BLACK }}
+                  >
+                    {getGivingLevel(member)}
+                  </div>
+                </div>
+                <div>
+                  <div
+                    className="font-body text-[10px] uppercase mb-1"
+                    style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                  >
+                    Amount
+                  </div>
+                  <div
+                    className="font-display text-lg font-semibold"
+                    style={{ color: DEEP_RED }}
+                  >
+                    ${member.last_payment_amount
+                      ? parseFloat(member.last_payment_amount).toLocaleString()
+                      : "50"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCompletePayment}
+              disabled={submittingCheckout}
+              className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+              style={{
+                letterSpacing: "0.12em",
+                color: WARM_BLACK,
+                background: GOLD_ACCENT,
+                padding: "16px 36px",
+                border: "none",
+              }}
+            >
+              {submittingCheckout ? "Redirecting to payment…" : "Complete Your Membership →"}
+            </button>
+
+            <button
+              onClick={handleSignOut}
+              className="w-full font-body text-[12px] uppercase cursor-pointer transition-all hover:opacity-70"
+              style={{
+                letterSpacing: "0.1em",
+                color: "rgba(26,19,17,0.45)",
+                background: "transparent",
+                border: "1px solid rgba(26,19,17,0.12)",
+                padding: "12px",
+              }}
+            >
+              Sign Out
+            </button>
+          </FadeIn>
+        </div>
+      </section>
+    );
+  }
+
   const stat = statusLabel(member);
   const credBadge = getCredentialBadge(userRole, member?.member_type);
   const hasAdminAccess = userRole === "admin" || userRole === "board_member";
@@ -370,6 +507,114 @@ export default function MemberDashboardSection() {
           {/* OVERVIEW TAB */}
           {activeTab === "overview" && (
             <div className="space-y-6">
+
+              {/* ── Welcome receipt — shown once after first activation ── */}
+              {isWelcome && (
+                <div
+                  className="relative p-7 md:p-10"
+                  style={{ background: NAVY }}
+                >
+                  <button
+                    onClick={dismissNudge}
+                    aria-label="Dismiss"
+                    className="absolute top-4 right-4 font-body text-[11px] uppercase cursor-pointer transition-all hover:opacity-100 bg-transparent border-none"
+                    style={{ letterSpacing: "0.1em", color: "rgba(250,247,244,0.45)" }}
+                  >
+                    ✕
+                  </button>
+
+                  <div
+                    className="font-body text-[11px] uppercase mb-3"
+                    style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
+                  >
+                    Welcome to the Museum Family
+                  </div>
+                  <h2
+                    className="font-display text-2xl md:text-3xl font-light text-white mb-0"
+                  >
+                    {member.first_name},{" "}
+                    <span className="italic">your membership is active.</span>
+                  </h2>
+
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-7 pt-6"
+                    style={{ borderTop: "1px solid rgba(250,247,244,0.1)" }}
+                  >
+                    <div>
+                      <div
+                        className="font-body text-[10px] uppercase mb-1"
+                        style={{ letterSpacing: "0.2em", color: "rgba(250,247,244,0.45)" }}
+                      >
+                        Giving Level
+                      </div>
+                      <div className="font-display text-lg font-semibold text-white">
+                        {getGivingLevel(member)}
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        className="font-body text-[10px] uppercase mb-1"
+                        style={{ letterSpacing: "0.2em", color: "rgba(250,247,244,0.45)" }}
+                      >
+                        Amount Paid
+                      </div>
+                      <div className="font-display text-lg font-semibold text-white">
+                        {member.last_payment_amount
+                          ? `$${parseFloat(member.last_payment_amount).toLocaleString()}`
+                          : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        className="font-body text-[10px] uppercase mb-1"
+                        style={{ letterSpacing: "0.2em", color: "rgba(250,247,244,0.45)" }}
+                      >
+                        Active Through
+                      </div>
+                      <div className="font-display text-lg font-semibold text-white">
+                        {formatDate(member.renewal_due_date)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Optional mailing address nudge */}
+                  {!dismissedNudge && !member.street_address && (
+                    <div
+                      className="flex items-start justify-between gap-4 mt-6 pt-5"
+                      style={{ borderTop: "1px solid rgba(250,247,244,0.1)" }}
+                    >
+                      <p
+                        className="font-body text-[13px] m-0"
+                        style={{ color: "rgba(250,247,244,0.6)" }}
+                      >
+                        Add your mailing address and phone so we can send you
+                        event invitations.{" "}
+                        <button
+                          onClick={() => {
+                            dismissNudge();
+                            setActiveTab("profile");
+                          }}
+                          className="font-semibold underline cursor-pointer bg-transparent border-none p-0"
+                          style={{
+                            color: GOLD_ACCENT,
+                            fontFamily: "inherit",
+                            fontSize: "inherit",
+                          }}
+                        >
+                          Complete your profile →
+                        </button>
+                      </p>
+                      <button
+                        onClick={dismissNudge}
+                        className="flex-shrink-0 font-body text-[11px] uppercase cursor-pointer bg-transparent border-none hover:opacity-100 transition-all"
+                        style={{ letterSpacing: "0.1em", color: "rgba(250,247,244,0.35)" }}
+                      >
+                        No thanks
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Membership status card */}
               <div

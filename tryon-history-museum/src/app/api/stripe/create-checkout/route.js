@@ -67,8 +67,12 @@ export async function POST(request) {
       member_id: member.id,
       membership_tier: "individual",
     },
-    success_url: `${origin}/member/renew/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/member/renew`,
+    success_url: member.status === "pending"
+      ? `${origin}/member/dashboard?welcome=true`
+      : `${origin}/member/renew/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: member.status === "pending"
+      ? `${origin}/member/dashboard`
+      : `${origin}/member/renew`,
   });
 
   return NextResponse.json({ url: session.url });
