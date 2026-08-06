@@ -333,7 +333,7 @@ export default function ContactSection() {
                       >
                         Wednesday & Thursday: 1–4 PM
                         <br />
-                        Friday & Saturday: 11 AM–5 PM
+                        Friday & Saturday: 1–4 PM
                         <br />
                         Sunday–Tuesday: Closed
                       </p>

@@ -10,8 +10,8 @@ const GOLD_ACCENT = "#C4A35A";
 const fallbackHours = [
   { day: "Wednesday", time: "1:00 PM – 4:00 PM" },
   { day: "Thursday", time: "1:00 PM – 4:00 PM" },
-  { day: "Friday", time: "11:00 AM – 5:00 PM" },
-  { day: "Saturday", time: "11:00 AM – 5:00 PM" },
+  { day: "Friday", time: "1:00 PM – 4:00 PM" },
+  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
   { day: "Sunday – Tuesday", time: "Closed" },
 ];
 

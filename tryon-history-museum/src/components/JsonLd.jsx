@@ -36,14 +36,14 @@ export function OrganizationJsonLd() {
       {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: "Friday",
-        opens: "11:00",
-        closes: "17:00",
+        opens: "13:00",
+        closes: "16:00",
       },
       {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: "Saturday",
-        opens: "11:00",
-        closes: "17:00",
+        opens: "13:00",
+        closes: "16:00",
       },
     ],
     sameAs: ["https://www.facebook.com/tryonhistorymuseum/"],

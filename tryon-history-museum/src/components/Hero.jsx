@@ -11,8 +11,8 @@ const fallbackSchedule = {
   2: "Closed",
   3: "1:00 PM – 4:00 PM",
   4: "1:00 PM – 4:00 PM",
-  5: "11:00 AM – 5:00 PM",
-  6: "11:00 AM – 5:00 PM",
+  5: "1:00 PM – 4:00 PM",
+  6: "1:00 PM – 4:00 PM",
 };
 
 function getTodayHours(siteSettings) {
