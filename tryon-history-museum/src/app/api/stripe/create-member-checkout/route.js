@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { MEMBER_BENEFIT_FMV } from "@/lib/membershipPricing";
 
 const TIER_BANDS = {
   membership: { min: 50, max: 50 },
@@ -16,6 +17,22 @@ const TIER_LABELS = {
   simone:     "Nina Simone Circle Membership",
   pacolet:    "Pacolet Society Membership",
   fitzgerald: "Fitzgerald Society Membership",
+};
+
+const TIER_LEVEL_MAP = {
+  membership: "individual",
+  gillette:   "gillette",
+  simone:     "nina_simone",
+  pacolet:    "pacolet",
+  fitzgerald: "fitzgerald",
+};
+
+const TIER_DESCRIPTIONS = {
+  membership: "Individual",
+  gillette:   "Gillette Circle",
+  simone:     "Nina Simone Circle",
+  pacolet:    "Pacolet Society",
+  fitzgerald: "Fitzgerald Society",
 };
 
 function isValidEmail(email) {
@@ -101,11 +118,25 @@ export async function POST(request) {
         },
       ],
       metadata: {
+        fund:         "membership",
+        level:        TIER_LEVEL_MAP[tier],
+        fmv:          MEMBER_BENEFIT_FMV,
+        source:       "website",
         payment_type: "new_member",
-        first_name: cleanFirst,
-        last_name: cleanLast,
-        email: cleanEmail,
+        first_name:   cleanFirst,
+        last_name:    cleanLast,
+        email:        cleanEmail,
         tier,
+      },
+      payment_intent_data: {
+        description: `THM Membership — ${TIER_DESCRIPTIONS[tier] ?? "Individual"}`,
+        metadata: {
+          fund:   "membership",
+          level:  TIER_LEVEL_MAP[tier],
+          fmv:    MEMBER_BENEFIT_FMV,
+          source: "website",
+          tier,
+        },
       },
       success_url: `${origin}/membership/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/membership`,

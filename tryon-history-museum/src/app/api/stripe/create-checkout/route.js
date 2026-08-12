@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { MEMBER_BENEFIT_FMV } from "@/lib/membershipPricing";
 
 const DEFAULT_AMOUNT_CENTS = 5000; // $50.00 fallback
 
@@ -10,6 +11,22 @@ const DONOR_LEVEL_LABELS = {
   simone:     "Nina Simone Circle Membership",
   pacolet:    "Pacolet Society Membership",
   fitzgerald: "Fitzgerald Society Membership",
+};
+
+const LEVEL_MAP = {
+  none:       "individual",
+  gillette:   "gillette",
+  simone:     "nina_simone",
+  pacolet:    "pacolet",
+  fitzgerald: "fitzgerald",
+};
+
+const LEVEL_DESCRIPTIONS = {
+  individual:  "Individual",
+  gillette:    "Gillette Circle",
+  nina_simone: "Nina Simone Circle",
+  pacolet:     "Pacolet Society",
+  fitzgerald:  "Fitzgerald Society",
 };
 
 export async function POST(request) {
@@ -42,6 +59,15 @@ export async function POST(request) {
     (DONOR_LEVEL_LABELS[member.donor_level] ?? "Annual Membership") +
     " — Tryon History Museum";
 
+  const level = LEVEL_MAP[member.donor_level] ?? "individual";
+  const sessionMeta = {
+    fund:      "membership",
+    level,
+    fmv:       MEMBER_BENEFIT_FMV,
+    source:    "website",
+    member_id: String(member.id),
+  };
+
   const origin = request.headers.get("origin") || "https://tryonhistorymuseum.org";
 
   const session = await stripe.checkout.sessions.create({
@@ -63,9 +89,10 @@ export async function POST(request) {
         quantity: 1,
       },
     ],
-    metadata: {
-      member_id: member.id,
-      membership_tier: "individual",
+    metadata: sessionMeta,
+    payment_intent_data: {
+      description: `THM Membership — ${LEVEL_DESCRIPTIONS[level] ?? "Individual"}`,
+      metadata: sessionMeta,
     },
     success_url: member.status === "pending"
       ? `${origin}/member/dashboard?welcome=true`

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { MEMBER_BENEFIT_FMV } from "@/lib/membershipPricing";
 
 export async function POST(request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -45,7 +46,18 @@ export async function POST(request) {
         },
       ],
       metadata: {
+        fund:         "donation",
+        fmv:          MEMBER_BENEFIT_FMV,
+        source:       "website",
         payment_type: "donation",
+      },
+      payment_intent_data: {
+        description: `THM Donation — $${amountDollars}`,
+        metadata: {
+          fund:   "donation",
+          fmv:    MEMBER_BENEFIT_FMV,
+          source: "website",
+        },
       },
       success_url: `${origin}/donate/thank-you`,
       cancel_url: `${origin}/donate`,

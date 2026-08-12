@@ -118,3 +118,6 @@ export const DONOR_LEVEL_LABELS = {
 export function getFeeSchedule() {
   return { individual: INDIVIDUAL_FEE };
 }
+
+/** Fair-market value of membership benefits in dollars (string for Stripe metadata). */
+export const MEMBER_BENEFIT_FMV = "0";
