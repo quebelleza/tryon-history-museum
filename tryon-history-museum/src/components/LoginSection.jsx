@@ -209,6 +209,20 @@ export default function LoginSection() {
                   Forgot your password?
                 </button>
                 <p
+                  className="font-body text-[13px] m-0"
+                  style={{ color: "rgba(26,19,17,0.5)" }}
+                >
+                  First time here? Members who joined online or were added by
+                  our staff won&apos;t have a password yet.{" "}
+                  <Link
+                    href="/member/set-password"
+                    className="no-underline font-semibold transition-colors hover:opacity-70"
+                    style={{ color: DEEP_RED }}
+                  >
+                    Set one now →
+                  </Link>
+                </p>
+                <p
                   className="font-body text-[14px] m-0"
                   style={{ color: "rgba(26,19,17,0.5)" }}
                 >

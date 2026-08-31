@@ -83,13 +83,13 @@ export function welcomeEmail({ firstName, expirationDate, amount, paymentDate, s
             <table cellpadding="0" cellspacing="0">
               <tr>
                 <td style="background:#C4A35A;padding:14px 32px;">
-                  <a href="${setupLink || 'https://tryonhistorymuseum.org/member/dashboard'}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;">
-                    ${setupLink ? 'Set Up Your Account →' : 'Visit Your Dashboard'}
+                  <a href="${setupLink || 'https://www.tryonhistorymuseum.org/member/set-password'}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;">
+                    Set Your Password →
                   </a>
                 </td>
               </tr>
             </table>
-            ${setupLink ? `<p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(26,19,17,0.45);line-height:1.6;margin:12px 0 0;">This link is valid for 24 hours. Use it to set your password and access your member dashboard.</p>` : ''}
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(26,19,17,0.45);line-height:1.6;margin:12px 0 0;">This link is valid for 24 hours and can only be used once.</p>
             <p style="font-family:Georgia,serif;font-size:15px;color:#1A1311;line-height:1.7;margin:28px 0 0;">
               Warmly,<br />The Tryon History Museum Team
             </p>

@@ -491,23 +491,29 @@ export async function POST(request) {
           alertMemberId = newMember.member_id;
           alertComputedDL = computed.donorLevel;
 
-          // Create Supabase auth account for passwordless new member
+          // Create Supabase auth account, then generate a recovery link for the set-password page
           let setupLink = null;
           try {
-            const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-              type: "invite",
+            const { data: createData, error: createError } = await supabase.auth.admin.createUser({
               email,
-              options: {
-                data: { first_name: firstName, last_name: lastName },
-                redirectTo: "https://tryonhistorymuseum.org/member/dashboard",
-              },
+              email_confirm: true,
+              user_metadata: { first_name: firstName, last_name: lastName },
             });
-            if (!linkError && linkData?.user?.id) {
-              await supabase.from("members").update({ auth_user_id: linkData.user.id }).eq("id", newMember.id);
+            if (!createError && createData?.user?.id) {
+              await supabase.from("members").update({ auth_user_id: createData.user.id }).eq("id", newMember.id);
+              const { data: linkData } = await supabase.auth.admin.generateLink({
+                type: "recovery",
+                email,
+                options: {
+                  redirectTo: "https://www.tryonhistorymuseum.org/auth/callback?next=/member/set-password",
+                },
+              });
               setupLink = linkData?.properties?.action_link || null;
+            } else if (createError) {
+              console.error("[stripe-webhook] createUser error:", createError.message);
             }
           } catch (linkErr) {
-            console.error("[stripe-webhook] generateLink error:", linkErr.message);
+            console.error("[stripe-webhook] auth setup error:", linkErr.message);
           }
 
           if (email) {

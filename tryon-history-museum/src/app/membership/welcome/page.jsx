@@ -57,9 +57,28 @@ export default function MembershipWelcomePage() {
             className="font-body text-[17px] leading-relaxed mb-10"
             style={{ color: "rgba(26,19,17,0.7)" }}
           >
-            Thank you for joining us. A confirmation has been sent to your
-            email. We look forward to seeing you at the museum.
+            Thank you for joining us. We look forward to seeing you at the museum.
           </p>
+
+          <div
+            className="p-8 mb-10 text-left"
+            style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.1)" }}
+          >
+            <div
+              className="font-body text-[11px] uppercase mb-3"
+              style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
+            >
+              Next Step
+            </div>
+            <p
+              className="font-body text-[16px] leading-[1.7] mb-0"
+              style={{ color: WARM_BLACK }}
+            >
+              <strong>Check your email.</strong> We sent you a link to set up
+              your online account. Click it to create a password and access your
+              member dashboard.
+            </p>
+          </div>
 
           <Link
             href="/visit"

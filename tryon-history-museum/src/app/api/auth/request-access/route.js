@@ -40,21 +40,36 @@ export async function POST(request) {
   }
 
   const emailOnFile = member.email;
-  const origin = request.headers.get("origin") || "https://tryonhistorymuseum.org";
-  const redirectTo = `${origin}/member/dashboard`;
+  const origin = request.headers.get("origin") || "https://www.tryonhistorymuseum.org";
+  const redirectTo = `${origin}/auth/callback?next=/member/set-password`;
 
   try {
     let actionLink;
 
     if (!member.auth_user_id) {
-      // No auth account yet — generate an invite link (creates the Supabase auth user)
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: "invite",
+      // No auth account yet — create user, then generate a recovery link for the set-password page
+      const { data: createData, error: createError } = await supabase.auth.admin.createUser({
         email: emailOnFile,
-        options: {
-          data: { first_name: member.first_name, last_name: member.last_name },
-          redirectTo,
-        },
+        email_confirm: true,
+        user_metadata: { first_name: member.first_name, last_name: member.last_name },
+      });
+
+      if (createError) {
+        console.error("[request-access] createUser error:", createError.message);
+        return NextResponse.json({ sent: true });
+      }
+
+      if (createData?.user?.id) {
+        await supabase
+          .from("members")
+          .update({ auth_user_id: createData.user.id })
+          .eq("id", member.id);
+      }
+
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: "recovery",
+        email: emailOnFile,
+        options: { redirectTo },
       });
 
       if (linkError) {
@@ -63,17 +78,10 @@ export async function POST(request) {
       }
 
       actionLink = linkData?.properties?.action_link;
-
-      if (linkData?.user?.id) {
-        await supabase
-          .from("members")
-          .update({ auth_user_id: linkData.user.id })
-          .eq("id", member.id);
-      }
     } else {
-      // Auth account exists — send a magic link (passwordless sign-in)
+      // Auth account exists — send a recovery link so they can set or reset their password
       const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: "magiclink",
+        type: "recovery",
         email: emailOnFile,
         options: { redirectTo },
       });
@@ -110,13 +118,13 @@ export async function POST(request) {
               Dear ${member.first_name},
             </p>
             <p style="font-family:Georgia,serif;font-size:16px;color:#1A1311;line-height:1.7;margin:0 0 28px;">
-              Use the button below to access your member account. This link is valid for 24 hours and can only be used once.
+              Use the button below to set your password and access your member account. This link is valid for 24 hours and can only be used once.
             </p>
             <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
               <tr>
                 <td style="background:#C4A35A;padding:14px 32px;">
                   <a href="${actionLink}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;">
-                    Access My Account →
+                    Set Your Password →
                   </a>
                 </td>
               </tr>
@@ -143,7 +151,7 @@ export async function POST(request) {
     await resend.emails.send({
       from: "Tryon History Museum <info@tryonhistorymuseum.org>",
       to: emailOnFile,
-      subject: "Access your Tryon History Museum account",
+      subject: "Set up your Tryon History Museum account",
       html,
     });
   } catch (err) {
