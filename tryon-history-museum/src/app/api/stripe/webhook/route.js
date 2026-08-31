@@ -99,6 +99,21 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  const supabase = createAdminClient();
+
+  // Idempotency guard — deduplicate Stripe retries
+  const { error: idempotencyError } = await supabase
+    .from("processed_webhook_events")
+    .insert({ event_id: event.id, event_type: event.type });
+
+  if (idempotencyError) {
+    if (idempotencyError.code === "23505") {
+      console.log(`[stripe-webhook] Duplicate event ${event.id} — skipping`);
+      return NextResponse.json({ received: true });
+    }
+    console.error("[stripe-webhook] Idempotency insert error:", idempotencyError.message);
+  }
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const amountPaid = (session.amount_total || 0) / 100;
@@ -108,7 +123,6 @@ export async function POST(request) {
       month: "long", day: "numeric", year: "numeric",
       hour: "numeric", minute: "2-digit", timeZoneName: "short",
     });
-    const supabase = createAdminClient();
 
     const effectiveTier = (dl) => dl && dl !== "none" ? "family" : "individual";
 
