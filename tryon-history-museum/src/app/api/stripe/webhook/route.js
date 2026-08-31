@@ -24,46 +24,60 @@ function paymentDateFromSession(session) {
   }).format(new Date(ms));
 }
 
-function buildNotificationEmail({ type, name, email, amount, memberId, date }) {
-  const formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
-  const typeLabel =
-    type === "new_member" ? "New Membership" :
-    type === "renewal" ? "Membership Renewal" :
-    type === "donation" ? "Donation" : "Payment";
+const DONOR_LEVEL_DISPLAY = {
+  gillette:   "Gillette Circle",
+  simone:     "Nina Simone Circle",
+  pacolet:    "Pacolet Society",
+  fitzgerald: "Fitzgerald Society",
+};
 
+function buildStaffAlert({ typeLabel, amount, donorLevel, name, email, memberId, paymentDate, sessionId, timestamp }) {
+  const formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
+  const donorRow = donorLevel && donorLevel !== "none" ? `
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px; width: 140px;">Donor Level</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${DONOR_LEVEL_DISPLAY[donorLevel] || donorLevel}</td>
+              </tr>` : "";
+  const memberIdRow = memberId ? `
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Member ID</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${memberId}</td>
+              </tr>` : "";
   return {
     subject: `[THM] ${typeLabel} — ${name} — ${formattedAmount}`,
     html: `
       <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 32px;">
-        <h2 style="color: #1A1311; margin-bottom: 8px;">${typeLabel} Received</h2>
-        <p style="color: #666; margin-top: 0; margin-bottom: 24px; font-size: 14px;">${date}</p>
+        <h2 style="color: #1A1311; margin-bottom: 4px;">New Website Payment Received</h2>
+        <p style="color: #666; margin-top: 0; margin-bottom: 24px; font-size: 14px;">${timestamp}</p>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px; width: 140px;">Type</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${typeLabel}</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Name</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${name}</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Email</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${email}</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Amount</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px; font-weight: bold;">${formattedAmount}</td>
-          </tr>
-          ${memberId ? `
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Member ID</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${memberId}</td>
-          </tr>` : ""}
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px; width: 140px;">Type</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${typeLabel}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Amount</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px; font-weight: bold;">${formattedAmount}</td>
+              </tr>${donorRow}
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Name</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Email</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${email}</td>
+              </tr>${memberIdRow}
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Payment Date</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${paymentDate}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; color: #888; font-size: 13px;">Stripe Session</td>
+                <td style="padding: 10px 0; color: #1A1311; font-size: 13px; font-family: monospace;">${sessionId}</td>
+              </tr>
         </table>
         <p style="margin-top: 24px; font-size: 12px; color: #aaa;">
-          This is an automated notification from the Tryon History Museum website. Log in to the
-          <a href="https://tryonhistorymuseum.org/admin/dashboard" style="color: #7B2D26;">admin dashboard</a>
-          to view full details.
+          Automated alert from tryonhistorymuseum.org —
+          <a href="https://tryonhistorymuseum.org/admin/dashboard" style="color: #7B2D26;">Admin dashboard</a>
         </p>
       </div>
     `,
@@ -96,70 +110,7 @@ export async function POST(request) {
     });
     const supabase = createAdminClient();
 
-    // ── Universal staff alert (fires for ALL payment types) ──
-    try {
-      const alertPaymentType = session.metadata?.payment_type || "unknown";
-      const alertTypeLabel =
-        alertPaymentType === "new_member" ? "New Membership" :
-        alertPaymentType === "renewal" ? "Membership Renewal" :
-        alertPaymentType === "donation" ? "Donation" : "Payment";
-      const alertName = session.customer_details?.name || session.metadata?.first_name
-        ? `${session.metadata?.first_name || ""} ${session.metadata?.last_name || ""}`.trim() || session.customer_details?.name
-        : "Unknown";
-      const alertEmail = session.customer_email || session.customer_details?.email || "—";
-      const alertMemberId = session.metadata?.member_id || null;
-      const alertTimestamp = new Date().toLocaleString("en-US", {
-        timeZone: "America/New_York",
-        month: "long", day: "numeric", year: "numeric",
-        hour: "numeric", minute: "2-digit", timeZoneName: "short",
-      });
-      const alertAmount = `$${amountPaid.toFixed(2)}`;
-
-      await resend.emails.send({
-        from: "Tryon History Museum <info@tryonhistorymuseum.org>",
-        to: ["info@tryonhistorymuseum.org"],
-        subject: `New THM website payment: ${alertAmount}`,
-        html: `
-          <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 32px;">
-            <h2 style="color: #1A1311; margin-bottom: 4px;">New Website Payment Received</h2>
-            <p style="color: #888; margin-top: 0; margin-bottom: 24px; font-size: 13px;">${alertTimestamp}</p>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px; width: 140px;">Type</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${alertTypeLabel}</td>
-              </tr>
-              <tr>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Amount</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px; font-weight: bold;">${alertAmount}</td>
-              </tr>
-              <tr>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Name</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${alertName}</td>
-              </tr>
-              <tr>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Email</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${alertEmail}</td>
-              </tr>
-              ${alertMemberId ? `
-              <tr>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Member ID</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #1A1311; font-size: 14px;">${alertMemberId}</td>
-              </tr>` : ""}
-              <tr>
-                <td style="padding: 10px 0; color: #888; font-size: 13px;">Stripe Session</td>
-                <td style="padding: 10px 0; color: #1A1311; font-size: 13px; font-family: monospace;">${session.id}</td>
-              </tr>
-            </table>
-            <p style="margin-top: 24px; font-size: 12px; color: #aaa;">
-              Automated alert from tryonhistorymuseum.org —
-              <a href="https://tryonhistorymuseum.org/admin/dashboard" style="color: #7B2D26;">Admin dashboard</a>
-            </p>
-          </div>
-        `,
-      });
-    } catch (alertErr) {
-      console.error("[webhook] Universal staff alert failed:", alertErr.message);
-    }
+    const effectiveTier = (dl) => dl && dl !== "none" ? "family" : "individual";
 
     // ── Donation ──
     if (session.metadata?.payment_type === "donation") {
@@ -167,28 +118,29 @@ export async function POST(request) {
       const donorName = session.customer_details?.name || "";
       const computed = computeDonationMembership(amountPaid, paymentDate);
 
-      // Staff notification (always sent)
-      try {
-        const { subject, html } = buildNotificationEmail({
-          type: "donation",
-          name: donorName || "Anonymous",
-          email: donorEmail || "—",
-          amount: amountPaid,
-          memberId: null,
-          date: notificationTimestamp,
-        });
-        await resend.emails.send({
-          from: "Tryon History Museum <info@tryonhistorymuseum.org>",
-          to: ["info@tryonhistorymuseum.org", "wanda@tdowntowntryon.org"],
-          subject,
-          html,
-        });
-      } catch (notifyErr) {
-        console.error("[webhook] Donation notification error:", notifyErr.message);
-      }
-
       // < $50 — receipt only, no membership created
       if (!computed.createsMembership) {
+        try {
+          const { subject, html } = buildStaffAlert({
+            typeLabel: "Donation",
+            amount: amountPaid,
+            donorLevel: null,
+            name: donorName || "Anonymous",
+            email: donorEmail || "—",
+            memberId: null,
+            paymentDate,
+            sessionId: session.id,
+            timestamp: notificationTimestamp,
+          });
+          await resend.emails.send({
+            from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+            to: ["info@tryonhistorymuseum.org"],
+            subject,
+            html,
+          });
+        } catch (alertErr) {
+          console.error("[webhook] Staff alert failed:", alertErr.message);
+        }
         return NextResponse.json({ received: true });
       }
 
@@ -202,6 +154,11 @@ export async function POST(request) {
         .eq("email", donorEmail)
         .maybeSingle();
 
+      // Collect alert data after DB work
+      let alertMemberId = null;
+      let alertDonorLevel = computed.donorLevel;
+      let alertName = donorName || "Anonymous";
+
       if (existingMember) {
         // Update donor class only if new level is higher; always roll renewal date forward
         const currentRank = DONOR_LEVEL_RANK[existingMember.donor_level] ?? 0;
@@ -211,6 +168,7 @@ export async function POST(request) {
         await supabase.from("members").update({
           status: "active",
           membership_tier: "individual",
+          effective_access_tier: effectiveTier(upgradedLevel),
           renewal_due_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
@@ -219,6 +177,7 @@ export async function POST(request) {
           donor_level: upgradedLevel,
           donor_class: upgradedLevel,
           member_label: upgradedLabel,
+          stripe_customer_id: session.customer || null,
         }).eq("id", existingMember.id);
 
         await supabase.from("membership_payments").insert({
@@ -231,6 +190,10 @@ export async function POST(request) {
           additional_donation: computed.additionalDonation,
           notes: `Stripe session ${session.id}`,
         });
+
+        alertMemberId = existingMember.member_id;
+        alertDonorLevel = upgradedLevel;
+        alertName = `${existingMember.first_name} ${existingMember.last_name}`;
 
         if (existingMember.email) {
           const { subject, html } = renewalConfirmationEmail({
@@ -275,6 +238,8 @@ export async function POST(request) {
           email: donorEmail,
           membership_tier: "individual",
           status: "active",
+          effective_access_tier: effectiveTier(computed.donorLevel),
+          source: "donation",
           membership_start_date: computed.membershipStartDate,
           renewal_due_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
@@ -284,7 +249,7 @@ export async function POST(request) {
           donor_level: computed.donorLevel || "none",
           donor_class: computed.donorLevel || "none",
           member_label: computed.memberLabel || "member",
-          member_source: "donation",
+          stripe_customer_id: session.customer || null,
         }).select().single();
 
         if (insertError) {
@@ -303,6 +268,9 @@ export async function POST(request) {
             additional_donation: computed.additionalDonation,
             notes: `Stripe session ${session.id}`,
           });
+
+          alertMemberId = newMember.member_id;
+          alertName = `${firstName} ${lastName}`;
 
           if (donorEmail) {
             const { subject, html } = welcomeEmail({
@@ -338,6 +306,29 @@ export async function POST(request) {
         }
       }
 
+      // Single consolidated staff alert after all DB work
+      try {
+        const { subject, html } = buildStaffAlert({
+          typeLabel: "Donation",
+          amount: amountPaid,
+          donorLevel: alertDonorLevel,
+          name: alertName,
+          email: donorEmail || "—",
+          memberId: alertMemberId,
+          paymentDate,
+          sessionId: session.id,
+          timestamp: notificationTimestamp,
+        });
+        await resend.emails.send({
+          from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+          to: ["info@tryonhistorymuseum.org"],
+          subject,
+          html,
+        });
+      } catch (alertErr) {
+        console.error("[webhook] Staff alert failed:", alertErr.message);
+      }
+
       return NextResponse.json({ received: true });
     }
 
@@ -353,12 +344,19 @@ export async function POST(request) {
         .eq("email", email)
         .maybeSingle();
 
+      let alertMemberId = null;
+      let alertComputedDL = null;
+      let alertTypeLabel = "New Membership";
+      let alertPersonName = `${firstName} ${lastName}`.trim() || "Unknown";
+
       if (existingMember) {
         // Email already on file — treat as renewal
         const computed = computeMembership(amountPaid, paymentDate, "renewal");
         await supabase.from("members").update({
           membership_tier: "individual",
           status: "active",
+          effective_access_tier: effectiveTier(computed.donorLevel),
+          source: "public_renewal",
           renewal_due_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
@@ -367,6 +365,7 @@ export async function POST(request) {
           donor_level: computed.donorLevel,
           donor_class: computed.donorLevel,
           member_label: computed.memberLabel,
+          stripe_customer_id: session.customer || null,
         }).eq("id", existingMember.id);
 
         await supabase.from("membership_payments").insert({
@@ -380,24 +379,10 @@ export async function POST(request) {
           notes: `Stripe session ${session.id}`,
         });
 
-        try {
-          const { subject, html } = buildNotificationEmail({
-            type: "renewal",
-            name: `${existingMember.first_name} ${existingMember.last_name}`,
-            email: existingMember.email,
-            amount: amountPaid,
-            memberId: existingMember.member_id,
-            date: notificationTimestamp,
-          });
-          await resend.emails.send({
-            from: "Tryon History Museum <info@tryonhistorymuseum.org>",
-            to: ["info@tryonhistorymuseum.org", "wmay@tds.net"],
-            subject,
-            html,
-          });
-        } catch (notifyErr) {
-          console.error("[webhook] Staff notification error:", notifyErr.message);
-        }
+        alertMemberId = existingMember.member_id;
+        alertComputedDL = computed.donorLevel;
+        alertTypeLabel = "Membership Renewal";
+        alertPersonName = `${existingMember.first_name} ${existingMember.last_name}`;
 
         if (existingMember.email) {
           const { subject, html } = renewalConfirmationEmail({
@@ -447,6 +432,8 @@ export async function POST(request) {
           email,
           membership_tier: "individual",
           status: "active",
+          effective_access_tier: effectiveTier(computed.donorLevel),
+          source: "public_join",
           membership_start_date: paymentDate,
           renewal_due_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
@@ -456,7 +443,7 @@ export async function POST(request) {
           donor_level: computed.donorLevel || "none",
           donor_class: computed.donorLevel || "none",
           member_label: computed.memberLabel || "member",
-          member_source: "online",
+          stripe_customer_id: session.customer || null,
         }).select().single();
 
         if (insertError) {
@@ -476,24 +463,8 @@ export async function POST(request) {
             notes: `Stripe session ${session.id}`,
           });
 
-          try {
-            const { subject, html } = buildNotificationEmail({
-              type: "new_member",
-              name: `${firstName} ${lastName}`,
-              email,
-              amount: amountPaid,
-              memberId: newMember.member_id,
-              date: notificationTimestamp,
-            });
-            await resend.emails.send({
-              from: "Tryon History Museum <info@tryonhistorymuseum.org>",
-              to: ["info@tryonhistorymuseum.org", "wmay@tds.net"],
-              subject,
-              html,
-            });
-          } catch (notifyErr) {
-            console.error("[webhook] Staff notification error:", notifyErr.message);
-          }
+          alertMemberId = newMember.member_id;
+          alertComputedDL = computed.donorLevel;
 
           if (email) {
             const { subject, html } = welcomeEmail({
@@ -535,6 +506,29 @@ export async function POST(request) {
             }
           }
         }
+      }
+
+      // Single consolidated staff alert after all DB work
+      try {
+        const { subject, html } = buildStaffAlert({
+          typeLabel: alertTypeLabel,
+          amount: amountPaid,
+          donorLevel: alertComputedDL,
+          name: alertPersonName,
+          email: email || "—",
+          memberId: alertMemberId,
+          paymentDate,
+          sessionId: session.id,
+          timestamp: notificationTimestamp,
+        });
+        await resend.emails.send({
+          from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+          to: ["info@tryonhistorymuseum.org"],
+          subject,
+          html,
+        });
+      } catch (alertErr) {
+        console.error("[webhook] Staff alert failed:", alertErr.message);
       }
 
       return NextResponse.json({ received: true });
@@ -586,6 +580,8 @@ export async function POST(request) {
     const updateFields = {
       membership_tier: "individual",
       status: "active",
+      effective_access_tier: effectiveTier(computed.donorLevel),
+      source: isNewActivation ? "public_join" : "public_renewal",
       renewal_due_date: computed.renewalDueDate,
       last_payment_date: paymentDate,
       last_payment_amount: amountPaid,
@@ -594,6 +590,7 @@ export async function POST(request) {
       donor_level: computed.donorLevel,
       donor_class: computed.donorLevel,
       member_label: computed.memberLabel,
+      stripe_customer_id: session.customer || null,
     };
 
     if (isNewActivation) {
@@ -617,24 +614,27 @@ export async function POST(request) {
       notes: `Stripe session ${session.id}`,
     });
 
-    // Staff notification
+    // Single consolidated staff alert after all DB work
     try {
-      const { subject, html } = buildNotificationEmail({
-        type: isNewActivation ? "new_member" : "renewal",
-        name: `${member.first_name} ${member.last_name}`,
-        email: member.email,
+      const { subject, html } = buildStaffAlert({
+        typeLabel: isNewActivation ? "New Membership" : "Membership Renewal",
         amount: amountPaid,
+        donorLevel: computed.donorLevel,
+        name: `${member.first_name} ${member.last_name}`,
+        email: member.email || "—",
         memberId: assignedMemberId || member.member_id,
-        date: notificationTimestamp,
+        paymentDate,
+        sessionId: session.id,
+        timestamp: notificationTimestamp,
       });
       await resend.emails.send({
         from: "Tryon History Museum <info@tryonhistorymuseum.org>",
-        to: ["info@tryonhistorymuseum.org", "wmay@tds.net"],
+        to: ["info@tryonhistorymuseum.org"],
         subject,
         html,
       });
-    } catch (notifyErr) {
-      console.error("[webhook] Staff notification error:", notifyErr.message);
+    } catch (alertErr) {
+      console.error("[webhook] Staff alert failed:", alertErr.message);
     }
 
     // Member email — welcome for first activation, renewal confirmation for renewals
