@@ -248,18 +248,7 @@ export default function EllettraSection() {
               color: "var(--text-mid)",
               marginBottom: "1.25rem",
             }}>
-              Elettra&apos;s story comes to us through the people who knew her best. A member of her family will share recollections of her life, her houses, her table, and the years she spent making Tryon her own.
-            </p>
-            <p style={{
-              fontFamily: "'Source Serif 4', Georgia, serif",
-              fontSize: "1.05rem",
-              fontWeight: 300,
-              fontStyle: "italic",
-              lineHeight: 1.8,
-              color: "var(--text-mid)",
-              marginBottom: 0,
-            }}>
-              Speaker to be announced.
+              Elettra&apos;s story comes to us through the people who knew her best. Family members will share recollections of her life, her houses, her table, and the years she spent making Tryon her own.
             </p>
           </div>
         </div>
