@@ -142,7 +142,7 @@ export default function RenewalSection() {
             </div>
             <div>
               <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.15em", color: MUTED_RED }}>Expires</div>
-              <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.expiration_date)}</div>
+              <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.renewal_due_date || member.expiration_date)}</div>
             </div>
           </div>
         </div>

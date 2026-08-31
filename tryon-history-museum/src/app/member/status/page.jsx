@@ -145,7 +145,7 @@ export default function MemberStatusPage() {
                   Member Since
                 </div>
                 <div className="font-display text-xl font-semibold" style={{ color: WARM_BLACK }}>
-                  {formatDate(member.membership_start_date)}
+                  {formatDate(member.start_date || member.membership_start_date)}
                 </div>
               </div>
               <div>

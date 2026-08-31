@@ -60,8 +60,8 @@ export default function AdminDashboardSection() {
     async function load() {
       const [statsRes, expiringRes, expiredRes, patronsRes, stewardsRes, logsRes] = await Promise.all([
         fetch("/api/admin/stats"),
-        fetch("/api/admin/members?status=expiring_soon&perPage=10&sortBy=expiration_date&sortDir=asc"),
-        fetch("/api/admin/members?status=expired&perPage=10&sortBy=expiration_date&sortDir=desc"),
+        fetch("/api/admin/members?status=expiring_soon&perPage=10&sortBy=renewal_due_date&sortDir=asc"),
+        fetch("/api/admin/members?status=expired&perPage=10&sortBy=renewal_due_date&sortDir=desc"),
         fetch("/api/admin/members?donorClass=simone&perPage=20"),
         fetch("/api/admin/members?donorClass=pacolet&perPage=20"),
         fetch("/api/admin/email-logs"),
@@ -210,7 +210,7 @@ export default function AdminDashboardSection() {
                       {m.first_name} {m.last_name}
                     </Link>
                     <div className="font-body text-[11px]" style={{ color: "rgba(26,19,17,0.4)" }}>
-                      {m.membership_tier} · Exp {formatDate(m.expiration_date)}
+                      {m.membership_tier} · Exp {formatDate(m.renewal_due_date || m.expiration_date)}
                     </div>
                   </div>
                   <button
@@ -255,7 +255,7 @@ export default function AdminDashboardSection() {
                       {m.first_name} {m.last_name}
                     </Link>
                     <div className="font-body text-[11px]" style={{ color: "rgba(26,19,17,0.4)" }}>
-                      {m.membership_tier} · Exp {formatDate(m.expiration_date)}
+                      {m.membership_tier} · Exp {formatDate(m.renewal_due_date || m.expiration_date)}
                     </div>
                   </div>
                   <Link

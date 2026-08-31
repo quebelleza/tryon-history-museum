@@ -24,9 +24,9 @@ export async function POST(request) {
 
   const { data: members, error } = await supabase
     .from("members")
-    .select("id, first_name, email, expiration_date")
+    .select("id, first_name, email, renewal_due_date")
     .eq("status", "expired")
-    .eq("expiration_date", today)
+    .eq("renewal_due_date", today)
     .not("email", "is", null);
 
   if (error) {

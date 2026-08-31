@@ -29,7 +29,7 @@ export async function POST(request) {
   // Get all expiring_soon members who haven't been emailed a warning in the last 7 days
   const { data: members, error } = await supabase
     .from("members")
-    .select("id, first_name, email, membership_tier, expiration_date")
+    .select("id, first_name, email, membership_tier, renewal_due_date")
     .eq("status", "expiring_soon")
     .not("email", "is", null);
 
@@ -58,7 +58,7 @@ export async function POST(request) {
     const { subject, html } = expirationWarningEmail({
       firstName: member.first_name,
       tier: member.membership_tier,
-      expirationDate: formatDate(member.expiration_date),
+      expirationDate: formatDate(member.renewal_due_date),
     });
 
     try {

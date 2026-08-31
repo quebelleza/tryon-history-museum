@@ -210,6 +210,7 @@ export default function MemberDashboardSection() {
         city: profileForm.city,
         state: profileForm.state,
         zip_code: profileForm.zip_code,
+        address: [profileForm.street_address, profileForm.city, [profileForm.state, profileForm.zip_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") || null,
         email_newsletter: profileForm.email_newsletter,
         email_event_announcements: profileForm.email_event_announcements,
         email_membership_reminders: profileForm.email_membership_reminders,
@@ -652,7 +653,7 @@ export default function MemberDashboardSection() {
                       Member Since
                     </div>
                     <div className="font-display text-xl font-semibold" style={{ color: WARM_BLACK }}>
-                      {formatDate(member.membership_start_date)}
+                      {formatDate(member.start_date || member.membership_start_date)}
                     </div>
                   </div>
                   <div>

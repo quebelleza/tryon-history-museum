@@ -50,7 +50,7 @@ export async function getMemberAccess() {
     tier: member.effective_access_tier,
     donorClass: member.donor_class,
     donorLevel: member.donor_level || member.donor_class,
-    expirationDate: member.expiration_date,
+    expirationDate: member.renewal_due_date || member.expiration_date,
     member,
   };
 }

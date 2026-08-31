@@ -113,12 +113,14 @@ export async function POST(request) {
       memberFields.member_label = computed.memberLabel;
       memberFields.status = computed.status;
       memberFields.renewal_due_date = computed.renewalDueDate;
+      memberFields.expiration_date = computed.renewalDueDate;
       memberFields.last_payment_date = pDate;
       memberFields.last_payment_amount = amt;
       memberFields.membership_fee = computed.membershipFee;
       memberFields.additional_donation = computed.additionalDonation;
 
       if (pType === "new_member" && computed.membershipStartDate) {
+        memberFields.start_date = computed.membershipStartDate;
         memberFields.membership_start_date = computed.membershipStartDate;
       }
 
@@ -130,6 +132,10 @@ export async function POST(request) {
       memberFields.last_payment_amount = amt;
     }
   }
+
+  // Sync deprecated ↔ authoritative start columns
+  if (memberFields.start_date && !memberFields.membership_start_date) memberFields.membership_start_date = memberFields.start_date;
+  if (memberFields.membership_start_date && !memberFields.start_date) memberFields.start_date = memberFields.membership_start_date;
 
   const { data, error } = await supabase.from("members").insert(memberFields).select().single();
 

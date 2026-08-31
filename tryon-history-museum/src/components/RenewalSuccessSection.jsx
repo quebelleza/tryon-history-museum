@@ -72,9 +72,9 @@ export default function RenewalSuccessSection() {
             <> A confirmation has been sent to <strong style={{ color: WARM_BLACK }}>{member.email}</strong>.</>
           )}
         </p>
-        {member?.expiration_date && (
+        {(member?.renewal_due_date || member?.expiration_date) && (
           <p className="font-body text-[16px] leading-[1.7] mb-8" style={{ color: "rgba(26,19,17,0.6)" }}>
-            Your membership is now active through <strong style={{ color: WARM_BLACK }}>{formatDate(member.expiration_date)}</strong>.
+            Your membership is now active through <strong style={{ color: WARM_BLACK }}>{formatDate(member.renewal_due_date || member.expiration_date)}</strong>.
           </p>
         )}
 

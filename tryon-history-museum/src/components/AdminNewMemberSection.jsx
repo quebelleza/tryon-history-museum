@@ -90,6 +90,7 @@ export default function AdminNewMemberSection() {
       ...form,
       email: form.email?.trim() || null,
       start_date: paymentDate,
+      membership_start_date: paymentDate,
       payment_amount: amt > 0 ? amt : undefined,
       payment_date: amt > 0 ? paymentDate : undefined,
       payment_method: amt > 0 ? paymentMethod : undefined,

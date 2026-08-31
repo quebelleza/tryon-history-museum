@@ -184,6 +184,7 @@ export async function POST(request) {
           membership_tier: "individual",
           effective_access_tier: effectiveTier(upgradedLevel),
           renewal_due_date: computed.renewalDueDate,
+          expiration_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
@@ -254,8 +255,10 @@ export async function POST(request) {
           status: "active",
           effective_access_tier: effectiveTier(computed.donorLevel),
           source: "donation",
+          start_date: computed.membershipStartDate,
           membership_start_date: computed.membershipStartDate,
           renewal_due_date: computed.renewalDueDate,
+          expiration_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
@@ -372,6 +375,7 @@ export async function POST(request) {
           effective_access_tier: effectiveTier(computed.donorLevel),
           source: "public_renewal",
           renewal_due_date: computed.renewalDueDate,
+          expiration_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
@@ -448,8 +452,10 @@ export async function POST(request) {
           status: "active",
           effective_access_tier: effectiveTier(computed.donorLevel),
           source: "public_join",
+          start_date: paymentDate,
           membership_start_date: paymentDate,
           renewal_due_date: computed.renewalDueDate,
+          expiration_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
@@ -597,6 +603,7 @@ export async function POST(request) {
       effective_access_tier: effectiveTier(computed.donorLevel),
       source: isNewActivation ? "public_join" : "public_renewal",
       renewal_due_date: computed.renewalDueDate,
+      expiration_date: computed.renewalDueDate,
       last_payment_date: paymentDate,
       last_payment_amount: amountPaid,
       membership_fee: computed.membershipFee,
@@ -608,6 +615,7 @@ export async function POST(request) {
     };
 
     if (isNewActivation) {
+      updateFields.start_date = paymentDate;
       updateFields.membership_start_date = paymentDate;
       if (assignedMemberId && !member.member_id) {
         updateFields.member_id = assignedMemberId;

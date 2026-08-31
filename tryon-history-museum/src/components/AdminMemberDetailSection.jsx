@@ -124,6 +124,8 @@ export default function AdminMemberDetailSection({ memberId }) {
       const updated = { ...prev, [field]: value };
       if (field === "expiration_date") updated.renewal_due_date = value;
       if (field === "renewal_due_date") updated.expiration_date = value;
+      if (field === "start_date") updated.membership_start_date = value;
+      if (field === "membership_start_date") updated.start_date = value;
       return updated;
     });
     setSaved(false);
@@ -131,11 +133,17 @@ export default function AdminMemberDetailSection({ memberId }) {
 
   async function handleSave() {
     setSaving(true);
+    const dateVal = member.renewal_due_date || member.expiration_date || null;
+    const startVal = member.start_date || member.membership_start_date || null;
+    const addrVal = [member.street_address, member.city, [member.state, member.zip_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") || null;
     const cleaned = {
       ...member,
       email: member.email?.trim() || null,
-      renewal_due_date: member.expiration_date || member.renewal_due_date,
-      expiration_date: member.expiration_date || member.renewal_due_date,
+      renewal_due_date: dateVal,
+      expiration_date: dateVal,
+      start_date: startVal,
+      membership_start_date: startVal,
+      address: addrVal,
     };
     const body = isBoardMember ? { member_label: cleaned.member_label } : cleaned;
     const res = await fetch(`/api/admin/members/${memberId}`, {
@@ -432,7 +440,7 @@ export default function AdminMemberDetailSection({ memberId }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
             <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Membership Start</div>
-            <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.membership_start_date)}</div>
+            <div className="font-body text-[14px] font-semibold" style={{ color: WARM_BLACK }}>{formatDate(member.start_date || member.membership_start_date)}</div>
           </div>
           <div>
             <div className="font-body text-[10px] uppercase mb-1" style={{ letterSpacing: "0.12em", color: MUTED_RED }}>Last Payment</div>

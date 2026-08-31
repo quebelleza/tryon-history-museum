@@ -29,7 +29,7 @@ export async function POST(request) {
 
   const { data: member, error } = await supabase
     .from("members")
-    .select("id, first_name, email, membership_tier, expiration_date")
+    .select("id, first_name, email, membership_tier, renewal_due_date")
     .eq("id", member_id)
     .single();
 
@@ -44,7 +44,7 @@ export async function POST(request) {
   const { subject, html } = expirationWarningEmail({
     firstName: member.first_name,
     tier: member.membership_tier,
-    expirationDate: formatDate(member.expiration_date),
+    expirationDate: formatDate(member.renewal_due_date),
   });
 
   try {
