@@ -64,8 +64,14 @@ export default function EllettraSection() {
         color: "rgba(255,255,255,0.38)",
         letterSpacing: "0.06em",
         fontFamily: "'DM Sans', system-ui, sans-serif",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        flexWrap: "wrap",
+        gap: "0.5rem",
       }}>
-        Song Hill, Landrum. Elettra bought sixty-eight acres above Lake Lanier in 1984 and designed three houses on the land.
+        <span>Song Hill, Landrum. Elettra bought sixty-eight acres above Lake Lanier in 1984 and designed three houses on the land.</span>
+        <span style={{ whiteSpace: "nowrap" }}>Courtesy of Song Hill Reserve</span>
       </div>
 
       {/* METADATA STRIP */}
