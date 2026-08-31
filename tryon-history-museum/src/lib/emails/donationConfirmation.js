@@ -1,13 +1,14 @@
 /**
- * Welcome Email — sent to new members after their first Stripe payment.
+ * Donation Confirmation Email — sent after a donation payment via Stripe.
  */
-export function welcomeEmail({ firstName, expirationDate, amount, paymentDate, setupLink }) {
+export function donationConfirmationEmail({ firstName, amount, paymentDate }) {
   const amountFormatted = amount != null
     ? `$${Number(amount).toFixed(2)}`
-    : "$50.00";
+    : "$0.00";
   const dateFormatted = paymentDate || "—";
+
   return {
-    subject: "Welcome to the Tryon History Museum",
+    subject: "Thank you for your gift to the Tryon History Museum",
     html: `
 <!DOCTYPE html>
 <html>
@@ -31,16 +32,16 @@ export function welcomeEmail({ firstName, expirationDate, amount, paymentDate, s
               Dear ${firstName},
             </p>
             <p style="font-family:Georgia,serif;font-size:16px;color:#1A1311;line-height:1.7;margin:0 0 20px;">
-              Welcome — and thank you for becoming a member of the Tryon History Museum. Your membership is now active through <strong>${expirationDate}</strong>.
+              Thank you for your generous contribution to the Tryon History Museum. Your support helps us preserve and share the stories of this community.
             </p>
             <p style="font-family:Georgia,serif;font-size:16px;color:#1A1311;line-height:1.7;margin:0 0 28px;">
-              Your support helps us preserve and share the stories of this community. We're glad you're part of it.
+              Please keep this email for your records.
             </p>
             <!-- Receipt block -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
               <tr>
                 <td style="background:#F5F2EE;border:1px solid rgba(26,19,17,0.1);padding:24px 28px;">
-                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;color:#1A1311;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 16px;">Membership Receipt</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;color:#1A1311;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 16px;">Donation Receipt</p>
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Organization</td>
@@ -64,33 +65,18 @@ export function welcomeEmail({ firstName, expirationDate, amount, paymentDate, s
                     </tr>
                     <tr>
                       <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Description</td>
-                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">Annual Membership — Tryon History Museum</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">Charitable Donation</td>
                     </tr>
                     <tr>
                       <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Amount</td>
                       <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-align:right;padding:3px 0;">${amountFormatted}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Membership valid through</td>
-                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">${expirationDate}</td>
                     </tr>
                   </table>
                   <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(26,19,17,0.5);line-height:1.6;margin:16px 0 0;">The Tryon History Museum is a 501(c)(3) nonprofit organization, EIN 47-1736984. No goods or services were provided in exchange for this contribution.</p>
                 </td>
               </tr>
             </table>
-            <!-- Button: setup account link if provided, else generic dashboard -->
-            <table cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="background:#C4A35A;padding:14px 32px;">
-                  <a href="${setupLink || 'https://tryonhistorymuseum.org/member/dashboard'}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;">
-                    ${setupLink ? 'Set Up Your Account →' : 'Visit Your Dashboard'}
-                  </a>
-                </td>
-              </tr>
-            </table>
-            ${setupLink ? `<p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(26,19,17,0.45);line-height:1.6;margin:12px 0 0;">This link is valid for 24 hours. Use it to set your password and access your member dashboard.</p>` : ''}
-            <p style="font-family:Georgia,serif;font-size:15px;color:#1A1311;line-height:1.7;margin:28px 0 0;">
+            <p style="font-family:Georgia,serif;font-size:15px;color:#1A1311;line-height:1.7;margin:0;">
               Warmly,<br />The Tryon History Museum Team
             </p>
           </td>

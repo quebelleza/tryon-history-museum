@@ -87,14 +87,18 @@ export async function POST(request) {
 
   try {
     const supabase = createAdminClient();
-    const { data: existingMember, error: memberError } = await supabase
+    const { data: existingMember } = await supabase
       .from("members")
-      .select("first_name")
+      .select("first_name, auth_user_id")
       .ilike("email", cleanEmail)
-      .single();
+      .maybeSingle();
 
-    if (existingMember && !memberError) {
-      return NextResponse.json({ existingMember: true, firstName: existingMember.first_name });
+    if (existingMember) {
+      return NextResponse.json({
+        existingMember: true,
+        firstName: existingMember.first_name,
+        hasAuth: !!existingMember.auth_user_id,
+      });
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);

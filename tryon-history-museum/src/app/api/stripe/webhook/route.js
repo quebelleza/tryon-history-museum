@@ -215,6 +215,8 @@ export async function POST(request) {
             firstName: existingMember.first_name,
             tier: "individual",
             expirationDate: formatDate(computed.renewalDueDate),
+            amount: amountPaid,
+            paymentDate: formatDate(paymentDate),
           });
           try {
             const { data: sendData, error: sendError } = await resend.emails.send({
@@ -294,6 +296,7 @@ export async function POST(request) {
               firstName,
               expirationDate: formatDate(computed.renewalDueDate),
               amount: amountPaid,
+              paymentDate: formatDate(paymentDate),
             });
             try {
               const { data: sendData, error: sendError } = await resend.emails.send({
@@ -407,6 +410,8 @@ export async function POST(request) {
             firstName: existingMember.first_name,
             tier: "individual",
             expirationDate: formatDate(computed.renewalDueDate),
+            amount: amountPaid,
+            paymentDate: formatDate(paymentDate),
           });
           try {
             const { data: sendData, error: sendError } = await resend.emails.send({
@@ -486,11 +491,32 @@ export async function POST(request) {
           alertMemberId = newMember.member_id;
           alertComputedDL = computed.donorLevel;
 
+          // Create Supabase auth account for passwordless new member
+          let setupLink = null;
+          try {
+            const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+              type: "invite",
+              email,
+              options: {
+                data: { first_name: firstName, last_name: lastName },
+                redirectTo: "https://tryonhistorymuseum.org/member/dashboard",
+              },
+            });
+            if (!linkError && linkData?.user?.id) {
+              await supabase.from("members").update({ auth_user_id: linkData.user.id }).eq("id", newMember.id);
+              setupLink = linkData?.properties?.action_link || null;
+            }
+          } catch (linkErr) {
+            console.error("[stripe-webhook] generateLink error:", linkErr.message);
+          }
+
           if (email) {
             const { subject, html } = welcomeEmail({
               firstName,
               expirationDate: formatDate(computed.renewalDueDate),
               amount: amountPaid,
+              paymentDate: formatDate(paymentDate),
+              setupLink,
             });
             try {
               const { data: sendData, error: sendError } = await resend.emails.send({
@@ -667,11 +693,14 @@ export async function POST(request) {
             firstName: member.first_name,
             expirationDate: formatDate(computed.renewalDueDate),
             amount: amountPaid,
+            paymentDate: formatDate(paymentDate),
           })
         : renewalConfirmationEmail({
             firstName: member.first_name,
             tier: "individual",
             expirationDate: formatDate(computed.renewalDueDate),
+            amount: amountPaid,
+            paymentDate: formatDate(paymentDate),
           });
 
       try {

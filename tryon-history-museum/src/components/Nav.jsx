@@ -230,19 +230,16 @@ export default function Nav() {
               </div>
             </div>
           ) : (
-            null
-            // <Link
-            //   href="/login"
-            //   className="font-body text-[13px] font-normal uppercase no-underline py-2 transition-colors hover:!text-tryon-gold"
-            //   style={{
-            //     letterSpacing: "0.12em",
-            //     color: scrolled
-            //       ? "rgba(250,247,244,0.8)"
-            //       : "rgba(255,255,255,0.85)",
-            //   }}
-            // >
-            //   Sign In
-            // </Link>
+            <Link
+              href="/login"
+              className="font-body text-[13px] font-normal uppercase no-underline py-2 transition-colors hover:!text-tryon-gold"
+              style={{
+                letterSpacing: "0.12em",
+                color: scrolled ? "rgba(250,247,244,0.8)" : "rgba(255,255,255,0.85)",
+              }}
+            >
+              Log In
+            </Link>
           )}
           <a
             href="/donate"
@@ -369,15 +366,14 @@ export default function Nav() {
                 </button>
               </>
             ) : (
-              null
-              // <Link
-              //   href="/login"
-              //   className="block font-body text-sm no-underline py-1.5"
-              //   style={{ color: "rgba(250,247,244,0.6)" }}
-              //   onClick={() => setMobileOpen(false)}
-              // >
-              //   Sign In
-              // </Link>
+              <Link
+                href="/login"
+                className="block font-body text-sm no-underline py-1.5"
+                style={{ color: "rgba(250,247,244,0.6)" }}
+                onClick={() => setMobileOpen(false)}
+              >
+                Log In
+              </Link>
             )}
           </div>
           <a

@@ -84,6 +84,9 @@ export default function MemberDashboardSection() {
   const [txLoading, setTxLoading] = useState(false);
   const [submittingCheckout, setSubmittingCheckout] = useState(false);
   const [dismissedNudge, setDismissedNudge] = useState(false);
+  const [donateAmount, setDonateAmount] = useState("");
+  const [donateLoading, setDonateLoading] = useState(false);
+  const [donateError, setDonateError] = useState("");
 
   const searchParams = useSearchParams();
   const isWelcome = searchParams.get("welcome") === "true";
@@ -160,6 +163,45 @@ export default function MemberDashboardSection() {
       .order("payment_date", { ascending: false });
     setTransactions(data || []);
     setTxLoading(false);
+  }
+
+  async function handleRenew() {
+    setSubmittingCheckout(true);
+    const res = await fetch("/api/stripe/create-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      const { url } = await res.json();
+      window.location.href = url;
+    } else {
+      setSubmittingCheckout(false);
+      alert("Something went wrong. Please try again.");
+    }
+  }
+
+  async function handleDonate() {
+    const parsed = Math.round(Number(donateAmount));
+    if (!parsed || parsed < 1) {
+      setDonateError("Please enter a valid donation amount.");
+      return;
+    }
+    setDonateError("");
+    setDonateLoading(true);
+    const res = await fetch("/api/stripe/create-member-donation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: parsed }),
+    });
+    if (res.ok) {
+      const { url } = await res.json();
+      window.location.href = url;
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setDonateError(data.error || "Something went wrong. Please try again.");
+      setDonateLoading(false);
+    }
   }
 
   async function handleCompletePayment() {
@@ -701,6 +743,100 @@ export default function MemberDashboardSection() {
                 )}
               </div>
 
+              {/* Renew & Donate actions */}
+              {member.status !== "pending" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Renew */}
+                  <div
+                    className="p-6"
+                    style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
+                  >
+                    <div
+                      className="font-body text-[10px] uppercase mb-2"
+                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                    >
+                      Membership
+                    </div>
+                    {(() => {
+                      const rd = member.renewal_due_date;
+                      const days = rd
+                        ? Math.floor((new Date(rd + "T12:00:00") - new Date()) / 86400000)
+                        : null;
+                      const label =
+                        days === null ? "Renew Membership"
+                        : days > 60 ? "Renew Early"
+                        : days >= 0 ? `Renew Now — Due ${formatDate(rd)}`
+                        : `Renew — Lapsed ${formatDate(rd)}`;
+                      return (
+                        <button
+                          onClick={handleRenew}
+                          disabled={submittingCheckout}
+                          className="font-body text-[12px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{
+                            letterSpacing: "0.1em",
+                            color: WARM_BLACK,
+                            background: GOLD_ACCENT,
+                            padding: "10px 20px",
+                            border: "none",
+                          }}
+                        >
+                          {submittingCheckout ? "Redirecting…" : label}
+                        </button>
+                      );
+                    })()}
+                  </div>
+                  {/* Donate */}
+                  <div
+                    className="p-6"
+                    style={{ background: "#FFFDF9", border: "1px solid rgba(123,45,38,0.08)" }}
+                  >
+                    <div
+                      className="font-body text-[10px] uppercase mb-2"
+                      style={{ letterSpacing: "0.2em", color: MUTED_RED }}
+                    >
+                      Make a Donation
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-body text-[14px]" style={{ color: WARM_BLACK }}>$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={donateAmount}
+                        onChange={(e) => { setDonateAmount(e.target.value); setDonateError(""); }}
+                        placeholder="Amount"
+                        className="font-body text-[14px] outline-none w-24"
+                        style={{
+                          border: "1px solid rgba(26,19,17,0.15)",
+                          padding: "8px 10px",
+                          background: "#FAF7F4",
+                          color: WARM_BLACK,
+                        }}
+                      />
+                      <button
+                        onClick={handleDonate}
+                        disabled={donateLoading}
+                        className="font-body text-[12px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                          letterSpacing: "0.1em",
+                          color: WARM_BLACK,
+                          background: GOLD_ACCENT,
+                          padding: "10px 18px",
+                          border: "none",
+                        }}
+                      >
+                        {donateLoading ? "Redirecting…" : "Donate"}
+                      </button>
+                    </div>
+                    {donateError && (
+                      <p className="font-body text-[12px] mt-2 m-0" style={{ color: DEEP_RED }}>
+                        {donateError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Admin access card */}
               {hasAdminAccess && (
                 <div className="p-6 md:p-8" style={{ background: NAVY }}>
@@ -1045,8 +1181,9 @@ export default function MemberDashboardSection() {
                   Loading transactions…
                 </p>
               ) : transactions.length === 0 ? (
-                <p className="font-body text-[14px]" style={{ color: "rgba(26,19,17,0.5)" }}>
-                  No transactions on record yet.
+                <p className="font-body text-[14px] leading-[1.7]" style={{ color: "rgba(26,19,17,0.5)" }}>
+                  No online transactions are on file for this account. If you joined before July 2026, your membership is active — payment records weren’t collected digitally at that time.{" "}
+                  <a href="mailto:info@tryonhistorymuseum.org" className="no-underline hover:underline" style={{ color: MUTED_RED }}>Contact us</a> with any questions.
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -1070,8 +1207,21 @@ export default function MemberDashboardSection() {
                           {formatDate(tx.payment_date)}
                         </div>
                       </div>
-                      <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>
-                        ${parseFloat(tx.amount).toFixed(2)}
+                      <div className="flex items-center gap-4">
+                        <div className="font-display text-lg font-semibold" style={{ color: WARM_BLACK }}>
+                          ${parseFloat(tx.amount).toFixed(2)}
+                        </div>
+                        {tx.payment_date && tx.payment_date >= "2026-07-01" && (
+                          <a
+                            href={`/api/receipts/${tx.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-body text-[11px] font-semibold uppercase no-underline hover:underline"
+                            style={{ letterSpacing: "0.1em", color: MUTED_RED }}
+                          >
+                            Receipt
+                          </a>
+                        )}
                       </div>
                     </div>
                   ))}

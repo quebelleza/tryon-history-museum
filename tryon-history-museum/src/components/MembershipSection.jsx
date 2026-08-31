@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import FadeIn from "./FadeIn";
-import { createClient } from "@/lib/supabase/client";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -71,11 +70,12 @@ export default function MembershipSection() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [existingMemberName, setExistingMemberName] = useState(null);
+  const [existingMemberHasAuth, setExistingMemberHasAuth] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
 
   const selectedTier = TIERS.find((t) => t.id === selectedTierId) || null;
 
@@ -85,6 +85,48 @@ export default function MembershipSection() {
     setAmount(tier.min);
     setError("");
     setExistingMemberName(null);
+    setExistingMemberHasAuth(false);
+    setMagicLinkSent(false);
+  }
+
+  async function handleEmailBlur() {
+    const trimEmail = email.trim().toLowerCase();
+    if (!trimEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimEmail)) return;
+    try {
+      const res = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimEmail }),
+      });
+      const data = await res.json();
+      if (data.state === "member_has_auth") {
+        setExistingMemberName(data.firstName);
+        setExistingMemberHasAuth(true);
+      } else if (data.state === "member_no_auth") {
+        setExistingMemberName(data.firstName);
+        setExistingMemberHasAuth(false);
+      } else {
+        setExistingMemberName(null);
+        setExistingMemberHasAuth(false);
+      }
+    } catch {
+      // silently ignore network errors on blur
+    }
+  }
+
+  async function handleRequestAccess() {
+    setMagicLinkLoading(true);
+    try {
+      await fetch("/api/auth/request-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+    } catch {
+      // ignore
+    }
+    setMagicLinkSent(true);
+    setMagicLinkLoading(false);
   }
 
   function handleSliderChange(e) {
@@ -117,28 +159,22 @@ export default function MembershipSection() {
       setError("Please enter a valid email address.");
       return;
     }
-    if (!password || password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+
+    if (existingMemberName) {
+      setError("Please use the options above to access your existing membership.");
       return;
     }
 
     setLoading(true);
     setError("");
-    setExistingMemberName(null);
     try {
-      // Step 1: create auth user + pending member record
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/stripe/create-member-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName: trimFirst,
           lastName: trimLast,
           email: trimEmail,
-          password,
           tier: selectedTierId,
           amount,
         }),
@@ -147,40 +183,16 @@ export default function MembershipSection() {
 
       if (data.existingMember) {
         setExistingMemberName(data.firstName);
+        setExistingMemberHasAuth(!!data.hasAuth);
         setLoading(false);
         return;
       }
-      if (!data.success) {
+      if (!data.url) {
         setError(data.error || "Something went wrong. Please try again.");
         setLoading(false);
         return;
       }
-
-      // Step 2: sign in so session is available for the checkout call
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: trimEmail,
-        password,
-      });
-      if (signInError) {
-        setError("Account created but sign-in failed. Please log in manually.");
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: create Stripe checkout session and redirect directly
-      const checkoutRes = await fetch("/api/stripe/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const checkoutData = await checkoutRes.json();
-      if (!checkoutData.url) {
-        setError("Account created. Please log in to complete your payment.");
-        setLoading(false);
-        return;
-      }
-      window.location.href = checkoutData.url;
+      window.location.href = data.url;
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -452,7 +464,7 @@ export default function MembershipSection() {
                     />
                   </div>
                 </div>
-                <div className="mb-3">
+                <div className="mb-5">
                   <label
                     htmlFor="mem-email"
                     className="block font-body text-[10px] uppercase mb-1.5"
@@ -464,7 +476,8 @@ export default function MembershipSection() {
                     id="mem-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setExistingMemberName(null); setMagicLinkSent(false); }}
+                    onBlur={handleEmailBlur}
                     required
                     className="w-full font-body text-[14px] outline-none"
                     style={{
@@ -476,70 +489,44 @@ export default function MembershipSection() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div>
-                    <label
-                      htmlFor="mem-password"
-                      className="block font-body text-[10px] uppercase mb-1.5"
-                      style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
-                    >
-                      Password
-                    </label>
-                    <input
-                      id="mem-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete="new-password"
-                      className="w-full font-body text-[14px] outline-none"
-                      style={{
-                        border: "1px solid rgba(26,19,17,0.15)",
-                        padding: "10px 12px",
-                        background: "#FAF7F4",
-                        color: WARM_BLACK,
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="mem-confirm"
-                      className="block font-body text-[10px] uppercase mb-1.5"
-                      style={{ letterSpacing: "0.15em", color: "rgba(26,19,17,0.45)" }}
-                    >
-                      Confirm
-                    </label>
-                    <input
-                      id="mem-confirm"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      autoComplete="new-password"
-                      className="w-full font-body text-[14px] outline-none"
-                      style={{
-                        border: "1px solid rgba(26,19,17,0.15)",
-                        padding: "10px 12px",
-                        background: "#FAF7F4",
-                        color: WARM_BLACK,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {existingMemberName && (
+                {existingMemberName && !magicLinkSent && (
                   <p
                     className="font-body text-[13px] mb-4"
                     style={{ color: NAVY }}
                   >
-                    Looks like {existingMemberName} already has a membership with us!{" "}
-                    <Link
-                      href="/login"
-                      className="no-underline font-semibold hover:underline"
-                      style={{ color: DEEP_RED }}
-                    >
-                      Log in to view or renew →
-                    </Link>
+                    {existingMemberHasAuth ? (
+                      <>
+                        Looks like <strong>{existingMemberName}</strong> already has an account with us.{" "}
+                        <Link
+                          href="/login"
+                          className="no-underline font-semibold hover:underline"
+                          style={{ color: DEEP_RED }}
+                        >
+                          Log in to view or renew →
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        Looks like <strong>{existingMemberName}</strong> is already a member.{" "}
+                        <button
+                          type="button"
+                          onClick={handleRequestAccess}
+                          disabled={magicLinkLoading}
+                          className="font-semibold hover:underline bg-transparent border-none cursor-pointer p-0 font-body text-[13px]"
+                          style={{ color: DEEP_RED }}
+                        >
+                          {magicLinkLoading ? "Sending…" : "Set a password to access your account and renew. →"}
+                        </button>
+                      </>
+                    )}
+                  </p>
+                )}
+                {magicLinkSent && (
+                  <p
+                    className="font-body text-[13px] mb-4"
+                    style={{ color: NAVY }}
+                  >
+                    Check your inbox — we sent an access link to the email on file.
                   </p>
                 )}
                 {error && !existingMemberName && (
@@ -564,16 +551,16 @@ export default function MembershipSection() {
                   }}
                 >
                   {loading
-                    ? "Creating account…"
+                    ? "Sending you to payment…"
                     : selectedTierId
-                    ? `Create Account — $${amount.toLocaleString()}`
+                    ? `Continue to Payment — $${amount.toLocaleString()}`
                     : "Select a level above"}
                 </button>
                 <p
                   className="font-body text-[11px] text-center mt-3 m-0"
                   style={{ color: "rgba(26,19,17,0.35)" }}
                 >
-                  You&apos;ll be redirected to a secure payment page to complete your membership.
+                  You&apos;ll be redirected to a secure Stripe checkout page. Your account is created after payment.
                 </p>
               </form>
             </div>

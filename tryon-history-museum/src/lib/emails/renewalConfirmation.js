@@ -1,8 +1,10 @@
 /**
  * Renewal Confirmation Email — sent after successful Stripe payment.
  */
-export function renewalConfirmationEmail({ firstName, tier, expirationDate }) {
+export function renewalConfirmationEmail({ firstName, tier, expirationDate, amount, paymentDate }) {
   const tierLabel = "Individual";
+  const amountFormatted = amount != null ? `$${Number(amount).toFixed(2)}` : "$50.00";
+  const dateFormatted = paymentDate || "—";
   return {
     subject: "Welcome back — your membership is renewed!",
     html: `
@@ -33,6 +35,49 @@ export function renewalConfirmationEmail({ firstName, tier, expirationDate }) {
             <p style="font-family:Georgia,serif;font-size:16px;color:#1A1311;line-height:1.7;margin:0 0 28px;">
               We're grateful for your continued support of Tryon's history.
             </p>
+            <!-- Receipt block -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td style="background:#F5F2EE;border:1px solid rgba(26,19,17,0.1);padding:24px 28px;">
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;color:#1A1311;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 16px;">Membership Renewal Receipt</p>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Organization</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">Tryon History Museum</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Address</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">26 Maple Street, Tryon NC 28782</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Federal Tax ID (EIN)</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">47-1736984</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Donor</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">${firstName}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Date</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">${dateFormatted}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Description</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">Annual Membership Renewal — Tryon History Museum</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Amount</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#1A1311;text-align:right;padding:3px 0;">${amountFormatted}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(26,19,17,0.55);padding:3px 0;">Valid through</td>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1311;text-align:right;padding:3px 0;">${expirationDate}</td>
+                    </tr>
+                  </table>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(26,19,17,0.5);line-height:1.6;margin:16px 0 0;">The Tryon History Museum is a 501(c)(3) nonprofit organization, EIN 47-1736984. No goods or services were provided in exchange for this contribution.</p>
+                </td>
+              </tr>
+            </table>
             <!-- Button -->
             <table cellpadding="0" cellspacing="0">
               <tr>
