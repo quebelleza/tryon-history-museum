@@ -7,6 +7,16 @@ const DEEP_RED = "#7B2D26";
 
 const STATIC_EVENTS = [
   {
+    _id: "elettra-static",
+    title: "The Many Lives of Elettra",
+    date: "2026-09-24",
+    eventType: "Tales of Tryon",
+    description: "An evening on the life of Elettra — artist, restaurateur, and adventurer — told by the family who knew her best.",
+    time: "Doors 4:00 pm · Lecture 5:00 pm",
+    location: "Holy Cross Episcopal Church · Tryon NC",
+    slug: { current: "elettra" },
+  },
+  {
     _id: "nc-rev-war-static",
     title: "NC and the Revolutionary War",
     date: "2026-07-23",

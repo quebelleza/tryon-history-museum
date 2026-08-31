@@ -10,19 +10,11 @@ const GOLD_ACCENT = "#C4A35A";
 
 const fallbackEvents = [
   {
-    date: "Jul 23",
-    title: "NC and the Revolutionary War",
-    type: "Tales of Tryon",
-    desc: "Join historian John Oliver for an evening exploration of North Carolina's pivotal role in the Revolutionary War — and the stories that connect Tryon's own landscape to the birth of a nation.",
-    href: "/events/nc-revolutionary-war",
-    membersOnly: false,
-  },
-  {
     date: "Sep 24",
     title: "Elettra",
     type: "Tales of Tryon",
-    desc: "A fascinating evening dedicated to Elettra, one of Tryon's most intriguing public figures. Join us for an intimate look at a life that left its mark on this small mountain town.",
-    href: null,
+    desc: "An evening on the life of Elettra — artist, restaurateur, and adventurer — told by the family who knew her best.",
+    href: "/events/elettra",
     membersOnly: false,
   },
   {
