@@ -121,3 +121,32 @@ export function getFeeSchedule() {
 
 /** Fair-market value of membership benefits in dollars (string for Stripe metadata). */
 export const MEMBER_BENEFIT_FMV = "0";
+
+/**
+ * Donation-origin membership. A donation is not a dues payment, so the whole
+ * amount is recorded as a gift and membership_fee is 0. This keeps donation
+ * totals honest for acknowledgment letters and the annual report.
+ */
+export function computeDonationMembership(paymentAmount, paymentDate) {
+  const amt = parseFloat(paymentAmount) || 0;
+
+  if (amt < INDIVIDUAL_FEE) {
+    return { createsMembership: false, membershipFee: 0, additionalDonation: amt,
+             donorLevel: null, renewalDueDate: null };
+  }
+
+  // Reuse the existing band logic so there is one definition of donor levels.
+  const base = computeMembership(amt, paymentDate, "new_member");
+
+  return {
+    createsMembership: true,
+    membershipTier: "individual",
+    membershipFee: 0,               // comp membership — not a dues payment
+    additionalDonation: amt,        // full amount is the gift
+    donorLevel: base.donorLevel,
+    memberLabel: base.memberLabel,
+    renewalDueDate: base.renewalDueDate,
+    membershipStartDate: paymentDate,
+    status: "active",
+  };
+}

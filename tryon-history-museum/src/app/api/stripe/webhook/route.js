@@ -4,7 +4,7 @@ import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renewalConfirmationEmail } from "@/lib/emails/renewalConfirmation";
 import { welcomeEmail } from "@/lib/emails/welcomeEmail";
-import { computeMembership } from "@/lib/membershipPricing";
+import { computeMembership, computeDonationMembership } from "@/lib/membershipPricing";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -163,14 +163,16 @@ export async function POST(request) {
 
     // ── Donation ──
     if (session.metadata?.payment_type === "donation") {
-      const donorEmail = session.customer_email || session.customer_details?.email || "unknown";
-      const donorName = session.customer_details?.name || "Anonymous";
+      const donorEmail = session.customer_email || session.customer_details?.email || "";
+      const donorName = session.customer_details?.name || "";
+      const computed = computeDonationMembership(amountPaid, paymentDate);
 
+      // Staff notification (always sent)
       try {
         const { subject, html } = buildNotificationEmail({
           type: "donation",
-          name: donorName,
-          email: donorEmail,
+          name: donorName || "Anonymous",
+          email: donorEmail || "—",
           amount: amountPaid,
           memberId: null,
           date: notificationTimestamp,
@@ -183,6 +185,157 @@ export async function POST(request) {
         });
       } catch (notifyErr) {
         console.error("[webhook] Donation notification error:", notifyErr.message);
+      }
+
+      // < $50 — receipt only, no membership created
+      if (!computed.createsMembership) {
+        return NextResponse.json({ received: true });
+      }
+
+      // Donor level rank for upgrade-only logic
+      const DONOR_LEVEL_RANK = { none: 0, gillette: 1, simone: 2, pacolet: 3, fitzgerald: 4 };
+      const newRank = DONOR_LEVEL_RANK[computed.donorLevel] ?? 0;
+
+      const { data: existingMember } = await supabase
+        .from("members")
+        .select("*")
+        .eq("email", donorEmail)
+        .maybeSingle();
+
+      if (existingMember) {
+        // Update donor class only if new level is higher; always roll renewal date forward
+        const currentRank = DONOR_LEVEL_RANK[existingMember.donor_level] ?? 0;
+        const upgradedLevel = newRank > currentRank ? computed.donorLevel : existingMember.donor_level;
+        const upgradedLabel = newRank > currentRank ? computed.memberLabel : existingMember.member_label;
+
+        await supabase.from("members").update({
+          status: "active",
+          membership_tier: "individual",
+          renewal_due_date: computed.renewalDueDate,
+          last_payment_date: paymentDate,
+          last_payment_amount: amountPaid,
+          membership_fee: computed.membershipFee,
+          additional_donation: computed.additionalDonation,
+          donor_level: upgradedLevel,
+          donor_class: upgradedLevel,
+          member_label: upgradedLabel,
+        }).eq("id", existingMember.id);
+
+        await supabase.from("membership_payments").insert({
+          member_id: existingMember.id,
+          payment_date: paymentDate,
+          amount: amountPaid,
+          payment_method: "stripe",
+          payment_type: "donation",
+          membership_fee: computed.membershipFee,
+          additional_donation: computed.additionalDonation,
+          notes: `Stripe session ${session.id}`,
+        });
+
+        if (existingMember.email) {
+          const { subject, html } = renewalConfirmationEmail({
+            firstName: existingMember.first_name,
+            tier: "individual",
+            expirationDate: formatDate(computed.renewalDueDate),
+          });
+          try {
+            const { data: sendData, error: sendError } = await resend.emails.send({
+              from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+              to: existingMember.email,
+              subject,
+              html,
+            });
+            await supabase.from("email_log").insert({
+              member_id: existingMember.id,
+              email_type: "renewal_confirmation",
+              sent_to: existingMember.email,
+              status: sendError ? "failed" : "sent",
+              resend_id: sendData?.id || null,
+            });
+          } catch (emailErr) {
+            console.error("[webhook] Donation renewal email error:", emailErr.message);
+            await supabase.from("email_log").insert({
+              member_id: existingMember.id,
+              email_type: "renewal_confirmation",
+              sent_to: existingMember.email,
+              status: "error",
+              resend_id: null,
+            });
+          }
+        }
+      } else {
+        // New member auto-enrolled from donation
+        const nameParts = donorName.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        const { data: newMember, error: insertError } = await supabase.from("members").insert({
+          first_name: firstName,
+          last_name: lastName,
+          email: donorEmail,
+          membership_tier: "individual",
+          status: "active",
+          membership_start_date: computed.membershipStartDate,
+          renewal_due_date: computed.renewalDueDate,
+          last_payment_date: paymentDate,
+          last_payment_amount: amountPaid,
+          membership_fee: computed.membershipFee,
+          additional_donation: computed.additionalDonation,
+          donor_level: computed.donorLevel || "none",
+          donor_class: computed.donorLevel || "none",
+          member_label: computed.memberLabel || "member",
+          member_source: "donation",
+        }).select().single();
+
+        if (insertError) {
+          console.error("[stripe-webhook] Donation member insert error:", JSON.stringify(insertError));
+          return NextResponse.json({ received: true });
+        }
+
+        if (newMember) {
+          await supabase.from("membership_payments").insert({
+            member_id: newMember.id,
+            payment_date: paymentDate,
+            amount: amountPaid,
+            payment_method: "stripe",
+            payment_type: "donation",
+            membership_fee: computed.membershipFee,
+            additional_donation: computed.additionalDonation,
+            notes: `Stripe session ${session.id}`,
+          });
+
+          if (donorEmail) {
+            const { subject, html } = welcomeEmail({
+              firstName,
+              expirationDate: formatDate(computed.renewalDueDate),
+              amount: amountPaid,
+            });
+            try {
+              const { data: sendData, error: sendError } = await resend.emails.send({
+                from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+                to: donorEmail,
+                subject,
+                html,
+              });
+              await supabase.from("email_log").insert({
+                member_id: newMember.id,
+                email_type: "welcome",
+                sent_to: donorEmail,
+                status: sendError ? "failed" : "sent",
+                resend_id: sendData?.id || null,
+              });
+            } catch (emailErr) {
+              console.error("[webhook] Donation welcome email error:", emailErr.message);
+              await supabase.from("email_log").insert({
+                member_id: newMember.id,
+                email_type: "welcome",
+                sent_to: donorEmail,
+                status: "error",
+                resend_id: null,
+              });
+            }
+          }
+        }
       }
 
       return NextResponse.json({ received: true });
