@@ -2,7 +2,7 @@
  * Renewal Confirmation Email — sent after successful Stripe payment.
  */
 export function renewalConfirmationEmail({ firstName, tier, expirationDate }) {
-  const tierLabel = tier === "family" ? "Family" : "Individual";
+  const tierLabel = "Individual";
   return {
     subject: "Welcome back — your membership is renewed!",
     html: `

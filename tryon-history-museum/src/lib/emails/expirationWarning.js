@@ -2,7 +2,7 @@
  * Expiration Warning Email — sent 30 days before expiration.
  */
 export function expirationWarningEmail({ firstName, tier, expirationDate }) {
-  const tierLabel = tier === "family" ? "Family" : "Individual";
+  const tierLabel = "Individual";
   return {
     subject: "Your Tryon History Museum membership expires soon",
     html: `

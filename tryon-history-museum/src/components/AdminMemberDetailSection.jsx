@@ -363,7 +363,6 @@ export default function AdminMemberDetailSection({ memberId }) {
             ) : (
               <select value={member.membership_tier || "individual"} onChange={(e) => handleChange("membership_tier", e.target.value)} className="w-full font-body text-sm px-3 py-2 outline-none cursor-pointer" style={fieldStyle}>
                 <option value="individual">Individual</option>
-                <option value="family">Family</option>
               </select>
             )}
           </div>
