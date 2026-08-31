@@ -12,6 +12,18 @@ function formatDate(dateStr) {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
+function paymentDateFromSession(session) {
+  // session.created is a Unix timestamp (seconds)
+  const ms = (session.created ?? Math.floor(Date.now() / 1000)) * 1000;
+  // en-CA locale gives YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(ms));
+}
+
 function buildNotificationEmail({ type, name, email, amount, memberId, date }) {
   const formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
   const typeLabel =
@@ -76,7 +88,12 @@ export async function POST(request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const amountPaid = (session.amount_total || 0) / 100;
-    const today = new Date().toISOString().split("T")[0];
+    const paymentDate = paymentDateFromSession(session);
+    const notificationTimestamp = new Date().toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      month: "long", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit", timeZoneName: "short",
+    });
     const supabase = createAdminClient();
 
     // ── Universal staff alert (fires for ALL payment types) ──
@@ -156,7 +173,7 @@ export async function POST(request) {
           email: donorEmail,
           amount: amountPaid,
           memberId: null,
-          date: today,
+          date: notificationTimestamp,
         });
         await resend.emails.send({
           from: "Tryon History Museum <info@tryonhistorymuseum.org>",
@@ -185,12 +202,12 @@ export async function POST(request) {
 
       if (existingMember) {
         // Email already on file — treat as renewal
-        const computed = computeMembership(amountPaid, today, "renewal");
+        const computed = computeMembership(amountPaid, paymentDate, "renewal");
         await supabase.from("members").update({
           membership_tier: "individual",
           status: "active",
           renewal_due_date: computed.renewalDueDate,
-          last_payment_date: today,
+          last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
           additional_donation: computed.additionalDonation,
@@ -201,7 +218,7 @@ export async function POST(request) {
 
         await supabase.from("membership_payments").insert({
           member_id: existingMember.id,
-          payment_date: today,
+          payment_date: paymentDate,
           amount: amountPaid,
           payment_method: "stripe",
           payment_type: "renewal",
@@ -217,7 +234,7 @@ export async function POST(request) {
             email: existingMember.email,
             amount: amountPaid,
             memberId: existingMember.member_id,
-            date: today,
+            date: notificationTimestamp,
           });
           await resend.emails.send({
             from: "Tryon History Museum <info@tryonhistorymuseum.org>",
@@ -270,16 +287,16 @@ export async function POST(request) {
         }
       } else {
         // Brand new member
-        const computed = computeMembership(amountPaid, today, "new_member");
+        const computed = computeMembership(amountPaid, paymentDate, "new_member");
         const { data: newMember, error: insertError } = await supabase.from("members").insert({
           first_name: firstName,
           last_name: lastName,
           email,
           membership_tier: "individual",
           status: "active",
-          membership_start_date: today,
+          membership_start_date: paymentDate,
           renewal_due_date: computed.renewalDueDate,
-          last_payment_date: today,
+          last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
           additional_donation: computed.additionalDonation,
@@ -297,7 +314,7 @@ export async function POST(request) {
         if (newMember) {
           await supabase.from("membership_payments").insert({
             member_id: newMember.id,
-            payment_date: today,
+            payment_date: paymentDate,
             amount: amountPaid,
             payment_method: "stripe",
             payment_type: "new_member",
@@ -313,7 +330,7 @@ export async function POST(request) {
               email,
               amount: amountPaid,
               memberId: newMember.member_id,
-              date: today,
+              date: notificationTimestamp,
             });
             await resend.emails.send({
               from: "Tryon History Museum <info@tryonhistorymuseum.org>",
@@ -391,7 +408,7 @@ export async function POST(request) {
     }
 
     const isNewActivation = member.status === "pending";
-    const computed = computeMembership(amountPaid, today, isNewActivation ? "new_member" : "renewal");
+    const computed = computeMembership(amountPaid, paymentDate, isNewActivation ? "new_member" : "renewal");
 
     // Generate THM-#### member ID for first-time activations that don't have one yet
     let assignedMemberId = member.member_id;
@@ -417,7 +434,7 @@ export async function POST(request) {
       membership_tier: "individual",
       status: "active",
       renewal_due_date: computed.renewalDueDate,
-      last_payment_date: today,
+      last_payment_date: paymentDate,
       last_payment_amount: amountPaid,
       membership_fee: computed.membershipFee,
       additional_donation: computed.additionalDonation,
@@ -427,7 +444,7 @@ export async function POST(request) {
     };
 
     if (isNewActivation) {
-      updateFields.membership_start_date = today;
+      updateFields.membership_start_date = paymentDate;
       if (assignedMemberId && !member.member_id) {
         updateFields.member_id = assignedMemberId;
       }
@@ -438,7 +455,7 @@ export async function POST(request) {
     // Payment record
     await supabase.from("membership_payments").insert({
       member_id: member.id,
-      payment_date: today,
+      payment_date: paymentDate,
       amount: amountPaid,
       payment_method: "stripe",
       payment_type: isNewActivation ? "new_member" : "renewal",
@@ -455,7 +472,7 @@ export async function POST(request) {
         email: member.email,
         amount: amountPaid,
         memberId: assignedMemberId || member.member_id,
-        date: today,
+        date: notificationTimestamp,
       });
       await resend.emails.send({
         from: "Tryon History Museum <info@tryonhistorymuseum.org>",
