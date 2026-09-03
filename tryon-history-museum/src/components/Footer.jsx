@@ -34,7 +34,7 @@ const footerLinks = [
     links: [
       { name: "Become a Member", href: "/#support" },
       { name: "Volunteer", href: "/volunteer" },
-      { name: "Board of Directors", href: "/board-application" },
+      { name: "Board Application", href: "/board-application" },
       { name: "Donate", href: "/donate" },
     ],
   },
