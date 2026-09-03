@@ -39,6 +39,7 @@ const navItems = [
     children: [
       { name: "Become a Member", href: "/membership" },
       { name: "Volunteer", href: "/volunteer" },
+      { name: "Board of Directors", href: "/board-application" },
       { name: "Donate", href: "/donate" },
     ],
   },
