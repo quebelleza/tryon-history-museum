@@ -10,14 +10,6 @@ const GOLD_ACCENT = "#C4A35A";
 
 const fallbackEvents = [
   {
-    date: "Sep 24",
-    title: "Elettra",
-    type: "Tales of Tryon",
-    desc: "An evening on the life of Elettra — artist, restaurateur, and adventurer — told by the family who knew her best.",
-    href: "/events/elettra",
-    membersOnly: false,
-  },
-  {
     date: "Nov 12",
     title: "Appalachian Music with Jamie Laval",
     type: "Tales of Tryon",

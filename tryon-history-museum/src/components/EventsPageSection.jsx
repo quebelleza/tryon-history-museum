@@ -7,16 +7,6 @@ const DEEP_RED = "#7B2D26";
 
 const STATIC_EVENTS = [
   {
-    _id: "elettra-static",
-    title: "The Many Lives of Elettra",
-    date: "2026-09-24",
-    eventType: "Tales of Tryon",
-    description: "An evening on the life of Elettra — artist, restaurateur, and adventurer — told by the family who knew her best.",
-    time: "Doors 4:00 pm · Lecture 5:00 pm",
-    location: "Holy Cross Episcopal Church · Tryon NC",
-    slug: { current: "elettra" },
-  },
-  {
     _id: "nc-rev-war-static",
     title: "NC and the Revolutionary War",
     date: "2026-07-23",
@@ -128,8 +118,6 @@ export default function EventsPageSection({ events }) {
   const upcoming = mergedEvents.filter((e) => e.date >= today);
   const past = mergedEvents.filter((e) => e.date < today).reverse();
 
-  const hasNoEvents = upcoming.length === 0 && past.length === 0;
-
   return (
     <>
       {/* Page header */}
@@ -171,52 +159,17 @@ export default function EventsPageSection({ events }) {
       </section>
 
       {/* Upcoming Events */}
-      <section className="bg-tryon-cream py-16 md:py-20">
-        <div className="max-w-[900px] mx-auto px-5 md:px-8">
-          <FadeIn>
-            <div
-              className="font-body text-[11px] uppercase mb-10"
-              style={{ letterSpacing: "0.25em", color: DEEP_RED }}
-            >
-              Upcoming Events
-            </div>
-          </FadeIn>
-
-          {hasNoEvents && (
+      {upcoming.length > 0 && (
+        <section className="bg-tryon-cream py-16 md:py-20">
+          <div className="max-w-[900px] mx-auto px-5 md:px-8">
             <FadeIn>
               <div
-                className="text-center py-16 px-8"
-                style={{
-                  background: "#FFFDF9",
-                  border: "1px solid rgba(123,45,38,0.08)",
-                }}
+                className="font-body text-[11px] uppercase mb-10"
+                style={{ letterSpacing: "0.25em", color: DEEP_RED }}
               >
-                <p
-                  className="font-display text-2xl font-light mb-4"
-                  style={{ color: WARM_BLACK }}
-                >
-                  More events coming soon
-                </p>
-                <p
-                  className="font-body text-[15px] m-0"
-                  style={{ color: "rgba(26,19,17,0.5)" }}
-                >
-                  Follow us on{" "}
-                  <a
-                    href="https://www.facebook.com/tryonhistorymuseum/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: DEEP_RED }}
-                  >
-                    Facebook
-                  </a>{" "}
-                  for the latest updates.
-                </p>
+                Upcoming Events
               </div>
             </FadeIn>
-          )}
-
-          {upcoming.length > 0 && (
             <div className="flex flex-col gap-6">
               {upcoming.map((event, i) => (
                 <FadeIn key={event._id || event.title} delay={i * 0.08}>
@@ -224,37 +177,9 @@ export default function EventsPageSection({ events }) {
                 </FadeIn>
               ))}
             </div>
-          )}
-
-          {upcoming.length === 0 && past.length > 0 && (
-            <FadeIn>
-              <div
-                className="text-center py-12 px-8"
-                style={{
-                  background: "#FFFDF9",
-                  border: "1px solid rgba(123,45,38,0.08)",
-                }}
-              >
-                <p
-                  className="font-body text-[15px] m-0"
-                  style={{ color: "rgba(26,19,17,0.5)" }}
-                >
-                  No upcoming events scheduled. Check back soon or follow us on{" "}
-                  <a
-                    href="https://www.facebook.com/tryonhistorymuseum/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: DEEP_RED }}
-                  >
-                    Facebook
-                  </a>
-                  .
-                </p>
-              </div>
-            </FadeIn>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* Past Events */}
       {past.length > 0 && (
