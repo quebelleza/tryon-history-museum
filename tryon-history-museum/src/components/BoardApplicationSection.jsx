@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import FadeIn from "./FadeIn";
+import BoardVerification from "./BoardVerification";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -83,6 +84,8 @@ const initialForm = {
 export default function BoardApplicationSection() {
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState("idle");
+  const [token, setToken] = useState("");
+  const [attempt, setAttempt] = useState(0);
 
   function handleChange(e) {
     const { name, type, checked, value } = e.target;
@@ -91,12 +94,13 @@ export default function BoardApplicationSection() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!token || status === "sending") return;
     setStatus("sending");
     try {
       const res = await fetch("/api/board-application", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstileToken: token }),
       });
       if (res.ok) {
         setStatus("success");
@@ -107,6 +111,9 @@ export default function BoardApplicationSection() {
       }
     } catch {
       setStatus("error");
+    } finally {
+      setToken("");
+      setAttempt((value) => value + 1);
     }
   }
 
@@ -346,9 +353,11 @@ export default function BoardApplicationSection() {
                   </p>
                 )}
 
+                <BoardVerification onToken={setToken} attempt={attempt} />
+
                 <button
                   type="submit"
-                  disabled={status === "sending"}
+                  disabled={status === "sending" || !token}
                   className="w-full font-body text-[14px] font-semibold uppercase cursor-pointer transition-all hover:brightness-90 disabled:opacity-60 disabled:cursor-default"
                   style={{
                     letterSpacing: "0.12em",

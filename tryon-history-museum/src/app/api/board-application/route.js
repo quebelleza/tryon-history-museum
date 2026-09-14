@@ -60,6 +60,10 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
+  }
+
   const missingField = REQUIRED_TEXT_FIELDS.find(
     (field) => typeof body[field] !== "string" || !body[field].trim()
   );
@@ -74,6 +78,29 @@ export async function POST(request) {
 
   if (!Object.hasOwn(COMMITMENT_LABELS, body.commitment)) {
     return NextResponse.json({ error: "Please select a valid board service commitment." }, { status: 400 });
+  }
+
+  if (typeof body.turnstileToken !== "string" || !body.turnstileToken || body.turnstileToken.length > 2048) {
+    return NextResponse.json({ error: "Please complete human verification." }, { status: 400 });
+  }
+  if (!process.env.TURNSTILE_SECRET_KEY) {
+    return NextResponse.json({ error: "Verification is temporarily unavailable. Please try again later." }, { status: 503 });
+  }
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: process.env.TURNSTILE_SECRET_KEY, response: body.turnstileToken }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error("Verification unavailable");
+    const result = await response.json();
+    if (result.success !== true || result.action !== "board_application" ||
+        !["tryonhistorymuseum.org", "www.tryonhistorymuseum.org"].includes(result.hostname)) {
+      return NextResponse.json({ error: "Verification expired or failed. Please verify again and resubmit." }, { status: 400 });
+    }
+  } catch {
+    return NextResponse.json({ error: "Verification is temporarily unavailable. Please try again." }, { status: 503 });
   }
 
   const submission = {
