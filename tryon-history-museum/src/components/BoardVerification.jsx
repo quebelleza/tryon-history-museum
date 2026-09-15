@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 
-export default function BoardVerification({ onToken, attempt }) {
+export default function BoardVerification({ onToken, attempt, action = "board_application" }) {
   const container = useRef(null);
   const widgetId = useRef(null);
   const [ready, setReady] = useState(false);
@@ -16,7 +16,7 @@ export default function BoardVerification({ onToken, attempt }) {
     onToken("");
     const widget = window.turnstile.render(container.current, {
       sitekey: siteKey,
-      action: "board_application",
+      action,
       callback: (token) => { setError(""); onToken(token); },
       "expired-callback": () => onToken(""),
       "error-callback": () => {
@@ -26,7 +26,7 @@ export default function BoardVerification({ onToken, attempt }) {
     });
     widgetId.current = widget;
     return () => { window.turnstile.remove(widget); widgetId.current = null; };
-  }, [ready, siteKey, onToken, attempt]);
+  }, [ready, siteKey, onToken, attempt, action]);
 
   const [retry, setRetry] = useState(0);
   useEffect(() => {

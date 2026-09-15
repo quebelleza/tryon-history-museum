@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import FadeIn from "./FadeIn";
+import BoardVerification from "./BoardVerification";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -16,6 +17,10 @@ export default function ContactSection() {
     message: "",
   });
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
+  const [token, setToken] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const [error, setError] = useState("");
+  const submitting = useRef(false);
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -23,21 +28,31 @@ export default function ContactSection() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submitting.current || !token) return;
+    submitting.current = true;
+    setError("");
     setStatus("sending");
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstileToken: token }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success === true) {
         setStatus("success");
         setForm({ name: "", email: "", subject: "", message: "" });
       } else {
+        setError(data.error || "Your message could not be sent. Please try again.");
         setStatus("error");
       }
     } catch {
+      setError("We could not confirm your message was sent. Your answers are still here; please try again or email us directly.");
       setStatus("error");
+    } finally {
+      submitting.current = false;
+      setToken("");
+      setAttempt((value) => value + 1);
     }
   }
 
@@ -89,6 +104,7 @@ export default function ContactSection() {
               <FadeIn>
                 {status === "success" ? (
                   <div
+                    role="status"
                     className="p-8 text-center"
                     style={{
                       background: "#FFFDF9",
@@ -143,6 +159,8 @@ export default function ContactSection() {
                         <input
                           id="contact-name"
                           name="name"
+                          autoComplete="name"
+                          maxLength={150}
                           type="text"
                           required
                           value={form.name}
@@ -170,6 +188,8 @@ export default function ContactSection() {
                         <input
                           id="contact-email"
                           name="email"
+                          autoComplete="email"
+                          maxLength={254}
                           type="email"
                           required
                           value={form.email}
@@ -198,6 +218,7 @@ export default function ContactSection() {
                       <input
                         id="contact-subject"
                         name="subject"
+                        maxLength={200}
                         type="text"
                         required
                         value={form.subject}
@@ -225,6 +246,7 @@ export default function ContactSection() {
                       <textarea
                         id="contact-message"
                         name="message"
+                        maxLength={10000}
                         required
                         rows={6}
                         value={form.message}
@@ -240,15 +262,18 @@ export default function ContactSection() {
                     </div>
 
                     {status === "error" && (
-                      <p className="font-body text-sm" style={{ color: "#c53030" }}>
-                        Something went wrong. Please try again or email us
-                        directly.
+                      <p role="alert" className="font-body text-sm" style={{ color: "#c53030" }}>
+                        {error}{" "}
+                        <a className="underline" href="mailto:info@tryonhistorymuseum.org">Email the museum</a>.
                       </p>
                     )}
 
+                    <BoardVerification onToken={setToken} attempt={attempt} action="contact" />
+                    {!token && <p role="status" className="font-body text-sm">Complete the verification above to send your message.</p>}
+
                     <button
                       type="submit"
-                      disabled={status === "sending"}
+                      disabled={status === "sending" || !token}
                       className="font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-60"
                       style={{
                         letterSpacing: "0.12em",
