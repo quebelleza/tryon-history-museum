@@ -13,8 +13,8 @@ export const config = {
      * - favicon.ico
      * - public assets (images, etc.)
      * - Sanity Studio
-     * - API routes
+     * - API routes and public newsletter confirmation/unsubscribe pages
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|studio|api).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|studio|api|newsletter/).*)",
   ],
 };
