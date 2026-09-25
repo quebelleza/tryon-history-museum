@@ -119,13 +119,42 @@ export function getFeeSchedule() {
   return { individual: INDIVIDUAL_FEE };
 }
 
+export function computePayment(paymentAmount, paymentDate, paymentType = "new_member") {
+  if (paymentType !== "donation") return computeMembership(paymentAmount, paymentDate, paymentType);
+
+  const donation = computeDonationMembership(paymentAmount, paymentDate);
+  if (!donation.createsMembership) {
+    return {
+      isDonation: true,
+      membershipTier: null,
+      membershipFee: 0,
+      additionalDonation: donation.additionalDonation,
+      donorLevel: null,
+      donorLevelLabel: null,
+      memberLabel: null,
+      renewalDueDate: null,
+      membershipStartDate: null,
+      status: null,
+      belowMinimum: false,
+      note: null,
+    };
+  }
+
+  return {
+    isDonation: false,
+    ...donation,
+    donorLevelLabel: DONOR_LEVEL_LABELS[donation.donorLevel] || null,
+    belowMinimum: false,
+    note: null,
+  };
+}
+
 /** Fair-market value of membership benefits in dollars (string for Stripe metadata). */
 export const MEMBER_BENEFIT_FMV = "0";
 
 /**
- * Donation-origin membership. A donation is not a dues payment, so the whole
- * amount is recorded as a gift and membership_fee is 0. This keeps donation
- * totals honest for acknowledgment letters and the annual report.
+ * Donation-origin membership. Gifts below $50 remain donations only; gifts of
+ * $50 or more allocate the first $50 to membership and the remainder as a gift.
  */
 export function computeDonationMembership(paymentAmount, paymentDate) {
   const amt = parseFloat(paymentAmount) || 0;
@@ -141,8 +170,8 @@ export function computeDonationMembership(paymentAmount, paymentDate) {
   return {
     createsMembership: true,
     membershipTier: "individual",
-    membershipFee: 0,               // comp membership — not a dues payment
-    additionalDonation: amt,        // full amount is the gift
+    membershipFee: INDIVIDUAL_FEE,
+    additionalDonation: Math.round((amt - INDIVIDUAL_FEE) * 100) / 100,
     donorLevel: base.donorLevel,
     memberLabel: base.memberLabel,
     renewalDueDate: base.renewalDueDate,

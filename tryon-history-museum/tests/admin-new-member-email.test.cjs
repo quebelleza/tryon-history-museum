@@ -7,7 +7,7 @@ const file = fs.readFileSync("src/app/api/admin/members/route.js", "utf8");
 const formatDate = file.slice(file.indexOf("function formatDate"), file.indexOf("export async function GET"));
 const post = file.slice(file.indexOf("export async function POST"))
   .replace("export async function POST", "async function POST")
-  .replaceAll('await import("@/lib/membershipPricing")', "await Promise.resolve({ computeMembership: contextComputeMembership })");
+  .replaceAll('await import("@/lib/membershipPricing")', "await Promise.resolve({ computePayment: contextComputePayment })");
 const source = `${formatDate}\n${post}`;
 
 const baseBody = {
@@ -46,7 +46,7 @@ function setup({ env = { RESEND_API_KEY: "test" }, sendResult, sendThrows = fals
     NextResponse: { json: (body, options) => ({ body, status: options?.status || 200 }) },
     verifyAdmin: async () => ({ hasAdminAccess: true }),
     createAdminClient: () => supabase,
-    contextComputeMembership: (amount, date, type) => ({
+    contextComputePayment: (amount, date, type) => ({
       isDonation: false,
       membershipTier: "individual",
       donorLevel: "none",

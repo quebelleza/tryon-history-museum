@@ -1,14 +1,16 @@
 import Link from "next/link";
 import AdminSidebar from "@/components/AdminSidebar";
+import { verifyAdmin } from "@/lib/supabase/adminAuth";
 
 export const metadata = {
   title: "Admin | Tryon History Museum",
 };
 
-export default function AdminLayout({ children }) {
+export default async function AdminLayout({ children }) {
+  const { role } = await verifyAdmin();
   return (
     <div className="flex min-h-screen" style={{ background: "#F5F0EB" }}>
-      <AdminSidebar />
+      <AdminSidebar role={role} />
       <div className="flex-1 ml-[240px]">
         {/* Top header bar */}
         <div

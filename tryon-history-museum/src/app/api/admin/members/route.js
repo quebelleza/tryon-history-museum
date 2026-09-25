@@ -124,8 +124,8 @@ export async function POST(request) {
   if (!memberFields.donor_class) memberFields.donor_class = "none";
 
   if (amt > 0) {
-    const { computeMembership } = await import("@/lib/membershipPricing");
-    const computed = computeMembership(amt, pDate, pType);
+    const { computePayment } = await import("@/lib/membershipPricing");
+    const computed = computePayment(amt, pDate, pType);
 
     if (!computed.isDonation) {
       memberFields.membership_tier = computed.membershipTier;
@@ -163,8 +163,8 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   if (amt > 0) {
-    const { computeMembership } = await import("@/lib/membershipPricing");
-    const computed = computeMembership(amt, pDate, pType);
+    const { computePayment } = await import("@/lib/membershipPricing");
+    const computed = computePayment(amt, pDate, pType);
 
     await supabase.from("membership_payments").insert({
       member_id: data.id,
@@ -174,6 +174,10 @@ export async function POST(request) {
       payment_type: pType,
       membership_fee: computed.isDonation ? 0 : computed.membershipFee,
       additional_donation: computed.additionalDonation,
+      donor_name: `${data.first_name} ${data.last_name}`.trim(),
+      donor_email: data.email,
+      source: "admin",
+      status: "completed",
       notes: computed.belowMinimum ? computed.note : null,
     });
   }

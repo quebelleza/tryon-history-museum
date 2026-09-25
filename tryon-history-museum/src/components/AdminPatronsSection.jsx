@@ -50,7 +50,7 @@ export default function AdminPatronsSection() {
         const detailRes = await fetch(`/api/admin/members/${m.id}`);
         const detail = await detailRes.json();
         const totalDonations = (detail.payments || []).reduce(
-          (sum, p) => sum + parseFloat(p.amount || 0),
+          (sum, payment) => sum + parseFloat(payment.additional_donation || 0),
           0
         );
         const latestAssignment = (detail.assignments || [])[0] || null;

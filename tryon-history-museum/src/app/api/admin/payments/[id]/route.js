@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/supabase/adminAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { computeMembership } from "@/lib/membershipPricing";
+import { computePayment } from "@/lib/membershipPricing";
 
 /**
  * PATCH /api/admin/payments/[id] — update a payment and recalculate member fields
@@ -18,15 +18,31 @@ export async function PATCH(request, { params }) {
   const supabase = createAdminClient();
   const { id } = await params;
   const body = await request.json();
+  const amount = parseFloat(body.amount);
+  const paymentType = body.payment_type === "new" || body.payment_type === "new_membership"
+    ? "new_member"
+    : body.payment_type;
+  const computed = computePayment(amount, body.payment_date, paymentType);
+  const { data: currentAllocations } = await supabase
+    .from("payment_allocations")
+    .select("designation_id, amount")
+    .eq("payment_id", id);
+  const hasDesignatedAllocation = (currentAllocations || []).some((allocation) => allocation.designation_id);
+  const allocationTotal = (currentAllocations || []).reduce((sum, allocation) => sum + Number(allocation.amount || 0), 0);
+  if (hasDesignatedAllocation && Math.abs(allocationTotal - computed.additionalDonation) > 0.005) {
+    return NextResponse.json({ error: "Update this payment's designation allocations from the Finances page before changing its amount or type." }, { status: 400 });
+  }
 
   // Update the payment record
   const { data: payment, error } = await supabase
     .from("membership_payments")
     .update({
       payment_date: body.payment_date,
-      amount: parseFloat(body.amount),
-      payment_type: body.payment_type,
+      amount,
+      payment_type: paymentType,
       payment_method: body.payment_method,
+      membership_fee: computed.membershipFee,
+      additional_donation: computed.additionalDonation,
       notes: body.notes || null,
     })
     .eq("id", id)
@@ -35,11 +51,16 @@ export async function PATCH(request, { params }) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  if (!hasDesignatedAllocation) {
+    const allocations = computed.additionalDonation > 0
+      ? [{ designation_id: null, amount: computed.additionalDonation }]
+      : [];
+    await supabase.rpc("set_payment_allocations", { p_payment_id: id, p_allocations: allocations });
+  }
+
   // Recalculate member fields from this payment
   const memberId = payment.member_id;
   const amt = parseFloat(payment.amount) || 0;
-  const pType = payment.payment_type || "new_member";
-  const computed = computeMembership(amt, payment.payment_date, pType);
 
   const memberUpdate = {
     last_payment_date: payment.payment_date,
@@ -127,7 +148,7 @@ export async function DELETE(request, { params }) {
     memberUpdate.last_payment_amount = parseFloat(latest.amount);
 
     // Recalculate membership from latest remaining payment
-    const computed = computeMembership(
+    const computed = computePayment(
       parseFloat(latest.amount),
       latest.payment_date,
       latest.payment_type || "new_member"

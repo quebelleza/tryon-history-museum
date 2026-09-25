@@ -12,11 +12,12 @@ const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "📊" },
   { label: "All Members", href: "/admin/members", icon: "👥" },
   { label: "Add Member", href: "/admin/members/new", icon: "➕" },
+  { label: "Finances", href: "/admin/finances", icon: "$", adminOnly: true },
   { label: "Patron Management", href: "/admin/patrons", icon: "✦" },
   { label: "Volunteers", href: "/admin/volunteers", icon: "🤝" },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ role }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -62,7 +63,7 @@ export default function AdminSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {navItems.filter((item) => !item.adminOnly || role === "admin").map((item) => {
           const isActive =
             item.href === "/admin/members"
               ? pathname === "/admin/members"

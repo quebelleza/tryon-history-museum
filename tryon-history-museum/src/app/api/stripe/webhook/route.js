@@ -132,8 +132,26 @@ export async function POST(request) {
       const donorName = session.customer_details?.name || "";
       const computed = computeDonationMembership(amountPaid, paymentDate);
 
-      // < $50 — receipt only, no membership created
+      // < $50 — donation only, no membership created
       if (!computed.createsMembership) {
+        const { error: paymentError } = await supabase.from("membership_payments").insert({
+          member_id: null,
+          payment_date: paymentDate,
+          amount: amountPaid,
+          payment_method: "stripe",
+          payment_type: "donation",
+          membership_fee: 0,
+          additional_donation: amountPaid,
+          donor_name: donorName || null,
+          donor_email: donorEmail || null,
+          source: "website",
+          status: "completed",
+          stripe_session_id: session.id,
+          stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+          notes: `Stripe session ${session.id}`,
+        });
+        if (paymentError) console.error("[stripe-webhook] Donation payment insert error:", paymentError.message);
+
         try {
           const { subject, html } = buildStaffAlert({
             typeLabel: "Donation",
@@ -203,6 +221,12 @@ export async function POST(request) {
           payment_type: "donation",
           membership_fee: computed.membershipFee,
           additional_donation: computed.additionalDonation,
+          donor_name: `${existingMember.first_name} ${existingMember.last_name}`.trim(),
+          donor_email: existingMember.email,
+          source: "website",
+          status: "completed",
+          stripe_session_id: session.id,
+          stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
           notes: `Stripe session ${session.id}`,
         });
 
@@ -285,6 +309,12 @@ export async function POST(request) {
             payment_type: "donation",
             membership_fee: computed.membershipFee,
             additional_donation: computed.additionalDonation,
+            donor_name: `${firstName} ${lastName}`.trim(),
+            donor_email: donorEmail,
+            source: "website",
+            status: "completed",
+            stripe_session_id: session.id,
+            stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
             notes: `Stripe session ${session.id}`,
           });
 
@@ -397,6 +427,12 @@ export async function POST(request) {
           payment_type: "renewal",
           membership_fee: computed.membershipFee,
           additional_donation: computed.additionalDonation,
+          donor_name: `${existingMember.first_name} ${existingMember.last_name}`.trim(),
+          donor_email: existingMember.email,
+          source: "website",
+          status: "completed",
+          stripe_session_id: session.id,
+          stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
           notes: `Stripe session ${session.id}`,
         });
 
@@ -485,6 +521,12 @@ export async function POST(request) {
             payment_type: "new_member",
             membership_fee: computed.membershipFee,
             additional_donation: computed.additionalDonation,
+            donor_name: `${firstName} ${lastName}`.trim(),
+            donor_email: email,
+            source: "website",
+            status: "completed",
+            stripe_session_id: session.id,
+            stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
             notes: `Stripe session ${session.id}`,
           });
 
@@ -665,6 +707,12 @@ export async function POST(request) {
       payment_type: isNewActivation ? "new_member" : "renewal",
       membership_fee: computed.membershipFee,
       additional_donation: computed.additionalDonation,
+      donor_name: `${member.first_name} ${member.last_name}`.trim(),
+      donor_email: member.email,
+      source: "website",
+      status: "completed",
+      stripe_session_id: session.id,
+      stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
       notes: `Stripe session ${session.id}`,
     });
 
