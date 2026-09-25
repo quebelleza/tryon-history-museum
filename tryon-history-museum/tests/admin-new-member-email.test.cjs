@@ -24,6 +24,7 @@ function setup({ env = { RESEND_API_KEY: "test" }, sendResult, sendThrows = fals
   const calls = { authCreate: 0, generateLink: 0, emails: [], inserts: [], updates: [] };
   const member = { id: "member-id", ...baseBody, expiration_date: "2027-09-24" };
   const supabase = {
+    rpc: async () => ({ error: null }),
     auth: { admin: {
       createUser: async () => { calls.authCreate += 1; return { data: { user: { id: "auth-id" } }, error: null }; },
       generateLink: async () => { calls.generateLink += 1; return { data: { properties: { action_link: "https://example.com/setup" } }, error: null }; },

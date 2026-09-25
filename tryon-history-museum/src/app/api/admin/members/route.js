@@ -112,7 +112,7 @@ export async function POST(request) {
     if (typeof memberFields.email !== "string" || !memberFields.email.trim()) {
       return NextResponse.json({ error: "An email address is required to send the welcome email and receipt." }, { status: 400 });
     }
-    if (amt <= 0 || pType !== "new_member") {
+    if (amt < 50 || pType !== "new_member") {
       return NextResponse.json({ error: "A new-member payment is required to send the welcome email and receipt." }, { status: 400 });
     }
     if (!process.env.RESEND_API_KEY) {
@@ -149,6 +149,8 @@ export async function POST(request) {
         memberFields.notes = [memberFields.notes, computed.note].filter(Boolean).join(" | ");
       }
     } else {
+      delete memberFields.start_date;
+      delete memberFields.membership_start_date;
       memberFields.last_payment_date = pDate;
       memberFields.last_payment_amount = amt;
     }
@@ -180,6 +182,7 @@ export async function POST(request) {
       status: "completed",
       notes: computed.belowMinimum ? computed.note : null,
     });
+    await supabase.rpc("replay_member_payment_history", { p_member_id: data.id });
   }
 
   let welcomeEmailSent = false;

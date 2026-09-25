@@ -17,6 +17,30 @@
 
 const INDIVIDUAL_FEE = 50;
 
+function donorDetails(amount) {
+  if (amount >= 1000) return { donorLevel: "fitzgerald", donorLevelLabel: "Fitzgerald", memberLabel: "fitzgerald" };
+  if (amount >= 500) return { donorLevel: "pacolet", donorLevelLabel: "Pacolet", memberLabel: "pacolet" };
+  if (amount >= 250) return { donorLevel: "simone", donorLevelLabel: "Simone", memberLabel: "simone" };
+  if (amount >= 100) return { donorLevel: "gillette", donorLevelLabel: "Gillette", memberLabel: "gillette" };
+  return { donorLevel: "none", donorLevelLabel: null, memberLabel: "member" };
+}
+
+function donationOnly(amount) {
+  return {
+    isDonation: true,
+    appliesMembership: false,
+    membershipTier: null,
+    membershipFee: 0,
+    additionalDonation: amount,
+    ...donorDetails(amount),
+    renewalDueDate: null,
+    membershipStartDate: null,
+    status: null,
+    belowMinimum: amount < INDIVIDUAL_FEE,
+    note: null,
+  };
+}
+
 /**
  * Compute membership details from a payment amount, date, and type.
  *
@@ -30,50 +54,9 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
   const date = paymentDate ? new Date(paymentDate + "T12:00:00") : new Date();
   const renewalDueDate = formatDatePlusYear(date);
 
-  // ── Donation: full amount, no membership changes ──
-  if (paymentType === "donation") {
-    return {
-      isDonation: true,
-      membershipTier: null,
-      membershipFee: 0,
-      additionalDonation: amt,
-      donorLevel: null,
-      donorLevelLabel: null,
-      memberLabel: null,
-      renewalDueDate: null,
-      membershipStartDate: null,
-      status: null,
-      belowMinimum: false,
-      note: null,
-    };
-  }
+  if (paymentType === "donation" || amt < INDIVIDUAL_FEE) return donationOnly(amt);
 
-  // ── New Member / Renewal ──
-  if (amt < INDIVIDUAL_FEE) {
-    return {
-      isDonation: false,
-      membershipTier: "individual",
-      membershipFee: amt,
-      additionalDonation: 0,
-      donorLevel: "none",
-      donorLevelLabel: null,
-      memberLabel: "member",
-      renewalDueDate,
-      membershipStartDate: paymentType === "new_member" ? paymentDate : null,
-      status: "active",
-      belowMinimum: true,
-      note: `Payment below $${INDIVIDUAL_FEE} minimum — please verify.`,
-    };
-  }
-
-  // Donor level based on total payment amount
-  let donorLevel = "none";
-  let donorLevelLabel = null;
-  let memberLabel = "member";
-  if (amt >= 1000) { donorLevel = "fitzgerald"; donorLevelLabel = "Fitzgerald"; memberLabel = "fitzgerald"; }
-  else if (amt >= 500) { donorLevel = "pacolet"; donorLevelLabel = "Pacolet"; memberLabel = "pacolet"; }
-  else if (amt >= 250) { donorLevel = "simone"; donorLevelLabel = "Simone"; memberLabel = "simone"; }
-  else if (amt >= 100) { donorLevel = "gillette"; donorLevelLabel = "Gillette"; memberLabel = "gillette"; }
+  const { donorLevel, donorLevelLabel, memberLabel } = donorDetails(amt);
 
   // All memberships are Individual at $50; amounts above $50 accrue as additional donation
   const membershipTier = "individual";
@@ -83,6 +66,7 @@ export function computeMembership(paymentAmount, paymentDate, paymentType = "new
 
   return {
     isDonation: false,
+    appliesMembership: true,
     membershipTier,
     membershipFee,
     additionalDonation,
@@ -119,63 +103,48 @@ export function getFeeSchedule() {
   return { individual: INDIVIDUAL_FEE };
 }
 
-export function computePayment(paymentAmount, paymentDate, paymentType = "new_member") {
-  if (paymentType !== "donation") return computeMembership(paymentAmount, paymentDate, paymentType);
+export function isMembershipDue(renewalDueDate, paymentDate) {
+  if (!renewalDueDate) return true;
+  const due = new Date(renewalDueDate + "T12:00:00");
+  const payment = new Date(paymentDate + "T12:00:00");
+  payment.setDate(payment.getDate() + 30);
+  return due <= payment;
+}
 
-  const donation = computeDonationMembership(paymentAmount, paymentDate);
-  if (!donation.createsMembership) {
-    return {
-      isDonation: true,
-      membershipTier: null,
-      membershipFee: 0,
-      additionalDonation: donation.additionalDonation,
-      donorLevel: null,
-      donorLevelLabel: null,
-      memberLabel: null,
-      renewalDueDate: null,
-      membershipStartDate: null,
-      status: null,
-      belowMinimum: false,
-      note: null,
-    };
-  }
+export function computePayment(paymentAmount, paymentDate, paymentType = "new_member", member = {}) {
+  const amount = parseFloat(paymentAmount) || 0;
+  if (amount < INDIVIDUAL_FEE) return donationOnly(amount);
+  if (member.existing && !isMembershipDue(member.renewalDueDate, paymentDate)) return donationOnly(amount);
+  return computeMembership(amount, paymentDate, paymentType === "new_member" ? "new_member" : "renewal");
+}
 
-  return {
-    isDonation: false,
-    ...donation,
-    donorLevelLabel: DONOR_LEVEL_LABELS[donation.donorLevel] || null,
-    belowMinimum: false,
-    note: null,
-  };
+export function replayMembershipPayments(payments) {
+  let renewalDueDate = null;
+  let membershipStartDate = null;
+  const replayed = [...payments]
+    .sort((a, b) => String(a.payment_date).localeCompare(String(b.payment_date)) || String(a.created_at || a.id).localeCompare(String(b.created_at || b.id)))
+    .map((payment) => {
+      const computed = computePayment(payment.amount, payment.payment_date, payment.payment_type, { existing: true, renewalDueDate });
+      if (computed.appliesMembership) {
+        renewalDueDate = computed.renewalDueDate;
+        membershipStartDate ||= payment.payment_date;
+      }
+      return { ...payment, ...computed };
+    });
+  return { payments: replayed, renewalDueDate, membershipStartDate };
 }
 
 /** Fair-market value of membership benefits in dollars (string for Stripe metadata). */
 export const MEMBER_BENEFIT_FMV = "0";
 
 /**
- * Donation-origin membership. Gifts below $50 remain donations only; gifts of
- * $50 or more allocate the first $50 to membership and the remainder as a gift.
+ * Donation-origin membership. Existing members only apply dues when expired,
+ * missing a renewal date, or due within 30 days of the payment date.
  */
-export function computeDonationMembership(paymentAmount, paymentDate) {
-  const amt = parseFloat(paymentAmount) || 0;
-
-  if (amt < INDIVIDUAL_FEE) {
-    return { createsMembership: false, membershipFee: 0, additionalDonation: amt,
-             donorLevel: null, renewalDueDate: null };
-  }
-
-  // Reuse the existing band logic so there is one definition of donor levels.
-  const base = computeMembership(amt, paymentDate, "new_member");
-
+export function computeDonationMembership(paymentAmount, paymentDate, member = {}) {
+  const computed = computePayment(paymentAmount, paymentDate, "donation", member);
   return {
-    createsMembership: true,
-    membershipTier: "individual",
-    membershipFee: INDIVIDUAL_FEE,
-    additionalDonation: Math.round((amt - INDIVIDUAL_FEE) * 100) / 100,
-    donorLevel: base.donorLevel,
-    memberLabel: base.memberLabel,
-    renewalDueDate: base.renewalDueDate,
-    membershipStartDate: paymentDate,
-    status: "active",
+    ...computed,
+    createsMembership: computed.appliesMembership,
   };
 }

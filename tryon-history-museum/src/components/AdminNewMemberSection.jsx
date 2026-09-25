@@ -117,8 +117,8 @@ export default function AdminNewMemberSection() {
   }
 
   const hasPayment = (parseFloat(paymentAmount) || 0) > 0;
-  const isDonation = paymentType === "donation";
-  const canSendWelcome = paymentType === "new_member" && hasPayment && Boolean(form.email.trim());
+  const isDonation = computed?.isDonation || paymentType === "donation";
+  const canSendWelcome = paymentType === "new_member" && (parseFloat(paymentAmount) || 0) >= 50 && Boolean(form.email.trim());
 
   const summaryColor = computed
     ? computed.isDonation ? GOLD_ACCENT

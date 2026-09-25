@@ -4,7 +4,8 @@ import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renewalConfirmationEmail } from "@/lib/emails/renewalConfirmation";
 import { welcomeEmail } from "@/lib/emails/welcomeEmail";
-import { computeMembership, computeDonationMembership } from "@/lib/membershipPricing";
+import { donationConfirmationEmail } from "@/lib/emails/donationConfirmation";
+import { computeMembership, computeDonationMembership, computePayment } from "@/lib/membershipPricing";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -130,20 +131,29 @@ export async function POST(request) {
     if (session.metadata?.payment_type === "donation") {
       const donorEmail = session.customer_email || session.customer_details?.email || "";
       const donorName = session.customer_details?.name || "";
+      const memberReference = session.client_reference_id || session.metadata?.member_id;
+      let existingMember = null;
+      if (memberReference) {
+        const { data } = await supabase.from("members").select("*").eq("id", memberReference).maybeSingle();
+        existingMember = data;
+      } else if (donorEmail) {
+        const { data } = await supabase.from("members").select("*").eq("email", donorEmail).maybeSingle();
+        existingMember = data;
+      }
       const computed = computeDonationMembership(amountPaid, paymentDate);
 
       // < $50 — donation only, no membership created
       if (!computed.createsMembership) {
         const { error: paymentError } = await supabase.from("membership_payments").insert({
-          member_id: null,
+          member_id: existingMember?.id || null,
           payment_date: paymentDate,
           amount: amountPaid,
           payment_method: "stripe",
           payment_type: "donation",
           membership_fee: 0,
           additional_donation: amountPaid,
-          donor_name: donorName || null,
-          donor_email: donorEmail || null,
+          donor_name: existingMember ? `${existingMember.first_name} ${existingMember.last_name}`.trim() : donorName || null,
+          donor_email: existingMember?.email || donorEmail || null,
           source: "website",
           status: "completed",
           stripe_session_id: session.id,
@@ -151,6 +161,7 @@ export async function POST(request) {
           notes: `Stripe session ${session.id}`,
         });
         if (paymentError) console.error("[stripe-webhook] Donation payment insert error:", paymentError.message);
+        else if (existingMember) await supabase.rpc("replay_member_payment_history", { p_member_id: existingMember.id });
 
         try {
           const { subject, html } = buildStaffAlert({
@@ -180,29 +191,22 @@ export async function POST(request) {
       const DONOR_LEVEL_RANK = { none: 0, gillette: 1, simone: 2, pacolet: 3, fitzgerald: 4 };
       const newRank = DONOR_LEVEL_RANK[computed.donorLevel] ?? 0;
 
-      const { data: existingMember } = await supabase
-        .from("members")
-        .select("*")
-        .eq("email", donorEmail)
-        .maybeSingle();
-
       // Collect alert data after DB work
       let alertMemberId = null;
       let alertDonorLevel = computed.donorLevel;
       let alertName = donorName || "Anonymous";
 
       if (existingMember) {
-        // Update donor class only if new level is higher; always roll renewal date forward
+        const computed = computeDonationMembership(amountPaid, paymentDate, {
+          existing: true,
+          renewalDueDate: existingMember.renewal_due_date || existingMember.expiration_date,
+        });
         const currentRank = DONOR_LEVEL_RANK[existingMember.donor_level] ?? 0;
         const upgradedLevel = newRank > currentRank ? computed.donorLevel : existingMember.donor_level;
         const upgradedLabel = newRank > currentRank ? computed.memberLabel : existingMember.member_label;
 
-        await supabase.from("members").update({
-          status: "active",
-          membership_tier: "individual",
+        const memberUpdate = {
           effective_access_tier: effectiveTier(upgradedLevel),
-          renewal_due_date: computed.renewalDueDate,
-          expiration_date: computed.renewalDueDate,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
@@ -211,7 +215,14 @@ export async function POST(request) {
           donor_class: upgradedLevel,
           member_label: upgradedLabel,
           stripe_customer_id: session.customer || null,
-        }).eq("id", existingMember.id);
+        };
+        if (computed.createsMembership) {
+          memberUpdate.status = "active";
+          memberUpdate.membership_tier = "individual";
+          memberUpdate.renewal_due_date = computed.renewalDueDate;
+          memberUpdate.expiration_date = computed.renewalDueDate;
+        }
+        await supabase.from("members").update(memberUpdate).eq("id", existingMember.id);
 
         await supabase.from("membership_payments").insert({
           member_id: existingMember.id,
@@ -229,19 +240,27 @@ export async function POST(request) {
           stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
           notes: `Stripe session ${session.id}`,
         });
+        await supabase.rpc("replay_member_payment_history", { p_member_id: existingMember.id });
 
         alertMemberId = existingMember.member_id;
         alertDonorLevel = upgradedLevel;
         alertName = `${existingMember.first_name} ${existingMember.last_name}`;
 
         if (existingMember.email) {
-          const { subject, html } = renewalConfirmationEmail({
-            firstName: existingMember.first_name,
-            tier: "individual",
-            expirationDate: formatDate(computed.renewalDueDate),
-            amount: amountPaid,
-            paymentDate: formatDate(paymentDate),
-          });
+          const emailType = computed.createsMembership ? "renewal_confirmation" : "donation_confirmation";
+          const { subject, html } = computed.createsMembership
+            ? renewalConfirmationEmail({
+                firstName: existingMember.first_name,
+                tier: "individual",
+                expirationDate: formatDate(computed.renewalDueDate),
+                amount: amountPaid,
+                paymentDate: formatDate(paymentDate),
+              })
+            : donationConfirmationEmail({
+                firstName: existingMember.first_name,
+                amount: amountPaid,
+                paymentDate: formatDate(paymentDate),
+              });
           try {
             const { data: sendData, error: sendError } = await resend.emails.send({
               from: "Tryon History Museum <info@tryonhistorymuseum.org>",
@@ -251,16 +270,16 @@ export async function POST(request) {
             });
             await supabase.from("email_log").insert({
               member_id: existingMember.id,
-              email_type: "renewal_confirmation",
+              email_type: emailType,
               sent_to: existingMember.email,
               status: sendError ? "failed" : "sent",
               resend_id: sendData?.id || null,
             });
           } catch (emailErr) {
-            console.error("[webhook] Donation renewal email error:", emailErr.message);
+            console.error("[webhook] Donation confirmation email error:", emailErr.message);
             await supabase.from("email_log").insert({
               member_id: existingMember.id,
-              email_type: "renewal_confirmation",
+              email_type: emailType,
               sent_to: existingMember.email,
               status: "error",
               resend_id: null,
@@ -317,6 +336,7 @@ export async function POST(request) {
             stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
             notes: `Stripe session ${session.id}`,
           });
+          await supabase.rpc("replay_member_payment_history", { p_member_id: newMember.id });
 
           alertMemberId = newMember.member_id;
           alertName = `${firstName} ${lastName}`;
@@ -401,14 +421,13 @@ export async function POST(request) {
 
       if (existingMember) {
         // Email already on file — treat as renewal
-        const computed = computeMembership(amountPaid, paymentDate, "renewal");
-        await supabase.from("members").update({
-          membership_tier: "individual",
-          status: "active",
+        const computed = computePayment(amountPaid, paymentDate, "renewal", {
+          existing: true,
+          renewalDueDate: existingMember.renewal_due_date || existingMember.expiration_date,
+        });
+        const memberUpdate = {
           effective_access_tier: effectiveTier(computed.donorLevel),
-          source: "public_renewal",
-          renewal_due_date: computed.renewalDueDate,
-          expiration_date: computed.renewalDueDate,
+          source: computed.appliesMembership ? "public_renewal" : existingMember.source,
           last_payment_date: paymentDate,
           last_payment_amount: amountPaid,
           membership_fee: computed.membershipFee,
@@ -417,7 +436,14 @@ export async function POST(request) {
           donor_class: computed.donorLevel,
           member_label: computed.memberLabel,
           stripe_customer_id: session.customer || null,
-        }).eq("id", existingMember.id);
+        };
+        if (computed.appliesMembership) {
+          memberUpdate.membership_tier = "individual";
+          memberUpdate.status = "active";
+          memberUpdate.renewal_due_date = computed.renewalDueDate;
+          memberUpdate.expiration_date = computed.renewalDueDate;
+        }
+        await supabase.from("members").update(memberUpdate).eq("id", existingMember.id);
 
         await supabase.from("membership_payments").insert({
           member_id: existingMember.id,
@@ -435,20 +461,28 @@ export async function POST(request) {
           stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
           notes: `Stripe session ${session.id}`,
         });
+        await supabase.rpc("replay_member_payment_history", { p_member_id: existingMember.id });
 
         alertMemberId = existingMember.member_id;
         alertComputedDL = computed.donorLevel;
-        alertTypeLabel = "Membership Renewal";
+        alertTypeLabel = computed.appliesMembership ? "Membership Renewal" : "Donation";
         alertPersonName = `${existingMember.first_name} ${existingMember.last_name}`;
 
         if (existingMember.email) {
-          const { subject, html } = renewalConfirmationEmail({
-            firstName: existingMember.first_name,
-            tier: "individual",
-            expirationDate: formatDate(computed.renewalDueDate),
-            amount: amountPaid,
-            paymentDate: formatDate(paymentDate),
-          });
+          const emailType = computed.appliesMembership ? "renewal_confirmation" : "donation_confirmation";
+          const { subject, html } = computed.appliesMembership
+            ? renewalConfirmationEmail({
+                firstName: existingMember.first_name,
+                tier: "individual",
+                expirationDate: formatDate(computed.renewalDueDate),
+                amount: amountPaid,
+                paymentDate: formatDate(paymentDate),
+              })
+            : donationConfirmationEmail({
+                firstName: existingMember.first_name,
+                amount: amountPaid,
+                paymentDate: formatDate(paymentDate),
+              });
           try {
             const { data: sendData, error: sendError } = await resend.emails.send({
               from: "Tryon History Museum <info@tryonhistorymuseum.org>",
@@ -459,7 +493,7 @@ export async function POST(request) {
             try {
               await supabase.from("email_log").insert({
                 member_id: existingMember.id,
-                email_type: "renewal_confirmation",
+                email_type: emailType,
                 sent_to: existingMember.email,
                 status: sendError ? "failed" : "sent",
                 resend_id: sendData?.id || null,
@@ -472,7 +506,7 @@ export async function POST(request) {
             try {
               await supabase.from("email_log").insert({
                 member_id: existingMember.id,
-                email_type: "renewal_confirmation",
+                email_type: emailType,
                 sent_to: existingMember.email,
                 status: "error",
                 resend_id: null,
@@ -529,6 +563,7 @@ export async function POST(request) {
             stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
             notes: `Stripe session ${session.id}`,
           });
+          await supabase.rpc("replay_member_payment_history", { p_member_id: newMember.id });
 
           alertMemberId = newMember.member_id;
           alertComputedDL = computed.donorLevel;
@@ -649,7 +684,10 @@ export async function POST(request) {
     }
 
     const isNewActivation = member.status === "pending";
-    const computed = computeMembership(amountPaid, paymentDate, isNewActivation ? "new_member" : "renewal");
+    const computed = computePayment(amountPaid, paymentDate, isNewActivation ? "new_member" : "renewal", {
+      existing: true,
+      renewalDueDate: member.renewal_due_date || member.expiration_date,
+    });
 
     // Generate THM-#### member ID for first-time activations that don't have one yet
     let assignedMemberId = member.member_id;
@@ -672,12 +710,8 @@ export async function POST(request) {
 
     // Build update fields — activation sets start date and assigns member ID
     const updateFields = {
-      membership_tier: "individual",
-      status: "active",
       effective_access_tier: effectiveTier(computed.donorLevel),
-      source: isNewActivation ? "public_join" : "public_renewal",
-      renewal_due_date: computed.renewalDueDate,
-      expiration_date: computed.renewalDueDate,
+      source: computed.appliesMembership ? (isNewActivation ? "public_join" : "public_renewal") : member.source,
       last_payment_date: paymentDate,
       last_payment_amount: amountPaid,
       membership_fee: computed.membershipFee,
@@ -688,7 +722,14 @@ export async function POST(request) {
       stripe_customer_id: session.customer || null,
     };
 
-    if (isNewActivation) {
+    if (computed.appliesMembership) {
+      updateFields.membership_tier = "individual";
+      updateFields.status = "active";
+      updateFields.renewal_due_date = computed.renewalDueDate;
+      updateFields.expiration_date = computed.renewalDueDate;
+    }
+
+    if (isNewActivation && computed.appliesMembership) {
       updateFields.start_date = paymentDate;
       updateFields.membership_start_date = paymentDate;
       if (assignedMemberId && !member.member_id) {
@@ -715,11 +756,12 @@ export async function POST(request) {
       stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
       notes: `Stripe session ${session.id}`,
     });
+    await supabase.rpc("replay_member_payment_history", { p_member_id: member.id });
 
     // Single consolidated staff alert after all DB work
     try {
       const { subject, html } = buildStaffAlert({
-        typeLabel: isNewActivation ? "New Membership" : "Membership Renewal",
+        typeLabel: computed.appliesMembership ? (isNewActivation ? "New Membership" : "Membership Renewal") : "Donation",
         amount: amountPaid,
         donorLevel: computed.donorLevel,
         name: `${member.first_name} ${member.last_name}`,
@@ -741,21 +783,27 @@ export async function POST(request) {
 
     // Member email — welcome for first activation, renewal confirmation for renewals
     if (member.email) {
-      const emailType = isNewActivation ? "welcome" : "renewal_confirmation";
-      const { subject, html } = isNewActivation
-        ? welcomeEmail({
+      const emailType = computed.appliesMembership ? (isNewActivation ? "welcome" : "renewal_confirmation") : "donation_confirmation";
+      const { subject, html } = !computed.appliesMembership
+        ? donationConfirmationEmail({
             firstName: member.first_name,
-            expirationDate: formatDate(computed.renewalDueDate),
             amount: amountPaid,
             paymentDate: formatDate(paymentDate),
           })
-        : renewalConfirmationEmail({
-            firstName: member.first_name,
-            tier: "individual",
-            expirationDate: formatDate(computed.renewalDueDate),
-            amount: amountPaid,
-            paymentDate: formatDate(paymentDate),
-          });
+        : isNewActivation
+          ? welcomeEmail({
+              firstName: member.first_name,
+              expirationDate: formatDate(computed.renewalDueDate),
+              amount: amountPaid,
+              paymentDate: formatDate(paymentDate),
+            })
+          : renewalConfirmationEmail({
+              firstName: member.first_name,
+              tier: "individual",
+              expirationDate: formatDate(computed.renewalDueDate),
+              amount: amountPaid,
+              paymentDate: formatDate(paymentDate),
+            });
 
       try {
         const { data: sendData, error: sendError } = await resend.emails.send({

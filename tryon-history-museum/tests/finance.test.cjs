@@ -11,7 +11,7 @@ function load(file, names) {
   return context.result;
 }
 
-const pricing = load("src/lib/membershipPricing.js", ["computePayment"]);
+const pricing = load("src/lib/membershipPricing.js", ["computePayment", "isMembershipDue", "replayMembershipPayments"]);
 const finance = load("src/lib/finance.js", ["buildFinanceReport", "financeDetailCsv", "financeSummaryCsv"]);
 
 test("standalone gifts below $50 remain donations only", () => {
@@ -29,6 +29,30 @@ test("qualifying gifts split the first $50 into membership", () => {
     }),
     [[50, 0], [50, 75]]
   );
+});
+
+test("existing members only pay dues when expired, missing a date, or due within 30 days", () => {
+  const active = pricing.computePayment(125, "2026-06-01", "donation", { existing: true, renewalDueDate: "2026-08-01" });
+  const almostDue = pricing.computePayment(125, "2026-06-01", "donation", { existing: true, renewalDueDate: "2026-07-01" });
+  const expired = pricing.computePayment(125, "2026-06-01", "donation", { existing: true, renewalDueDate: "2026-05-01" });
+  const missing = pricing.computePayment(125, "2026-06-01", "donation", { existing: true, renewalDueDate: null });
+  assert.deepEqual([active.membershipFee, active.additionalDonation, active.renewalDueDate], [0, 125, null]);
+  for (const result of [almostDue, expired, missing]) {
+    assert.equal(result.membershipFee, 50);
+    assert.equal(result.additionalDonation, 75);
+    assert.equal(result.renewalDueDate, "2027-06-01");
+  }
+});
+
+test("chronological replay does not charge dues again during an active year", () => {
+  const replay = pricing.replayMembershipPayments([
+    { id: "1", payment_date: "2026-01-10", amount: 100, payment_type: "new_member" },
+    { id: "2", payment_date: "2026-03-10", amount: 200, payment_type: "donation" },
+    { id: "3", payment_date: "2026-12-15", amount: 75, payment_type: "renewal" },
+  ]);
+  assert.deepEqual(JSON.parse(JSON.stringify(replay.payments.map((payment) => [payment.membershipFee, payment.additionalDonation]))), [[50, 50], [0, 200], [50, 25]]);
+  assert.equal(replay.renewalDueDate, "2027-12-15");
+  assert.equal(replay.membershipStartDate, "2026-01-10");
 });
 
 test("finance totals reconcile dues, gifts, contributors, and designations", () => {
@@ -73,4 +97,8 @@ test("finance migration preserves records and restricts finance tables", () => {
   assert.match(migration, /app_metadata'.*role.*= 'admin'/i);
   assert.doesNotMatch(migration, /role.*board_member/i);
   assert.match(migration, /additional_donation = amount - case/i);
+  const correction = fs.readFileSync("supabase/migrations/017_date_aware_membership_fees.sql", "utf8");
+  assert.match(correction, /renewal_date <= payment\.payment_date \+ 30/i);
+  assert.match(correction, /payment\.payment_date \+ interval '1 year'/i);
+  assert.match(correction, /replay_member_payment_history/i);
 });

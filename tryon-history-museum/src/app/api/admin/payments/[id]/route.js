@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/supabase/adminAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { computePayment } from "@/lib/membershipPricing";
 
-/**
- * PATCH /api/admin/payments/[id] — update a payment and recalculate member fields
- */
-export async function PATCH(request, { params }) {
+async function requireAdmin() {
   const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) {
+  return isAdmin;
+}
+
+export async function PATCH(request, { params }) {
+  if (!await requireAdmin()) {
     return NextResponse.json(
       { error: "You don't have permission to perform this action. Please contact the Museum Administrator." },
       { status: 403 }
@@ -18,96 +18,47 @@ export async function PATCH(request, { params }) {
   const supabase = createAdminClient();
   const { id } = await params;
   const body = await request.json();
-  const amount = parseFloat(body.amount);
+  const amount = Number(body.amount);
   const paymentType = body.payment_type === "new" || body.payment_type === "new_membership"
     ? "new_member"
     : body.payment_type;
-  const computed = computePayment(amount, body.payment_date, paymentType);
-  const { data: currentAllocations } = await supabase
-    .from("payment_allocations")
-    .select("designation_id, amount")
-    .eq("payment_id", id);
-  const hasDesignatedAllocation = (currentAllocations || []).some((allocation) => allocation.designation_id);
-  const allocationTotal = (currentAllocations || []).reduce((sum, allocation) => sum + Number(allocation.amount || 0), 0);
-  if (hasDesignatedAllocation && Math.abs(allocationTotal - computed.additionalDonation) > 0.005) {
-    return NextResponse.json({ error: "Update this payment's designation allocations from the Finances page before changing its amount or type." }, { status: 400 });
+  if (!body.payment_date || !Number.isFinite(amount) || amount <= 0) {
+    return NextResponse.json({ error: "Please provide a valid date and amount." }, { status: 400 });
   }
 
-  // Update the payment record
-  const { data: payment, error } = await supabase
+  const { data: original, error: originalError } = await supabase
+    .from("membership_payments")
+    .select("member_id")
+    .eq("id", id)
+    .single();
+  if (originalError) return NextResponse.json({ error: originalError.message }, { status: 404 });
+
+  const { error } = await supabase
     .from("membership_payments")
     .update({
       payment_date: body.payment_date,
       amount,
       payment_type: paymentType,
       payment_method: body.payment_method,
-      membership_fee: computed.membershipFee,
-      additional_donation: computed.additionalDonation,
       notes: body.notes || null,
     })
-    .eq("id", id)
-    .select()
-    .single();
-
+    .eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  if (!hasDesignatedAllocation) {
-    const allocations = computed.additionalDonation > 0
-      ? [{ designation_id: null, amount: computed.additionalDonation }]
-      : [];
-    await supabase.rpc("set_payment_allocations", { p_payment_id: id, p_allocations: allocations });
+  if (original.member_id) {
+    const { error: replayError } = await supabase.rpc("replay_member_payment_history", { p_member_id: original.member_id });
+    if (replayError) return NextResponse.json({ error: replayError.message }, { status: 500 });
   }
 
-  // Recalculate member fields from this payment
-  const memberId = payment.member_id;
-  const amt = parseFloat(payment.amount) || 0;
-
-  const memberUpdate = {
-    last_payment_date: payment.payment_date,
-    last_payment_amount: amt,
-  };
-
-  if (!computed.isDonation) {
-    memberUpdate.membership_tier = computed.membershipTier;
-    memberUpdate.donor_level = computed.donorLevel;
-    memberUpdate.donor_class = computed.donorLevel;
-    memberUpdate.member_label = computed.memberLabel;
-    memberUpdate.membership_fee = computed.membershipFee;
-    memberUpdate.additional_donation = computed.additionalDonation;
-    memberUpdate.renewal_due_date = computed.renewalDueDate;
-  }
-
-  // Find the most recent payment for this member to set last_payment fields
-  const { data: latestPayments } = await supabase
-    .from("membership_payments")
-    .select("payment_date, amount")
-    .eq("member_id", memberId)
-    .order("payment_date", { ascending: false })
-    .limit(1);
-
-  if (latestPayments && latestPayments.length > 0) {
-    memberUpdate.last_payment_date = latestPayments[0].payment_date;
-    memberUpdate.last_payment_amount = parseFloat(latestPayments[0].amount);
-  }
-
-  await supabase.from("members").update(memberUpdate).eq("id", memberId);
-
-  // Re-fetch updated member
-  const { data: updatedMember } = await supabase
-    .from("members")
-    .select("*")
-    .eq("id", memberId)
-    .single();
-
+  const [{ data: payment }, { data: updatedMember }] = await Promise.all([
+    supabase.from("membership_payments").select("*").eq("id", id).single(),
+    original.member_id ? supabase.from("members").select("*").eq("id", original.member_id).single() : Promise.resolve({ data: null }),
+  ]);
   return NextResponse.json({ payment, member: updatedMember });
 }
 
-/**
- * DELETE /api/admin/payments/[id] — delete a payment and recalculate member fields
- */
 export async function DELETE(request, { params }) {
-  const { isAdmin } = await verifyAdmin();
-  if (!isAdmin) {
+  if (!await requireAdmin()) {
     return NextResponse.json(
       { error: "You don't have permission to perform this action. Please contact the Museum Administrator." },
       { status: 403 }
@@ -116,66 +67,23 @@ export async function DELETE(request, { params }) {
 
   const supabase = createAdminClient();
   const { id } = await params;
-
-  // Get the payment first to know the member_id
-  const { data: payment, error: fetchErr } = await supabase
+  const { data: payment, error: fetchError } = await supabase
     .from("membership_payments")
-    .select("*")
+    .select("member_id")
     .eq("id", id)
     .single();
+  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 404 });
 
-  if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 404 });
-
-  const memberId = payment.member_id;
-
-  // Delete the payment
   const { error } = await supabase.from("membership_payments").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Find the next most recent payment for this member
-  const { data: remaining } = await supabase
-    .from("membership_payments")
-    .select("payment_date, amount, payment_type")
-    .eq("member_id", memberId)
-    .order("payment_date", { ascending: false })
-    .limit(1);
-
-  const memberUpdate = {};
-
-  if (remaining && remaining.length > 0) {
-    const latest = remaining[0];
-    memberUpdate.last_payment_date = latest.payment_date;
-    memberUpdate.last_payment_amount = parseFloat(latest.amount);
-
-    // Recalculate membership from latest remaining payment
-    const computed = computePayment(
-      parseFloat(latest.amount),
-      latest.payment_date,
-      latest.payment_type || "new_member"
-    );
-    if (!computed.isDonation) {
-      memberUpdate.membership_tier = computed.membershipTier;
-      memberUpdate.donor_level = computed.donorLevel;
-      memberUpdate.donor_class = computed.donorLevel;
-      memberUpdate.member_label = computed.memberLabel;
-      memberUpdate.membership_fee = computed.membershipFee;
-      memberUpdate.additional_donation = computed.additionalDonation;
-      memberUpdate.renewal_due_date = computed.renewalDueDate;
-    }
-  } else {
-    // No remaining payments
-    memberUpdate.last_payment_date = null;
-    memberUpdate.last_payment_amount = null;
+  let updatedMember = null;
+  if (payment.member_id) {
+    const { error: replayError } = await supabase.rpc("replay_member_payment_history", { p_member_id: payment.member_id });
+    if (replayError) return NextResponse.json({ error: replayError.message }, { status: 500 });
+    const { data } = await supabase.from("members").select("*").eq("id", payment.member_id).single();
+    updatedMember = data;
   }
-
-  await supabase.from("members").update(memberUpdate).eq("id", memberId);
-
-  // Re-fetch updated member
-  const { data: updatedMember } = await supabase
-    .from("members")
-    .select("*")
-    .eq("id", memberId)
-    .single();
 
   return NextResponse.json({ success: true, member: updatedMember });
 }

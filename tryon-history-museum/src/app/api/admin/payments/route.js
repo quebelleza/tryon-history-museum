@@ -29,13 +29,16 @@ export async function POST(request) {
   const supabase = createAdminClient();
   const { data: member, error: memberError } = await supabase
     .from("members")
-    .select("id, first_name, last_name, email")
+    .select("id, first_name, last_name, email, renewal_due_date, expiration_date")
     .eq("id", body.member_id)
     .single();
 
   if (memberError || !member) return NextResponse.json({ error: "Member not found." }, { status: 404 });
 
-  const computed = computePayment(amount, body.payment_date, paymentType);
+  const computed = computePayment(amount, body.payment_date, paymentType, {
+    existing: true,
+    renewalDueDate: member.renewal_due_date || member.expiration_date,
+  });
   const { data, error } = await supabase
     .from("membership_payments")
     .insert({
@@ -57,24 +60,9 @@ export async function POST(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const memberUpdate = {
-    last_payment_date: data.payment_date,
-    last_payment_amount: data.amount,
-  };
-  if (!computed.isDonation) {
-    Object.assign(memberUpdate, {
-      membership_tier: computed.membershipTier,
-      donor_level: computed.donorLevel,
-      donor_class: computed.donorLevel,
-      member_label: computed.memberLabel,
-      membership_fee: computed.membershipFee,
-      additional_donation: computed.additionalDonation,
-      status: computed.status,
-      renewal_due_date: computed.renewalDueDate,
-      expiration_date: computed.renewalDueDate,
-    });
-  }
-  await supabase.from("members").update(memberUpdate).eq("id", member.id);
+  const { error: replayError } = await supabase.rpc("replay_member_payment_history", { p_member_id: member.id });
+  if (replayError) return NextResponse.json({ error: replayError.message }, { status: 500 });
+  const { data: replayedPayment } = await supabase.from("membership_payments").select("*").eq("id", data.id).single();
 
-  return NextResponse.json({ payment: data });
+  return NextResponse.json({ payment: replayedPayment || data });
 }
