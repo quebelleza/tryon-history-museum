@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 import { verifyAdmin } from "@/lib/supabase/adminAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { welcomeEmail } from "@/lib/emails/welcomeEmail";
+
+function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr + "T12:00:00");
+  return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
 
 export async function GET(request) {
   const { hasAdminAccess, role } = await verifyAdmin();
@@ -92,12 +100,25 @@ export async function POST(request) {
     additional_donation: _ad,
     pricing_year: _py,
     effective_access_tier: _eat,
+    send_welcome_email,
     ...memberFields
   } = body;
 
   const amt = parseFloat(payment_amount) || 0;
   const pDate = payment_date || new Date().toISOString().split("T")[0];
   const pType = payment_type || "new_member";
+
+  if (send_welcome_email === true) {
+    if (typeof memberFields.email !== "string" || !memberFields.email.trim()) {
+      return NextResponse.json({ error: "An email address is required to send the welcome email and receipt." }, { status: 400 });
+    }
+    if (amt <= 0 || pType !== "new_member") {
+      return NextResponse.json({ error: "A new-member payment is required to send the welcome email and receipt." }, { status: 400 });
+    }
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json({ error: "Email delivery is temporarily unavailable. The member was not created." }, { status: 503 });
+    }
+  }
 
   // Always ensure donor_class has a valid new-enum value
   if (!memberFields.donor_class) memberFields.donor_class = "none";
@@ -157,5 +178,75 @@ export async function POST(request) {
     });
   }
 
-  return NextResponse.json({ member: data });
+  let welcomeEmailSent = false;
+  let warning = null;
+
+  if (send_welcome_email === true) {
+    let setupLink = null;
+    try {
+      const email = memberFields.email.trim().toLowerCase();
+      const { data: createData, error: createError } = await supabase.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { first_name: data.first_name, last_name: data.last_name },
+      });
+
+      if (!createError && createData?.user?.id) {
+        await supabase.from("members").update({ auth_user_id: createData.user.id }).eq("id", data.id);
+      } else if (createError) {
+        console.error("[admin-members] createUser error:", createError.message);
+      }
+
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: "recovery",
+        email,
+        options: {
+          redirectTo: "https://www.tryonhistorymuseum.org/auth/callback?next=/member/set-password",
+        },
+      });
+      if (!linkError) setupLink = linkData?.properties?.action_link || null;
+      else console.error("[admin-members] generateLink error:", linkError.message);
+    } catch (error) {
+      console.error("[admin-members] auth setup error:", error.message);
+    }
+
+    const { subject, html } = welcomeEmail({
+      firstName: data.first_name,
+      expirationDate: formatDate(data.expiration_date || data.renewal_due_date),
+      amount: amt,
+      paymentDate: formatDate(pDate),
+      setupLink,
+    });
+
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { data: sendData, error: sendError } = await resend.emails.send({
+        from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+        to: memberFields.email.trim(),
+        subject,
+        html,
+      });
+      welcomeEmailSent = !sendError;
+      if (sendError) warning = "The member was created, but the welcome email and receipt could not be sent.";
+      await supabase.from("email_log").insert({
+        member_id: data.id,
+        email_type: "welcome",
+        sent_to: memberFields.email.trim(),
+        status: sendError ? "failed" : "sent",
+        resend_id: sendData?.id || null,
+      });
+    } catch (error) {
+      console.error("[admin-members] Welcome email error:", error.message);
+      warning = "The member was created, but the welcome email and receipt could not be sent.";
+      await supabase.from("email_log").insert({
+        member_id: data.id,
+        email_type: "welcome",
+        sent_to: memberFields.email.trim(),
+        status: "error",
+        resend_id: null,
+      });
+    }
+  }
+
+  return NextResponse.json({ member: data, welcomeEmailSent, warning });
 }

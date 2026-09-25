@@ -66,6 +66,7 @@ export default function AdminNewMemberSection() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
   const [paymentMethod, setPaymentMethod] = useState("check");
+  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -95,6 +96,7 @@ export default function AdminNewMemberSection() {
       payment_date: amt > 0 ? paymentDate : undefined,
       payment_method: amt > 0 ? paymentMethod : undefined,
       payment_type: amt > 0 ? paymentType : undefined,
+      send_welcome_email: canSendWelcome && sendWelcomeEmail,
     };
 
     const res = await fetch("/api/admin/members", {
@@ -105,6 +107,7 @@ export default function AdminNewMemberSection() {
 
     if (res.ok) {
       const data = await res.json();
+      if (data.warning) window.alert(data.warning);
       router.push(`/admin/members/${data.member.id}`);
     } else {
       const data = await res.json();
@@ -115,6 +118,7 @@ export default function AdminNewMemberSection() {
 
   const hasPayment = (parseFloat(paymentAmount) || 0) > 0;
   const isDonation = paymentType === "donation";
+  const canSendWelcome = paymentType === "new_member" && hasPayment && Boolean(form.email.trim());
 
   const summaryColor = computed
     ? computed.isDonation ? GOLD_ACCENT
@@ -339,7 +343,7 @@ export default function AdminNewMemberSection() {
           {/* Live Calculation Summary */}
           {computed && (
             <div
-              className="p-5 md:p-6"
+              className="p-5 md:p-6 mb-5"
               style={{
                 background: computed.belowMinimum ? "rgba(123,45,38,0.03)" : isDonation ? "rgba(196,163,90,0.03)" : "rgba(196,163,90,0.04)",
                 border: `1px solid ${summaryColor}18`,
@@ -430,6 +434,32 @@ export default function AdminNewMemberSection() {
               )}
             </div>
           )}
+
+          <label
+            className={`flex items-start gap-3 p-4 ${canSendWelcome ? "cursor-pointer" : "cursor-not-allowed"}`}
+            style={{
+              background: sendWelcomeEmail && canSendWelcome ? "rgba(196,163,90,0.08)" : "rgba(27,42,74,0.03)",
+              border: `1px solid ${sendWelcomeEmail && canSendWelcome ? "rgba(196,163,90,0.35)" : "rgba(27,42,74,0.1)"}`,
+              opacity: canSendWelcome ? 1 : 0.6,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={sendWelcomeEmail && canSendWelcome}
+              disabled={!canSendWelcome}
+              onChange={(e) => setSendWelcomeEmail(e.target.checked)}
+              className="mt-0.5 w-4 h-4 flex-shrink-0"
+              style={{ accentColor: GOLD_ACCENT }}
+            />
+            <span>
+              <span className="block font-body text-[13px] font-semibold" style={{ color: WARM_BLACK }}>
+                Send welcome email and membership receipt
+              </span>
+              <span className="block font-body text-[12px] leading-relaxed mt-1" style={{ color: "rgba(26,19,17,0.55)" }}>
+                Also creates their online account and includes a secure set-password link. Requires an email address and a new-member payment.
+              </span>
+            </span>
+          </label>
         </div>
 
         {/* Notes */}
