@@ -12,7 +12,7 @@ const fallbackSchedule = {
   3: "1:00 PM – 4:00 PM",
   4: "1:00 PM – 4:00 PM",
   5: "1:00 PM – 4:00 PM",
-  6: "1:00 PM – 4:00 PM",
+  6: "Closed",
 };
 
 function getTodayHours(siteSettings) {
@@ -179,7 +179,7 @@ export default function Hero({ siteSettings }) {
           className="font-body text-xs mt-1"
           style={{ color: "rgba(255,255,255,0.5)" }}
         >
-          Open Wed–Sat &middot;{" "}
+          Open Wed–Fri &middot;{" "}
           <a href="/visit" className="no-underline" style={{ color: GOLD_ACCENT }}>
             See all hours
           </a>

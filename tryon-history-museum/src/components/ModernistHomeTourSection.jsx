@@ -471,7 +471,7 @@ export default function ModernistHomeTourSection() {
                 <div className="flex items-start gap-3">
                   <span className="text-sm mt-0.5" style={{ color: GOLD_ACCENT }}>✦</span>
                   <span className="font-body text-[14px] leading-[1.6]" style={{ color: "rgba(26,19,17,0.65)" }}>
-                    Available online at tryonhistorymuseum.org and in person at the Museum (Wednesday–Saturday)
+                    Available online at tryonhistorymuseum.org and in person at the Museum (Wednesday–Friday)
                   </span>
                 </div>
               </div>

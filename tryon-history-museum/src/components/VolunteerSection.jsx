@@ -15,7 +15,7 @@ const VOLUNTEER_AREAS = [
     key: "docent",
     label: "Docent / Museum Volunteer",
     icon: "\uD83C\uDFDB\uFE0F",
-    desc: "Our docents are the heart of the museum experience. Working Wednesday through Saturday in three-hour shifts, docents welcome visitors, guide them through exhibits, and share the stories that bring Tryon\u2019s history to life. We ask for a commitment of two shifts per month \u2014 enough to stay connected without overwhelming your schedule. Training provided.",
+    desc: "Our docents are the heart of the museum experience. Working Wednesday through Friday in three-hour shifts, docents welcome visitors, guide them through exhibits, and share the stories that bring Tryon\u2019s history to life. We ask for a commitment of two shifts per month \u2014 enough to stay connected without overwhelming your schedule. Training provided.",
   },
   {
     key: "exhibits",
