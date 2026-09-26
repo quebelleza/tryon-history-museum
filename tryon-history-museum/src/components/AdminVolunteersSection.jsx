@@ -51,6 +51,7 @@ export default function AdminVolunteersSection() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterArea, setFilterArea] = useState("");
+  const [role, setRole] = useState(null);
 
   async function loadVolunteers() {
     setLoading(true);
@@ -63,6 +64,7 @@ export default function AdminVolunteersSection() {
     if (res.ok) {
       const data = await res.json();
       setVolunteers(data.volunteers || []);
+      setRole(data.role || null);
     }
     setLoading(false);
   }
@@ -92,19 +94,22 @@ export default function AdminVolunteersSection() {
   return (
     <div className="p-8 md:p-10 max-w-[1200px]">
       {/* Header */}
-      <div className="mb-8">
-        <div
-          className="font-body text-[11px] uppercase mb-2"
-          style={{ letterSpacing: "0.25em", color: GOLD_ACCENT }}
-        >
-          Volunteer Management
+      <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
+        <div>
+          <div
+            className="font-body text-[11px] uppercase mb-2"
+            style={{ letterSpacing: "0.25em", color: GOLD_ACCENT }}
+          >
+            Volunteer Management
+          </div>
+          <h1
+            className="font-display text-3xl font-light m-0"
+            style={{ color: WARM_BLACK }}
+          >
+            Volunteers
+          </h1>
         </div>
-        <h1
-          className="font-display text-3xl font-light m-0"
-          style={{ color: WARM_BLACK }}
-        >
-          Volunteers
-        </h1>
+        {role === "admin" && <Link href="/admin/volunteers/new" className="font-body text-[11px] uppercase font-semibold no-underline" style={{ color: WARM_BLACK, background: GOLD_ACCENT, padding: "11px 18px", letterSpacing: "0.08em" }}>+ Add Volunteer</Link>}
       </div>
 
       {/* Filters */}

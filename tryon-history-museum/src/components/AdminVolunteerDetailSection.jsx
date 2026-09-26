@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 const WARM_BLACK = "#1A1311";
@@ -57,8 +57,12 @@ function Field({ label, children }) {
 
 export default function AdminVolunteerDetailSection() {
   const params = useParams();
+  const router = useRouter();
   const [volunteer, setVolunteer] = useState(null);
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -66,6 +70,7 @@ export default function AdminVolunteerDetailSection() {
       if (res.ok) {
         const data = await res.json();
         setVolunteer(data.volunteer);
+        setRole(data.role || null);
       }
       setLoading(false);
     }
@@ -80,6 +85,19 @@ export default function AdminVolunteerDetailSection() {
     });
     if (res.ok) {
       setVolunteer((prev) => ({ ...prev, status: newStatus }));
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete ${volunteer.full_name}? This cannot be undone.`)) return;
+    setDeleting(true);
+    setError("");
+    const response = await fetch(`/api/admin/volunteers/${params.id}`, { method: "DELETE" });
+    if (response.ok) router.push("/admin/volunteers");
+    else {
+      const data = await response.json();
+      setError(data.error || "Could not delete volunteer.");
+      setDeleting(false);
     }
   }
 
@@ -134,7 +152,8 @@ export default function AdminVolunteerDetailSection() {
             {volunteer.full_name}
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {role === "admin" && <Link href={`/admin/volunteers/${params.id}/edit`} className="font-body text-[11px] uppercase font-semibold no-underline" style={{ color: WARM_BLACK, background: GOLD_ACCENT, padding: "10px 16px" }}>Edit</Link>}
           <select
             value={volunteer.status}
             onChange={(e) => handleStatusChange(e.target.value)}
@@ -150,8 +169,11 @@ export default function AdminVolunteerDetailSection() {
               <option key={s} value={s}>{STATUS_STYLES[s].label}</option>
             ))}
           </select>
+          {role === "admin" && <button type="button" onClick={handleDelete} disabled={deleting} className="font-body text-[11px] uppercase cursor-pointer disabled:opacity-50" style={{ color: DEEP_RED, background: "transparent", border: `1px solid ${DEEP_RED}`, padding: "9px 15px" }}>{deleting ? "Deleting…" : "Delete"}</button>}
         </div>
       </div>
+
+      {error && <p role="alert" className="font-body text-sm mb-5" style={{ color: DEEP_RED }}>{error}</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Contact Info */}
