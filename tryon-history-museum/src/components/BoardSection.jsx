@@ -10,11 +10,11 @@ const MUTED_RED = "#A8584F";
 
 const boardMembers = [
   {
-    name: "Dick Callaway",
+    name: "TBA",
     title: "President",
-    term: "2026",
-    photo: "/board/dick-callaway.png",
-    bio: "An avid historian and North Carolina native, Dick Callaway and his wife, Fran, moved to Tryon from Louisville, Kentucky, eleven years ago. Fran is deeply involved in Tryon\u2019s equestrian community, and together they have become an integral part of the town\u2019s civic life. Dick has served on the Tryon History Museum Board for eight years, including the past four as President. He is also deeply involved with the North Carolina Transportation Museum and is a familiar presence at community gatherings throughout Tryon. If you don\u2019t know Dick Callaway, you likely haven\u2019t been to a Tryon event. Widely respected for his deep knowledge of local and regional history, Dick is a natural storyteller and an invaluable resource to the Museum. If you ask him a historical question, be prepared to take a seat\u2014his understanding of the area\u2019s past is both expansive and enduring.",
+    term: null,
+    photo: null,
+    bio: "Biography to be announced.",
   },
   {
     name: "Heather Brady",
@@ -131,7 +131,7 @@ function MemberCard({ member, index }) {
             className="font-body text-[11px] uppercase mb-3 font-semibold"
             style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
           >
-            {member.title} &middot; Term {member.term}
+            {member.title}{member.term ? <> &middot; Term {member.term}</> : null}
           </div>
           <h3
             className="font-display text-3xl md:text-[34px] font-semibold mb-5"
