@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import FadeIn from "./FadeIn";
+import { JAMIE_LAVAL_EVENT } from "@/lib/events/jamieLaval";
 
 const DEEP_RED = "#7B2D26";
 const WARM_BLACK = "#1A1311";
@@ -11,10 +12,10 @@ const GOLD_ACCENT = "#C4A35A";
 const fallbackEvents = [
   {
     date: "Nov 12",
-    title: "Appalachian Music with Jamie Laval",
-    type: "Tales of Tryon",
-    desc: "Celtic artist Jamie Laval brings the sounds of Appalachia to life in an evening celebrating the musical heritage of our mountain region. A night of story, song, and history.",
-    href: null,
+    title: JAMIE_LAVAL_EVENT.title,
+    type: JAMIE_LAVAL_EVENT.eventType,
+    desc: JAMIE_LAVAL_EVENT.description,
+    href: `/events/${JAMIE_LAVAL_EVENT.slug}`,
     membersOnly: false,
   },
   {
