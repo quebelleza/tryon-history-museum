@@ -13,7 +13,7 @@
 }
 
 .navBackdrop {
-  height: 108px;
+  height: 92px;
   background: var(--event-ink);
 }
 
@@ -275,24 +275,23 @@
   line-height: 1.7;
 }
 
-.attribution {
-  padding: 62px 24px;
+.acknowledgment {
+  padding: 46px 24px;
   text-align: center;
 }
 
-.attribution p {
-  margin: 0 0 6px;
-  color: #6f675d;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.acknowledgment p {
+  max-width: 600px;
+  margin: 0 auto;
+  color: var(--event-ink);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-.attribution strong {
-  color: var(--event-red);
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.35rem;
+.pccfLogo {
+  width: min(260px, 72vw);
+  height: auto;
+  margin: 20px auto 0;
 }
 
 @media (max-width: 900px) {
@@ -327,7 +326,7 @@
 
 @media (max-width: 700px) {
   .navBackdrop {
-    height: 92px;
+    height: 72px;
   }
 
   .breadcrumbs,

@@ -52,3 +52,20 @@ test("event page metadata and structured data omit unknown end and ticket fields
   assert.match(page, /isAccessibleForFree: true/);
   assert.doesNotMatch(page, /endDate|offers|availability/);
 });
+
+test("event page uses the official PCCF acknowledgment and logo", () => {
+  const page = fs.readFileSync("src/app/events/tales-of-tryon-jamie-laval/page.js", "utf8");
+  assert.match(page, /Made possible by generous donors to the Polk County Community Foundation\./);
+  assert.match(page, /alt="Polk County Community Foundation\."/);
+  assert.match(page, /polk-county-community-foundation-logo\.png/);
+  assert.doesNotMatch(page, /Presented by Tryon History Museum/);
+  assert.ok(fs.existsSync("public/images/events/polk-county-community-foundation-logo.png"));
+});
+
+test("shared navigation bounds the complete museum logo inside the header", () => {
+  const nav = fs.readFileSync("src/components/Nav.jsx", "utf8");
+  assert.match(nav, /w-\[104px\] h-\[48px\] md:w-\[160px\] md:h-\[68px\]/);
+  assert.match(nav, /className="object-contain transition-opacity"/);
+  assert.match(nav, /sizes="\(max-width: 767px\) 104px, 160px"/);
+  assert.doesNotMatch(nav, /w-\[150px\] md:w-\[220px\] h-auto/);
+});

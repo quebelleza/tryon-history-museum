@@ -180,9 +180,15 @@ export default function JamieLavalEventPage() {
         </div>
       </section>
 
-      <section className={styles.attribution} aria-label="Presenter attribution">
-        <p>Presented by Tryon History Museum</p>
-        <strong>Tales of Tryon</strong>
+      <section className={styles.acknowledgment} aria-label="Funding acknowledgment">
+        <p>Made possible by generous donors to the Polk County Community Foundation.</p>
+        <Image
+          src="/images/events/polk-county-community-foundation-logo.png"
+          alt="Polk County Community Foundation."
+          width={1024}
+          height={505}
+          className={styles.pccfLogo}
+        />
       </section>
 
       <Footer />
