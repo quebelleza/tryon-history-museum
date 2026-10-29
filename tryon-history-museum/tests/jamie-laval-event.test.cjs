@@ -61,7 +61,8 @@ test("event page matches the approved mockup structure and copy", () => {
   assert.match(page, /Plan Your Evening/);
   assert.match(page, /About the Evening/);
   assert.match(page, /Meet Jamie Laval/);
-  assert.match(page, /photograph pending/);
+  assert.match(page, /tryon-presbyterian-church\.jpg/);
+  assert.ok(fs.existsSync("public/images/events/tryon-presbyterian-church.jpg"));
 });
 
 test("event page uses the official PCCF acknowledgment and logo", () => {

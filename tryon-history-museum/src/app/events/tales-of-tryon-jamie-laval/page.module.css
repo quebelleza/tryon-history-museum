@@ -284,19 +284,12 @@
 }
 
 .churchPhoto {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 4 / 3;
-  border: 1.5px dashed var(--event-stone);
-  background: rgba(255, 255, 255, 0.35);
-  color: #6f675d;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-align: center;
-  text-transform: uppercase;
-  line-height: 2;
+  position: relative;
+  aspect-ratio: 3 / 2;
+}
+
+.churchPhoto img {
+  object-fit: cover;
 }
 
 .venueCopy {

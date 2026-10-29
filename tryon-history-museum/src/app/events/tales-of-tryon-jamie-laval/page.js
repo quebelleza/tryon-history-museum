@@ -231,8 +231,13 @@ export default function JamieLavalEventPage() {
 
       <section className={styles.venue}>
         <div className={styles.venueInner}>
-          <div className={styles.churchPhoto} role="img" aria-label="Photograph of Tryon Presbyterian Church — final asset pending">
-            <span>Tryon Presbyterian Church<br />photograph pending</span>
+          <div className={styles.churchPhoto}>
+            <Image
+              src="/images/events/tryon-presbyterian-church.jpg"
+              alt="Tryon Presbyterian Church, a stone A-frame building set against green trees"
+              fill
+              sizes="(max-width: 900px) 100vw, 45vw"
+            />
           </div>
           <div className={styles.venueCopy}>
             <h2>Plan Your Evening</h2>
