@@ -20,10 +20,10 @@ export const JAMIE_LAVAL_EVENT = {
   country: "US",
   listingLocation: "Tryon Presbyterian Church · Tryon NC",
   canonicalUrl: "https://tryonhistorymuseum.org/events/tales-of-tryon-jamie-laval",
-  imageUrl: "https://tryonhistorymuseum.org/images/events/jamie-laval-scotland-appalachia.jpg",
-  imagePath: "/images/events/jamie-laval-scotland-appalachia.jpg",
-  imageWidth: 540,
-  imageHeight: 1024,
+  imageUrl: "https://tryonhistorymuseum.org/images/events/jamie-laval-6652.jpg",
+  imagePath: "/images/events/jamie-laval-6652.jpg",
+  imageWidth: 1024,
+  imageHeight: 639,
 };
 
 function escapeIcs(value) {
@@ -53,7 +53,7 @@ function foldIcsLine(line) {
 export function createJamieLavalIcs(now = new Date()) {
   const event = JAMIE_LAVAL_EVENT;
   const dtstamp = now.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const description = "Join Jamie Laval for a look at how music traveled from Scotland to Appalachia and changed along the way. Doors open at 4 p.m. with light refreshments in the narthex. The program begins at 5 p.m. in the sanctuary. Free admission.";
+  const description = "Join acclaimed Celtic musician Jamie Laval for a fascinating exploration of the musical traditions Scottish immigrants carried into Appalachia. Doors open at 4:00 p.m. The presentation begins at 5:00 p.m. in the sanctuary of Tryon Presbyterian Church. Free admission.";
   const location = `${event.locationName}, ${event.streetAddress}, ${event.city}, ${event.region} ${event.postalCode}`;
   const lines = [
     "BEGIN:VCALENDAR",

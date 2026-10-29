@@ -13,13 +13,14 @@ vm.createContext(context);
 vm.runInContext(source, context);
 const { JAMIE_LAVAL_EVENT, createJamieLavalIcs } = context.result;
 
-test("Jamie Laval event data uses the canonical route and approved image", () => {
+test("Jamie Laval event data uses the canonical route and approved hero image", () => {
   assert.equal(JAMIE_LAVAL_EVENT.slug, "tales-of-tryon-jamie-laval");
   assert.equal(JAMIE_LAVAL_EVENT.date, "2026-11-12");
   assert.equal(JAMIE_LAVAL_EVENT.canonicalUrl, "https://tryonhistorymuseum.org/events/tales-of-tryon-jamie-laval");
-  assert.equal(JAMIE_LAVAL_EVENT.imageWidth, 540);
-  assert.equal(JAMIE_LAVAL_EVENT.imageHeight, 1024);
-  assert.ok(fs.existsSync("public/images/events/jamie-laval-scotland-appalachia.jpg"));
+  assert.equal(JAMIE_LAVAL_EVENT.imageWidth, 1024);
+  assert.equal(JAMIE_LAVAL_EVENT.imageHeight, 639);
+  assert.ok(fs.existsSync("public/images/events/jamie-laval-6652.jpg"));
+  assert.ok(fs.existsSync("public/images/events/jamie-laval-3363.jpg"));
 });
 
 test("calendar download has the correct time and no invented end time", () => {
@@ -50,15 +51,26 @@ test("event page metadata and structured data omit unknown end and ticket fields
   assert.match(page, /2026-11-12T17:00:00-05:00/);
   assert.match(page, /2026-11-12T16:00:00-05:00/);
   assert.match(page, /isAccessibleForFree: true/);
-  assert.doesNotMatch(page, /endDate|offers|availability/);
+  assert.doesNotMatch(page, /"endDate"|"offers"|"availability"/);
+});
+
+test("event page matches the approved mockup structure and copy", () => {
+  const page = fs.readFileSync("src/app/events/tales-of-tryon-jamie-laval/page.js", "utf8");
+  assert.match(page, /<h1>\{event\.fullTitle\}<\/h1>/);
+  assert.match(page, /jamie-laval-3363\.jpg/);
+  assert.match(page, /Plan Your Evening/);
+  assert.match(page, /About the Evening/);
+  assert.match(page, /Meet Jamie Laval/);
+  assert.match(page, /photograph pending/);
 });
 
 test("event page uses the official PCCF acknowledgment and logo", () => {
   const page = fs.readFileSync("src/app/events/tales-of-tryon-jamie-laval/page.js", "utf8");
-  assert.match(page, /Made possible by generous donors to the Polk County Community Foundation\./);
+  assert.match(page, /made possible by the Tryon History Museum and grant/);
+  assert.match(page, /funding from the Polk County Community Foundation/);
   assert.match(page, /alt="Polk County Community Foundation\."/);
   assert.match(page, /polk-county-community-foundation-logo\.png/);
-  assert.doesNotMatch(page, /Presented by Tryon History Museum/);
+  assert.match(page, /With support from/);
   assert.ok(fs.existsSync("public/images/events/polk-county-community-foundation-logo.png"));
 });
 
