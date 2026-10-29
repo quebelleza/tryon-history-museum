@@ -1,0 +1,431 @@
+.page {
+  --event-cream: #f6f2ea;
+  --event-parchment: #e7e2d6;
+  --event-red: #9c3a2e;
+  --event-ink: #222222;
+  --event-stone: #cbb79a;
+  background: var(--event-cream);
+  color: var(--event-ink);
+  font-family: "Inter", "Source Sans 3", sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+.navBackdrop {
+  height: 92px;
+  background: var(--event-ink);
+}
+
+.breadcrumbs {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 26px 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  color: #6f675d;
+  font-size: 0.8rem;
+}
+
+.breadcrumbs a {
+  color: var(--event-red);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.breadcrumbs a:hover {
+  border-color: currentColor;
+}
+
+/* Hero */
+
+.hero {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 40px 0 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.22fr) minmax(300px, 0.78fr);
+  gap: 48px;
+  align-items: center;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.series {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--event-red);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.seriesRule {
+  display: inline-block;
+  width: 44px;
+  height: 1px;
+  background: var(--event-red);
+}
+
+.hero h1 {
+  margin: 22px 0 18px;
+  max-width: 720px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2.4rem, 5.2vw, 4.3rem);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--event-ink);
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.3rem;
+  color: var(--event-ink);
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 24px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.primaryButton {
+  background: var(--event-red);
+  color: #fff;
+  border: 1px solid var(--event-red);
+}
+
+.secondaryButton {
+  color: var(--event-red);
+  border: 1px solid var(--event-red);
+  background: transparent;
+}
+
+.primaryButton:hover {
+  background: #7d2f25;
+  border-color: #7d2f25;
+}
+
+.secondaryButton:hover {
+  background: rgba(156, 58, 46, 0.07);
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.breadcrumbs a:focus-visible,
+.venueAddress:focus-visible {
+  outline: 2px solid var(--event-red);
+  outline-offset: 3px;
+}
+
+.heroPortrait {
+  position: relative;
+  aspect-ratio: 5 / 5.6;
+  min-height: 0;
+}
+
+.heroPortrait img {
+  object-fit: cover;
+  object-position: 58% 40%;
+}
+
+/* Info strip */
+
+.infoStrip {
+  border-top: 1px solid var(--event-stone);
+  border-bottom: 1px solid var(--event-stone);
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.infoItem {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 30px 28px;
+  min-width: 0;
+}
+
+.infoItem + .infoItem {
+  border-left: 1px solid var(--event-stone);
+}
+
+.infoItem svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: 3px;
+  color: var(--event-red);
+}
+
+.infoLabel {
+  margin: 0 0 4px;
+  color: #6f675d;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.infoValue {
+  margin: 0;
+  color: var(--event-ink);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+/* About + bio */
+
+.aboutGrid {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 72px 0 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 64px;
+}
+
+.aboutMain,
+.aboutSide {
+  min-width: 0;
+}
+
+.aboutMain h2,
+.venue h2 {
+  margin: 0 0 20px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--event-ink);
+}
+
+.aboutMain p,
+.meetSide p,
+.venueCopy p {
+  margin: 0 0 18px;
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+
+.meetHeading {
+  margin-top: 44px !important;
+}
+
+.aboutPhoto {
+  position: relative;
+  aspect-ratio: 4 / 4.6;
+}
+
+.aboutPhoto img {
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+.meetSide {
+  position: relative;
+  margin-top: 40px;
+  padding-bottom: 90px;
+  min-height: 160px;
+}
+
+.meetSide svg {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 130px;
+  height: auto;
+  color: #a8a894;
+  opacity: 0.55;
+}
+
+/* Venue band */
+
+.venue {
+  background: var(--event-parchment);
+}
+
+.venueInner {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 68px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 64px;
+  align-items: center;
+}
+
+.churchPhoto {
+  position: relative;
+  aspect-ratio: 3 / 2;
+}
+
+.churchPhoto img {
+  object-fit: cover;
+}
+
+.venueCopy {
+  min-width: 0;
+}
+
+.venueAddress {
+  display: inline-flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 8px;
+  color: var(--event-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.6;
+  text-decoration: none;
+}
+
+.venueAddress svg {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  color: var(--event-red);
+}
+
+.venueAddress:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--event-red);
+  text-underline-offset: 4px;
+}
+
+/* Funding acknowledgment */
+
+.funding {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 46px 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 48px;
+  align-items: center;
+}
+
+.fundingLeft {
+  padding-right: 48px;
+  border-right: 1px solid var(--event-stone);
+}
+
+.fundingLeft p {
+  margin: 0 0 10px;
+  color: #6f675d;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.pccfLogo {
+  display: block;
+  width: min(230px, 60vw);
+  height: auto;
+}
+
+.fundingText {
+  margin: 0;
+  max-width: 640px;
+  color: var(--event-ink);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 30px 0 52px;
+    gap: 34px;
+  }
+
+  .heroPortrait {
+    aspect-ratio: 4 / 3.4;
+  }
+
+  .infoStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .infoItem + .infoItem {
+    border-left: none;
+    border-top: 1px solid var(--event-stone);
+  }
+
+  .aboutGrid,
+  .venueInner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .aboutGrid {
+    padding: 56px 0 64px;
+  }
+
+  .meetSide {
+    padding-bottom: 70px;
+  }
+
+  .funding {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 42px 0;
+  }
+
+  .fundingLeft {
+    padding: 0 0 22px;
+    border-right: none;
+    border-bottom: 1px solid var(--event-stone);
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumbs,
+  .hero,
+  .infoStrip,
+  .aboutGrid,
+  .venueInner,
+  .funding {
+    width: calc(100% - 40px);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 9vw, 2.5rem);
+  }
+
+  .infoItem {
+    padding: 22px 4px;
+  }
+}

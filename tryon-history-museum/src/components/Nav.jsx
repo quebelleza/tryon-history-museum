@@ -90,18 +90,21 @@ export default function Nav() {
         borderBottom: scrolled
           ? "1px solid rgba(123,45,38,0.2)"
           : "1px solid transparent",
-        padding: scrolled ? "12px 0" : "20px 0",
+        padding: scrolled ? "8px 0" : "12px 0",
       }}
     >
       <div className="max-w-[1200px] mx-auto px-5 md:px-8 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-3.5 no-underline">
+        <a
+          href="/"
+          className="relative flex-none w-[104px] h-[48px] md:w-[160px] md:h-[68px] no-underline"
+        >
           <Image
             src="/logo-white.png"
             alt="Tryon History Museum & Visitors Center"
-            width={220}
-            height={124}
-            className="transition-opacity w-[150px] md:w-[220px] h-auto"
+            fill
+            sizes="(max-width: 767px) 104px, 160px"
+            className="object-contain transition-opacity"
             style={{ opacity: scrolled ? 0.9 : 1 }}
           />
         </a>

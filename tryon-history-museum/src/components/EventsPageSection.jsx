@@ -2,10 +2,21 @@
 
 import Link from "next/link";
 import FadeIn from "./FadeIn";
+import { JAMIE_LAVAL_EVENT } from "@/lib/events/jamieLaval";
 
 const DEEP_RED = "#7B2D26";
 
 const STATIC_EVENTS = [
+  {
+    _id: JAMIE_LAVAL_EVENT.id,
+    title: JAMIE_LAVAL_EVENT.title,
+    date: JAMIE_LAVAL_EVENT.date,
+    eventType: JAMIE_LAVAL_EVENT.eventType,
+    description: JAMIE_LAVAL_EVENT.description,
+    time: JAMIE_LAVAL_EVENT.listingTime,
+    location: JAMIE_LAVAL_EVENT.listingLocation,
+    slug: { current: JAMIE_LAVAL_EVENT.slug },
+  },
   {
     _id: "nc-rev-war-static",
     title: "NC and the Revolutionary War",
