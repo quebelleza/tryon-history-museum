@@ -97,16 +97,22 @@ export default function Nav() {
         {/* Logo */}
         <a
           href="/"
-          className="relative flex-none w-[104px] h-[48px] md:w-[160px] md:h-[68px] no-underline"
+          className="relative flex-none no-underline"
+          aria-label="Tryon History Museum & Visitors Center — home"
         >
-          <Image
-            src="/logo-white.png"
-            alt="Tryon History Museum & Visitors Center"
-            fill
-            sizes="(max-width: 767px) 104px, 160px"
-            className="object-contain transition-opacity"
-            style={{ opacity: scrolled ? 0.9 : 1 }}
-          />
+          <span className="block bg-brand-cream/[0.97] px-3 py-2 md:px-4">
+            <span className="relative block w-[140px] h-[79px] md:w-[190px] md:h-[107px]">
+              <Image
+                src="/images/brand/thm-logo-horizontal.png"
+                alt="Tryon History Museum & Visitors Center"
+                fill
+                priority
+                sizes="(max-width: 767px) 140px, 190px"
+                className="object-contain transition-opacity"
+                style={{ opacity: scrolled ? 0.95 : 1 }}
+              />
+            </span>
+          </span>
         </a>
 
         {/* Desktop nav */}
