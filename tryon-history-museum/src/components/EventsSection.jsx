@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import FadeIn from "./FadeIn";
+import { Section, Eyebrow, DisplayHeadline, ButtonLink } from "@/components/brand";
 import { JAMIE_LAVAL_EVENT } from "@/lib/events/jamieLaval";
-
-const DEEP_RED = "#7B2D26";
-const WARM_BLACK = "#1A1311";
-const GOLD_ACCENT = "#C4A35A";
 
 const fallbackEvents = [
   {
@@ -57,6 +53,8 @@ function normalizeEvents(sanityEvents) {
       desc: e.description || "",
       month,
       day,
+      href: e.slug?.current ? `/events/${e.slug.current}` : null,
+      membersOnly: e.membersOnly || false,
     };
   });
 }
@@ -95,142 +93,89 @@ export default function EventsSection({ events }) {
 
   return (
     <>
-    <section id="events" className="bg-tryon-cream py-24 md:py-28">
-      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
-        <div className="flex flex-wrap justify-between items-end mb-16">
-          <FadeIn>
-            <div
-              className="font-body text-[11px] uppercase mb-4"
-              style={{ letterSpacing: "0.3em", color: DEEP_RED }}
-            >
-              What&apos;s Happening
-            </div>
-            <h2 className="font-display text-4xl md:text-[44px] font-light text-tryon-black leading-[1.15] m-0">
-              Upcoming <span className="italic font-semibold">Events</span>
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <a
-              href="/events"
-              className="font-body text-[13px] font-semibold uppercase no-underline mt-4 md:mt-0"
-              style={{
-                letterSpacing: "0.12em",
-                color: DEEP_RED,
-                borderBottom: `1px solid ${DEEP_RED}`,
-                paddingBottom: 4,
-              }}
-            >
-              View All Events →
-            </a>
-          </FadeIn>
+    <Section id="events" bg="cream">
+      <div className="mb-14 flex flex-wrap items-end justify-between gap-6 md:mb-16">
+        <div>
+          <Eyebrow>What&apos;s Happening</Eyebrow>
+          <DisplayHeadline>Upcoming Events</DisplayHeadline>
         </div>
+        <Link
+          href="/events"
+          className="font-brand-secondary text-[13px] font-semibold uppercase tracking-[0.12em] text-brand-heritage no-underline border-b border-brand-heritage pb-1 hover:text-brand-ink hover:border-brand-ink transition-colors"
+        >
+          View All Events &rarr;
+        </Link>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {displayEvents.map((event, i) => {
-            const cardContent = (
-              <div
-                className="flex gap-4 md:gap-7 p-5 md:p-9 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg h-full"
-                style={{
-                  background: "#FFFDF9",
-                  border: "1px solid rgba(123,45,38,0.08)",
-                }}
-              >
-                {/* Date block */}
-                <div
-                  className="min-w-[56px] md:min-w-[72px] text-center py-4 pr-4 md:pr-7"
-                  style={{ borderRight: "1px solid rgba(123,45,38,0.1)" }}
-                >
-                  <div
-                    className="font-display text-[28px] font-bold leading-none"
-                    style={{ color: DEEP_RED }}
-                  >
-                    {event.day}
-                  </div>
-                  <div
-                    className="font-body text-[11px] uppercase mt-1"
-                    style={{
-                      letterSpacing: "0.15em",
-                      color: "#A8584F",
-                    }}
-                  >
-                    {event.dateIsTBD ? "Fall 2026" : event.month}
-                  </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {displayEvents.map((event) => {
+          const cardContent = (
+            <div className="flex h-full gap-5 border border-brand-ink/10 bg-brand-parchment p-5 transition-colors duration-200 hover:border-brand-heritage/40 md:gap-7 md:p-8">
+              {/* Date block */}
+              <div className="min-w-[56px] border-r border-brand-ink/10 py-2 pr-5 text-center md:min-w-[72px] md:pr-7">
+                <div className="font-brand-display text-[30px] font-bold leading-none text-brand-heritage">
+                  {event.day}
                 </div>
-                {/* Details */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div
-                      className="font-body text-[11px] uppercase font-semibold"
-                      style={{ letterSpacing: "0.15em", color: GOLD_ACCENT }}
-                    >
-                      {event.type}
-                    </div>
-                    {event.membersOnly && (
-                      <span
-                        className="inline-flex items-center gap-1 font-body text-[9px] uppercase font-semibold px-2 py-0.5"
-                        style={{
-                          letterSpacing: "0.1em",
-                          color: "#1B2A4A",
-                          background: "rgba(27,42,74,0.08)",
-                          borderRadius: "2px",
-                        }}
-                      >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        Members Only
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="font-display text-[22px] font-semibold text-tryon-black mb-2">
-                    {event.title}
-                  </h3>
-                  <p
-                    className="font-body text-sm leading-relaxed m-0"
-                    style={{ color: "rgba(26,19,17,0.6)" }}
-                  >
-                    {event.desc}
-                  </p>
+                <div className="mt-1.5 font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-ink/50">
+                  {event.dateIsTBD ? "Fall 2026" : event.month}
                 </div>
               </div>
-            );
+              {/* Details */}
+              <div className="flex-1">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-stone">
+                    {event.type}
+                  </span>
+                  {event.membersOnly && (
+                    <span className="inline-flex items-center gap-1 rounded-sm bg-brand-ink/5 px-2 py-0.5 font-brand-secondary text-[9px] font-semibold uppercase tracking-[0.1em] text-brand-ink">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      Members Only
+                    </span>
+                  )}
+                </div>
+                <h3 className="m-0 mb-2 font-brand-display text-[22px] font-normal leading-[1.2] text-brand-ink">
+                  {event.title}
+                </h3>
+                <p className="m-0 font-brand-body text-sm leading-[1.7] text-brand-ink/65">
+                  {event.desc}
+                </p>
+              </div>
+            </div>
+          );
 
-            return (
-              <FadeIn key={event.title} delay={i * 0.1}>
-                {event.interestList ? (
-                  <button
-                    onClick={() => setModalOpen(true)}
-                    className="block w-full text-left no-underline h-full bg-transparent border-none cursor-pointer p-0"
-                  >
-                    {cardContent}
-                  </button>
-                ) : event.href ? (
-                  <Link href={event.href} className="block no-underline h-full">
-                    {cardContent}
-                  </Link>
-                ) : (
-                  cardContent
-                )}
-              </FadeIn>
-            );
-          })}
-        </div>
+          return event.interestList ? (
+            <button
+              key={event.title}
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="block h-full w-full cursor-pointer border-none bg-transparent p-0 text-left"
+            >
+              {cardContent}
+            </button>
+          ) : event.href ? (
+            <Link key={event.title} href={event.href} className="block h-full no-underline">
+              {cardContent}
+            </Link>
+          ) : (
+            <div key={event.title}>{cardContent}</div>
+          );
+        })}
       </div>
-    </section>
+    </Section>
 
     {modalOpen && (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-5"
-        style={{ background: "rgba(26,19,17,0.7)" }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-brand-ink/70 p-5"
         onClick={() => setModalOpen(false)}
       >
         <div
-          className="w-full max-w-[440px] p-8 md:p-10 relative"
-          style={{ background: "#FAF7F4" }}
+          className="relative w-full max-w-[440px] bg-brand-cream p-8 md:p-10"
           onClick={(e) => e.stopPropagation()}
         >
           <button
+            type="button"
             onClick={() => setModalOpen(false)}
-            className="absolute top-4 right-4 bg-transparent border-none cursor-pointer font-body text-lg"
-            style={{ color: "rgba(26,19,17,0.4)" }}
+            className="absolute right-4 top-4 cursor-pointer border-none bg-transparent font-brand-body text-lg text-brand-ink/40"
             aria-label="Close"
           >
             ✕
@@ -238,51 +183,26 @@ export default function EventsSection({ events }) {
 
           {interestStatus === "success" ? (
             <div className="text-center">
-              <div
-                className="font-body text-[11px] uppercase mb-3"
-                style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
-              >
-                You&apos;re on the list
-              </div>
-              <h3
-                className="font-display text-2xl font-light mb-3"
-                style={{ color: WARM_BLACK }}
-              >
+              <Eyebrow className="mb-3">You&apos;re on the list</Eyebrow>
+              <h3 className="m-0 mb-3 font-brand-display text-2xl font-normal text-brand-ink">
                 Thank you, {interestName}.
               </h3>
-              <p
-                className="font-body text-[14px] leading-[1.7] m-0"
-                style={{ color: "rgba(26,19,17,0.6)" }}
-              >
+              <p className="m-0 font-brand-body text-sm leading-[1.7] text-brand-ink/65">
                 We&apos;ll be in touch as soon as details for At Home in Tryon are confirmed. We look forward to having you.
               </p>
             </div>
           ) : (
             <>
-              <div
-                className="font-body text-[11px] uppercase mb-3"
-                style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
-              >
-                Interest List
-              </div>
-              <h3
-                className="font-display text-2xl font-light mb-2"
-                style={{ color: WARM_BLACK }}
-              >
-                At Home in <span className="italic font-semibold">Tryon</span>
+              <Eyebrow className="mb-3">Interest List</Eyebrow>
+              <h3 className="m-0 mb-2 font-brand-display text-2xl font-normal text-brand-ink">
+                At Home in Tryon
               </h3>
-              <p
-                className="font-body text-[14px] leading-[1.7] mb-6"
-                style={{ color: "rgba(26,19,17,0.6)" }}
-              >
+              <p className="mb-6 font-brand-body text-sm leading-[1.7] text-brand-ink/65">
                 Space is very limited. Add your name to be the first to know when details are confirmed.
               </p>
               <form onSubmit={handleInterestSubmit} className="space-y-4">
                 <div>
-                  <label
-                    className="block font-body text-[11px] uppercase mb-2"
-                    style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
-                  >
+                  <label className="mb-2 block font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-ink">
                     Your Name
                   </label>
                   <input
@@ -290,16 +210,12 @@ export default function EventsSection({ events }) {
                     required
                     value={interestName}
                     onChange={(e) => setInterestName(e.target.value)}
-                    className="w-full font-body text-sm px-4 py-3 outline-none"
-                    style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                    className="w-full border border-brand-ink/15 bg-white px-4 py-3 font-brand-body text-sm text-brand-ink outline-none focus-visible:border-brand-heritage"
                     placeholder="First and last name"
                   />
                 </div>
                 <div>
-                  <label
-                    className="block font-body text-[11px] uppercase mb-2"
-                    style={{ letterSpacing: "0.15em", color: WARM_BLACK }}
-                  >
+                  <label className="mb-2 block font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-ink">
                     Email Address
                   </label>
                   <input
@@ -307,24 +223,24 @@ export default function EventsSection({ events }) {
                     required
                     value={interestEmail}
                     onChange={(e) => setInterestEmail(e.target.value)}
-                    className="w-full font-body text-sm px-4 py-3 outline-none"
-                    style={{ background: "#FFFDF9", color: WARM_BLACK, border: "1px solid rgba(123,45,38,0.12)" }}
+                    className="w-full border border-brand-ink/15 bg-white px-4 py-3 font-brand-body text-sm text-brand-ink outline-none focus-visible:border-brand-heritage"
                     placeholder="you@example.com"
                   />
                 </div>
                 {interestStatus === "error" && (
-                  <p className="font-body text-[13px]" style={{ color: DEEP_RED }}>
+                  <p className="font-brand-body text-[13px] text-brand-heritage" role="alert">
                     Something went wrong. Please try again.
                   </p>
                 )}
-                <button
+                <ButtonLink
+                  as="button"
                   type="submit"
+                  variant="primary"
+                  className="w-full cursor-pointer disabled:opacity-60"
                   disabled={interestStatus === "loading"}
-                  className="w-full font-body text-[13px] font-semibold uppercase cursor-pointer transition-all hover:brightness-110 disabled:opacity-60"
-                  style={{ letterSpacing: "0.12em", color: WARM_BLACK, background: GOLD_ACCENT, padding: "14px 36px", border: "none" }}
                 >
-                  {interestStatus === "loading" ? "Submitting\u2026" : "Add Me to the List"}
-                </button>
+                  {interestStatus === "loading" ? "Submitting…" : "Add Me to the List"}
+                </ButtonLink>
               </form>
             </>
           )}

@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
-import FadeIn from "./FadeIn";
 import BoardVerification from "./BoardVerification";
+import { Section, Eyebrow, DisplayHeadline } from "@/components/brand";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
@@ -36,26 +36,25 @@ export default function NewsletterSection() {
     }
   }
   return (
-    <section id="newsletter" className="bg-tryon-warm py-16 md:py-20 scroll-mt-40">
-      <div className="max-w-[600px] mx-auto px-5 md:px-8 text-center">
-        <FadeIn>
-          <h3 className="font-display text-3xl font-normal text-tryon-black mb-3">Stay Connected</h3>
-          <p className="font-body text-base mb-7 text-tryon-black">Sign up for news, event announcements, and stories from Tryon&apos;s past.</p>
-          {status === "success" ? <div role="status" className="font-body text-base leading-relaxed"><h4 className="font-semibold">Check your email</h4><p>{notice}</p></div> : <form aria-label="Newsletter signup" className="flex flex-col gap-4 max-w-[440px] mx-auto text-left" onSubmit={subscribe}>
-            <label htmlFor="newsletter-email" className="font-body text-sm font-semibold text-tryon-black">Email address</label>
-            <input id="newsletter-email" type="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" autoComplete="email" className="w-full font-body text-base px-5 py-3.5 text-tryon-black border border-stone-300 focus:ring-2 focus:ring-tryon-gold" />
-            <label className="flex items-start gap-3 font-body text-sm leading-relaxed text-tryon-black">
-              <input type="checkbox" required checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0" />
-              I would like museum news, event announcements, and history stories by email. I can unsubscribe at any time.
-            </label>
-            <BoardVerification onToken={setToken} attempt={attempt} action="newsletter" />
-            {!token && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && <p className="font-body text-sm" role="status">Complete verification to request your confirmation email.</p>}
-            {status === "error" && <p role="alert" className="font-body text-sm text-red-800">{notice}</p>}
-            <button type="submit" disabled={!token || !consent || status === "sending"} className="bg-[#7B2D26] py-3.5 px-6 font-body text-sm font-semibold uppercase text-white cursor-pointer hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed">{status === "sending" ? "Sending…" : "Sign Up"}</button>
-            <p className="font-body text-sm text-tryon-black">We will email a confirmation link. Your subscription starts only after you confirm.</p>
-          </form>}
-        </FadeIn>
+    <Section id="newsletter" bg="parchment" className="scroll-mt-40">
+      <div className="max-w-[600px] mx-auto text-center">
+        <Eyebrow>Newsletter</Eyebrow>
+        <DisplayHeadline size="md" className="mb-3">Stay Connected</DisplayHeadline>
+        <p className="mb-7 font-brand-body text-base leading-[1.75] text-brand-ink/70">Sign up for news, event announcements, and stories from Tryon&apos;s past.</p>
+        {status === "success" ? <div role="status" className="font-brand-body text-base leading-relaxed text-brand-ink"><h4 className="font-brand-secondary text-sm font-semibold uppercase tracking-[0.15em]">Check your email</h4><p>{notice}</p></div> : <form aria-label="Newsletter signup" className="mx-auto flex max-w-[440px] flex-col gap-4 text-left" onSubmit={subscribe}>
+          <label htmlFor="newsletter-email" className="font-brand-secondary text-sm font-semibold text-brand-ink">Email address</label>
+          <input id="newsletter-email" type="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" autoComplete="email" className="w-full border border-brand-ink/20 bg-white px-5 py-3.5 font-brand-body text-base text-brand-ink focus-visible:outline-2 focus-visible:outline-brand-heritage" />
+          <label className="flex items-start gap-3 font-brand-body text-sm leading-relaxed text-brand-ink/80">
+            <input type="checkbox" required checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-brand-heritage" />
+            I would like museum news, event announcements, and history stories by email. I can unsubscribe at any time.
+          </label>
+          <BoardVerification onToken={setToken} attempt={attempt} action="newsletter" />
+          {!token && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && <p className="font-brand-body text-sm text-brand-ink/60" role="status">Complete verification to request your confirmation email.</p>}
+          {status === "error" && <p role="alert" className="font-brand-body text-sm text-brand-heritage">{notice}</p>}
+          <button type="submit" disabled={!token || !consent || status === "sending"} className="cursor-pointer bg-brand-heritage px-6 py-3.5 font-brand-secondary text-sm font-semibold uppercase tracking-[0.12em] text-brand-cream transition-colors hover:bg-brand-ink disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-heritage">{status === "sending" ? "Sending…" : "Sign Up"}</button>
+          <p className="font-brand-body text-sm text-brand-ink/60">We will email a confirmation link. Your subscription starts only after you confirm.</p>
+        </form>}
       </div>
-    </section>
+    </Section>
   );
 }

@@ -1,6 +1,7 @@
 const backgrounds = {
   cream: "bg-brand-cream",
   parchment: "bg-brand-parchment",
+  heritage: "bg-brand-heritage",
   ink: "bg-brand-ink",
   transparent: "bg-transparent",
 };

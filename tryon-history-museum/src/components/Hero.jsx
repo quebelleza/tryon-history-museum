@@ -1,9 +1,7 @@
 "use client";
 
-const DEEP_RED = "#7B2D26";
-const DARK_RED = "#5C1F1A";
-const WARM_BLACK = "#1A1311";
-const GOLD_ACCENT = "#C4A35A";
+import Image from "next/image";
+import { ButtonLink } from "@/components/brand";
 
 const fallbackSchedule = {
   0: "Closed",
@@ -28,178 +26,91 @@ export default function Hero({ siteSettings }) {
   const todayHours = getTodayHours(siteSettings);
 
   return (
-    <section
-      className="relative min-h-[480px] md:min-h-[600px] h-screen flex items-end overflow-hidden pt-24 md:pt-28"
-    >
-      {/* Photo background */}
-      <img
+    <section className="relative flex min-h-[480px] h-screen items-end overflow-hidden md:min-h-[600px]">
+      {/* Historical photograph */}
+      <Image
         src="/images/trade-street-1946.jpg"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+        alt="Trade Street in downtown Tryon, North Carolina, circa 1946"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
       />
-      {/* Gradient overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `linear-gradient(160deg, ${WARM_BLACK} 0%, ${DARK_RED} 50%, ${DEEP_RED} 100%)`,
-          opacity: 0.85,
-        }}
-      />
-      {/* Texture overlay */}
+      {/* Restrained dark gradient overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)",
-        }}
-      />
-      {/* Decorative lines */}
-      <div
-        className="absolute hidden lg:block"
-        style={{
-          top: "15%",
-          right: "8%",
-          width: 1,
-          height: "35%",
-          background: `linear-gradient(to bottom, transparent, ${GOLD_ACCENT}40, transparent)`,
-        }}
-      />
-      <div
-        className="absolute hidden lg:block"
-        style={{
-          top: "25%",
-          right: "7%",
-          width: 80,
-          height: 1,
-          background: `linear-gradient(to left, transparent, ${GOLD_ACCENT}40)`,
+            "linear-gradient(to top, rgba(34,34,34,0.92) 0%, rgba(34,34,34,0.55) 38%, rgba(34,34,34,0.15) 68%, rgba(34,34,34,0.35) 100%)",
         }}
       />
 
-      <div className="relative z-10 max-w-[1200px] mx-auto px-4 md:px-8 pb-12 md:pb-24 w-full">
-        <div className="max-w-full md:max-w-[700px]">
-          <div
-            className="font-body text-xs uppercase mb-4 md:mb-6 animate-fade-up animation-delay-300"
-            style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
-          >
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-5 pb-32 md:px-8 md:pb-24">
+        <div className="max-w-full md:max-w-[720px]">
+          <p className="mb-4 font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-stone md:mb-6">
             Tryon, North Carolina &middot; Est. 1885
-          </div>
-          <h1 className="font-display font-light text-white leading-[1.08] m-0 animate-fade-up animation-delay-500 text-[clamp(34px,8vw,72px)]">
-            A Small Town
-            <br />
-            <span className="font-semibold italic">with a Grand Story</span>
-          </h1>
-          <p
-            className="font-body text-[15px] md:text-[17px] leading-relaxed max-w-full md:max-w-[480px] mt-5 md:mt-7 animate-fade-up animation-delay-700"
-            style={{ color: "rgba(255,255,255,0.65)" }}
-          >
-            From Cherokee heritage to the railroad age, from Nina Simone&apos;s
-            first piano notes to a world-renowned equestrian tradition —
-            discover the people and moments that shaped Tryon.
           </p>
-          <div className="flex flex-wrap gap-3 md:gap-4 mt-6 md:mt-10 animate-fade-up animation-delay-900">
-            <a
-              href="/visit"
-              className="font-body text-[12px] md:text-[13px] font-semibold uppercase no-underline transition-all hover:brightness-110"
-              style={{
-                letterSpacing: "0.12em",
-                color: WARM_BLACK,
-                background: GOLD_ACCENT,
-                padding: "12px 24px",
-              }}
-            >
+          <h1 className="m-0 font-brand-display font-normal text-[clamp(36px,7vw,64px)] leading-[1.1] text-brand-cream">
+            Small town. Deep roots.
+            <br />
+            Endless stories.
+          </h1>
+          <p className="mt-5 max-w-full font-brand-body text-[15px] leading-[1.75] text-brand-cream/75 md:mt-7 md:max-w-[480px] md:text-[17px]">
+            Discover the people, places, and remarkable stories that shaped
+            our corner of the Carolina foothills.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3 md:mt-10 md:gap-4">
+            <ButtonLink href="/history-bits">Explore Our History</ButtonLink>
+            <ButtonLink href="/visit" variant="secondaryOnDark">
               Plan Your Visit
-            </a>
-            <a
-              href="/about/our-story"
-              className="font-body text-[12px] md:text-[13px] font-semibold uppercase no-underline transition-all hover:bg-white/10"
-              style={{
-                letterSpacing: "0.12em",
-                color: "rgba(255,255,255,0.8)",
-                border: "1px solid rgba(255,255,255,0.25)",
-                padding: "12px 24px",
-              }}
-            >
-              Our Story
-            </a>
+            </ButtonLink>
           </div>
         </div>
       </div>
 
-      {/* Mobile hours badge */}
-      <div
-        className="md:hidden w-full animate-fade-up animation-delay-1100"
-        style={{
-          background: "rgba(26,19,17,0.92)",
-          backdropFilter: "blur(12px)",
-          borderTop: "1px solid rgba(123,45,38,0.2)",
-          padding: "16px 20px",
-        }}
-      >
+      {/* Today's hours — mobile */}
+      <div className="absolute inset-x-0 bottom-0 z-10 border-t border-brand-cream/10 bg-brand-ink/85 px-5 py-4 backdrop-blur-md md:hidden">
         <div className="flex items-center justify-between">
           <div>
-            <div
-              className="font-body text-[10px] uppercase"
-              style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-            >
+            <p className="font-brand-secondary text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-stone">
               Today&apos;s Hours
-            </div>
-            <div className="font-display text-lg text-white font-light mt-0.5">
+            </p>
+            <p className="mt-0.5 font-brand-display text-lg font-normal text-brand-cream">
               {todayHours}
-            </div>
+            </p>
           </div>
-          <a href="/visit" className="no-underline font-body text-xs" style={{ color: GOLD_ACCENT }}>
+          <a
+            href="/visit"
+            className="font-brand-secondary text-xs font-semibold uppercase tracking-[0.1em] text-brand-stone no-underline"
+          >
             See all hours
           </a>
         </div>
       </div>
 
-      {/* Desktop hours badge */}
-      <div
-        className="absolute bottom-0 right-0 animate-fade-up animation-delay-1100 hidden md:block"
-        style={{
-          background: "rgba(26,19,17,0.92)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid rgba(123,45,38,0.2)",
-          borderBottom: "none",
-          borderRight: "none",
-          padding: "28px 40px",
-        }}
-      >
-        <div
-          className="font-body text-[11px] uppercase mb-3"
-          style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-        >
+      {/* Today's hours — desktop */}
+      <div className="absolute bottom-0 right-0 z-10 hidden border border-b-0 border-r-0 border-brand-cream/10 bg-brand-ink/85 px-10 py-7 backdrop-blur-md md:block">
+        <p className="mb-3 font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-stone">
           Today&apos;s Hours
-        </div>
-        <div className="font-display text-[22px] text-white font-light">
+        </p>
+        <p className="font-brand-display text-[22px] font-normal text-brand-cream">
           {todayHours}
-        </div>
-        <div
-          className="font-body text-xs mt-1"
-          style={{ color: "rgba(255,255,255,0.5)" }}
-        >
-          Open Wed–Fri &middot;{" "}
-          <a href="/visit" className="no-underline" style={{ color: GOLD_ACCENT }}>
+        </p>
+        <p className="mt-1 font-brand-body text-xs text-brand-cream/50">
+          Open Wed&ndash;Fri &middot;{" "}
+          <a
+            href="/visit"
+            className="text-brand-stone no-underline hover:text-brand-cream"
+          >
             See all hours
           </a>
-        </div>
+        </p>
       </div>
 
       {/* Photo credit */}
-      <div
-        className="absolute font-body pointer-events-none"
-        style={{
-          bottom: "16px",
-          right: "16px",
-          fontSize: "10px",
-          color: "rgba(255,255,255,0.35)",
-          letterSpacing: "0.05em",
-          zIndex: 5,
-        }}
-      >
+      <p className="pointer-events-none absolute bottom-5 left-8 z-[5] hidden font-brand-secondary text-[10px] uppercase tracking-[0.05em] text-brand-cream/40 md:block">
         Trade Street &middot; Tryon, NC &middot; c. 1946
-      </div>
+      </p>
     </section>
   );
 }
