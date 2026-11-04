@@ -15,6 +15,13 @@
   --text:      #2A2420;
   --text-mid:  #5A4E44;
   --rule:      rgba(184,150,90,0.35);
+
+  /* Redesign brand kit — namespaced, additive only (see tailwind.config.js) */
+  --brand-heritage:  #9C3A2E;
+  --brand-ink:       #222222;
+  --brand-stone:     #C8B79A;
+  --brand-parchment: #E7E2D6;
+  --brand-cream:     #F6F2EA;
 }
 
 @layer base {

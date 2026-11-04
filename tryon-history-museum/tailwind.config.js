@@ -16,10 +16,25 @@ module.exports = {
           muted: "#A8584F",
           gold: "#C4A35A",
         },
+        // Redesign brand kit — namespaced, additive only.
+        // Legacy `tryon.*` tokens above remain the production palette
+        // until redesigned components are migrated and verified.
+        brand: {
+          heritage: "#9C3A2E",
+          ink: "#222222",
+          stone: "#C8B79A",
+          parchment: "#E7E2D6",
+          cream: "#F6F2EA",
+        },
       },
       fontFamily: {
         display: ['"Cormorant Garamond"', "Garamond", "serif"],
         body: ['"Source Sans 3"', '"Source Sans Pro"', "sans-serif"],
+        // Redesign fonts — loaded via next/font in src/app/fonts.js.
+        // Do not point existing components at these; `font-display` and
+        // `font-body` above stay in place for legacy pages.
+        "brand-display": ["var(--font-fraunces)", "Georgia", "serif"],
+        "brand-body": ["var(--font-inter)", "Helvetica", "Arial", "sans-serif"],
       },
     },
   },
