@@ -95,7 +95,7 @@ export default function Nav() {
             artwork itself is unmodified and proportional. */}
         <a
           href="/"
-          className="relative flex-none block w-[190px] lg:w-[260px] my-3 no-underline"
+          className="relative flex-none block w-[190px] lg:w-[260px] my-2 no-underline"
           aria-label="Tryon History Museum & Visitors Center — home"
         >
           <span className="relative block aspect-[958/308]">
@@ -219,9 +219,11 @@ export default function Nav() {
           </a>
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile hamburger — ink, turns heritage red on hover/open */}
         <button
-          className="lg:hidden bg-transparent border-none cursor-pointer p-2"
+          className={`lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] bg-transparent border-none cursor-pointer transition-colors ${
+            mobileOpen ? "text-brand-heritage" : "text-brand-ink hover:text-brand-heritage"
+          }`}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
@@ -229,17 +231,17 @@ export default function Nav() {
         >
           <div className="space-y-1.5">
             <div
-              className="w-6 h-px bg-brand-ink transition-all"
+              className="w-6 h-px bg-current transition-all"
               style={{
                 transform: mobileOpen ? "rotate(45deg) translate(4px, 4px)" : "none",
               }}
             />
             <div
-              className="w-6 h-px bg-brand-ink transition-all"
+              className="w-6 h-px bg-current transition-all"
               style={{ opacity: mobileOpen ? 0 : 1 }}
             />
             <div
-              className="w-6 h-px bg-brand-ink transition-all"
+              className="w-6 h-px bg-current transition-all"
               style={{
                 transform: mobileOpen ? "rotate(-45deg) translate(4px, -4px)" : "none",
               }}
