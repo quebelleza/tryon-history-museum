@@ -6,11 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-const GOLD_ACCENT = "#C4A35A";
-const WARM_BLACK = "#1A1311";
-const DEEP_RED = "#7B2D26";
-const MUTED_RED = "#A8584F";
-
 const navItems = [
   {
     label: "Explore",
@@ -44,6 +39,12 @@ const navItems = [
     ],
   },
 ];
+
+const linkClasses =
+  "bg-transparent border-none cursor-pointer font-brand-secondary text-[13px] font-semibold uppercase tracking-[0.12em] py-2 no-underline transition-colors text-brand-ink/70 hover:text-brand-heritage";
+
+const dropdownLinkClasses =
+  "block font-brand-secondary text-sm no-underline py-2 transition-colors text-brand-ink/65 hover:text-brand-heritage";
 
 export default function Nav() {
   const router = useRouter();
@@ -83,40 +84,34 @@ export default function Nav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-400"
+      className="fixed top-0 left-0 right-0 z-50 bg-brand-cream border-b border-brand-ink/10 transition-shadow duration-300"
       style={{
-        background: scrolled ? "rgba(26,19,17,0.97)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled
-          ? "1px solid rgba(123,45,38,0.2)"
-          : "1px solid transparent",
-        padding: scrolled ? "8px 0" : "12px 0",
+        boxShadow: scrolled ? "0 4px 16px rgba(34,34,34,0.08)" : "none",
       }}
     >
-      <div className="max-w-[1200px] mx-auto px-5 md:px-8 flex items-center justify-between">
-        {/* Logo */}
+      <div className="max-w-[1400px] mx-auto px-5 lg:px-8 flex items-center justify-between">
+        {/* Logo — the PNG contains ~130px transparent padding top/bottom;
+            the 958:308 frame trims only that padding (object-cover), the
+            artwork itself is unmodified and proportional. */}
         <a
           href="/"
-          className="relative flex-none no-underline"
+          className="relative flex-none block w-[190px] lg:w-[260px] my-3 no-underline"
           aria-label="Tryon History Museum & Visitors Center — home"
         >
-          <span className="block bg-brand-cream/[0.97] px-3 py-2 md:px-4">
-            <span className="relative block w-[140px] h-[79px] md:w-[190px] md:h-[107px]">
-              <Image
-                src="/images/brand/thm-logo-horizontal.png"
-                alt="Tryon History Museum & Visitors Center"
-                fill
-                priority
-                sizes="(max-width: 767px) 140px, 190px"
-                className="object-contain transition-opacity"
-                style={{ opacity: scrolled ? 0.95 : 1 }}
-              />
-            </span>
+          <span className="relative block aspect-[958/308]">
+            <Image
+              src="/images/brand/thm-logo-horizontal.png"
+              alt="Tryon History Museum & Visitors Center"
+              fill
+              priority
+              sizes="(max-width: 1023px) 190px, 260px"
+              className="object-cover object-center"
+            />
           </span>
         </a>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-9">
+        {/* Desktop nav — lg breakpoint keeps tablet widths uncrowded */}
+        <div className="hidden lg:flex items-center gap-6 xl:gap-9">
           {navItems.map((item) => (
             <div
               key={item.label}
@@ -125,29 +120,14 @@ export default function Nav() {
               onMouseLeave={() => item.children && setActiveDropdown(null)}
             >
               {item.href ? (
-                <a
-                  href={item.href}
-                  className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold no-underline"
-                  style={{
-                    letterSpacing: "0.12em",
-                    color: scrolled
-                      ? "rgba(250,247,244,0.8)"
-                      : "rgba(255,255,255,0.85)",
-                  }}
-                >
+                <a href={item.href} className={linkClasses}>
                   {item.label}
                 </a>
               ) : (
                 <button
                   aria-expanded={activeDropdown === item.label}
                   aria-haspopup="true"
-                  className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold"
-                  style={{
-                    letterSpacing: "0.12em",
-                    color: scrolled
-                      ? "rgba(250,247,244,0.8)"
-                      : "rgba(255,255,255,0.85)",
-                  }}
+                  className={linkClasses}
                 >
                   {item.label}
                 </button>
@@ -155,25 +135,26 @@ export default function Nav() {
               {/* Dropdown */}
               {item.children && (
                 <div
-                  className="absolute top-full -left-4 min-w-[200px] transition-all duration-300"
+                  className="absolute top-full -left-4 min-w-[200px] bg-brand-cream border border-brand-ink/10 transition-all duration-200"
                   style={{
-                    background: WARM_BLACK,
-                    border: "1px solid rgba(123,45,38,0.25)",
                     padding:
-                      activeDropdown === item.label ? "16px 24px" : "0 24px",
+                      activeDropdown === item.label ? "14px 22px" : "0 22px",
                     opacity: activeDropdown === item.label ? 1 : 0,
                     maxHeight: activeDropdown === item.label ? 300 : 0,
                     overflow: "hidden",
                     pointerEvents:
                       activeDropdown === item.label ? "auto" : "none",
+                    boxShadow:
+                      activeDropdown === item.label
+                        ? "0 12px 24px rgba(34,34,34,0.10)"
+                        : "none",
                   }}
                 >
                   {item.children.map((child) => (
                     <a
                       key={child.name}
                       href={child.href}
-                      className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
-                      style={{ color: "rgba(250,247,244,0.7)" }}
+                      className={dropdownLinkClasses}
                     >
                       {child.name}
                     </a>
@@ -192,74 +173,47 @@ export default function Nav() {
               <button
                 aria-expanded={accountOpen}
                 aria-haspopup="true"
-                className="bg-transparent border-none cursor-pointer font-body text-[13px] font-normal uppercase py-2 transition-colors hover:!text-tryon-gold"
-                style={{
-                  letterSpacing: "0.12em",
-                  color: scrolled
-                    ? "rgba(250,247,244,0.8)"
-                    : "rgba(255,255,255,0.85)",
-                }}
+                className={linkClasses}
               >
                 My Account
               </button>
               <div
-                className="absolute top-full right-0 min-w-[180px] transition-all duration-300"
+                className="absolute top-full right-0 min-w-[180px] bg-brand-cream border border-brand-ink/10 transition-all duration-200"
                 style={{
-                  background: WARM_BLACK,
-                  border: "1px solid rgba(123,45,38,0.25)",
-                  padding: accountOpen ? "16px 24px" : "0 24px",
+                  padding: accountOpen ? "14px 22px" : "0 22px",
                   opacity: accountOpen ? 1 : 0,
                   maxHeight: accountOpen ? 200 : 0,
                   overflow: "hidden",
                   pointerEvents: accountOpen ? "auto" : "none",
+                  boxShadow: accountOpen
+                    ? "0 12px 24px rgba(34,34,34,0.10)"
+                    : "none",
                 }}
               >
-                <Link
-                  href="/member/dashboard"
-                  className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
-                  style={{ color: "rgba(250,247,244,0.7)" }}
-                >
+                <Link href="/member/dashboard" className={dropdownLinkClasses}>
                   Account Management
                 </Link>
                 {isAdmin && (
-                  <Link
-                    href="/admin/dashboard"
-                    className="block font-body text-sm no-underline py-2 transition-colors hover:!text-tryon-gold"
-                    style={{ color: "rgba(250,247,244,0.7)" }}
-                  >
+                  <Link href="/admin/dashboard" className={dropdownLinkClasses}>
                     Museum Admin
                   </Link>
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="block w-full text-left bg-transparent border-none cursor-pointer font-body text-sm py-2 transition-colors hover:!text-tryon-gold"
-                  style={{ color: "rgba(250,247,244,0.7)" }}
+                  className="block w-full text-left bg-transparent border-none cursor-pointer font-brand-secondary text-sm py-2 px-0 transition-colors text-brand-ink/65 hover:text-brand-heritage"
                 >
                   Sign Out
                 </button>
               </div>
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="font-body text-[13px] font-normal uppercase no-underline py-2 transition-colors hover:!text-tryon-gold"
-              style={{
-                letterSpacing: "0.12em",
-                color: scrolled ? "rgba(250,247,244,0.8)" : "rgba(255,255,255,0.85)",
-              }}
-            >
+            <Link href="/login" className={linkClasses}>
               Log In
             </Link>
           )}
           <a
             href="/donate"
-            className="font-body text-xs font-semibold uppercase no-underline transition-all hover:brightness-110"
-            style={{
-              letterSpacing: "0.14em",
-              color: WARM_BLACK,
-              background: GOLD_ACCENT,
-              padding: "10px 24px",
-            }}
+            className="font-brand-secondary text-xs font-semibold uppercase tracking-[0.14em] no-underline bg-brand-heritage text-brand-cream px-6 py-2.5 transition-colors hover:bg-brand-ink"
           >
             Donate
           </a>
@@ -267,7 +221,7 @@ export default function Nav() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden bg-transparent border-none cursor-pointer p-2"
+          className="lg:hidden bg-transparent border-none cursor-pointer p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
@@ -275,23 +229,18 @@ export default function Nav() {
         >
           <div className="space-y-1.5">
             <div
-              className="w-6 h-px transition-all"
+              className="w-6 h-px bg-brand-ink transition-all"
               style={{
-                background: "#fff",
                 transform: mobileOpen ? "rotate(45deg) translate(4px, 4px)" : "none",
               }}
             />
             <div
-              className="w-6 h-px transition-all"
-              style={{
-                background: "#fff",
-                opacity: mobileOpen ? 0 : 1,
-              }}
+              className="w-6 h-px bg-brand-ink transition-all"
+              style={{ opacity: mobileOpen ? 0 : 1 }}
             />
             <div
-              className="w-6 h-px transition-all"
+              className="w-6 h-px bg-brand-ink transition-all"
               style={{
-                background: "#fff",
                 transform: mobileOpen ? "rotate(-45deg) translate(4px, -4px)" : "none",
               }}
             />
@@ -304,22 +253,17 @@ export default function Nav() {
         <div
           id="mobile-menu"
           role="menu"
-          className="md:hidden px-5 pb-8 pt-4"
-          style={{ background: "rgba(26,19,17,0.98)" }}
+          className="lg:hidden bg-brand-cream border-t border-brand-ink/10 px-5 pb-8 pt-4"
         >
           {navItems.map((item) => (
             <div key={item.label} className="mb-6">
-              <div
-                className="font-body text-xs uppercase mb-3"
-                style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-              >
+              <div className="font-brand-secondary text-xs font-semibold uppercase tracking-[0.2em] text-brand-heritage mb-3">
                 {item.label}
               </div>
               {item.href ? (
                 <a
                   href={item.href}
-                  className="block font-body text-sm no-underline py-1.5"
-                  style={{ color: "rgba(250,247,244,0.6)" }}
+                  className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
                   onClick={() => setMobileOpen(false)}
                 >
                   {item.label}
@@ -329,8 +273,7 @@ export default function Nav() {
                   <a
                     key={child.name}
                     href={child.href}
-                    className="block font-body text-sm no-underline py-1.5"
-                    style={{ color: "rgba(250,247,244,0.6)" }}
+                    className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
                     onClick={() => setMobileOpen(false)}
                   >
                     {child.name}
@@ -341,18 +284,14 @@ export default function Nav() {
           ))}
           {/* Mobile auth controls */}
           <div className="mb-6 mt-2">
-            <div
-              className="font-body text-xs uppercase mb-3"
-              style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-            >
+            <div className="font-brand-secondary text-xs font-semibold uppercase tracking-[0.2em] text-brand-heritage mb-3">
               Account
             </div>
             {user ? (
               <>
                 <Link
                   href="/member/dashboard"
-                  className="block font-body text-sm no-underline py-1.5"
-                  style={{ color: "rgba(250,247,244,0.6)" }}
+                  className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
                   onClick={() => setMobileOpen(false)}
                 >
                   Account Management
@@ -360,8 +299,7 @@ export default function Nav() {
                 {isAdmin && (
                   <Link
                     href="/admin/dashboard"
-                    className="block font-body text-sm no-underline py-1.5"
-                    style={{ color: "rgba(250,247,244,0.6)" }}
+                    className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
                     onClick={() => setMobileOpen(false)}
                   >
                     Museum Admin
@@ -369,8 +307,7 @@ export default function Nav() {
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="block bg-transparent border-none cursor-pointer font-body text-sm py-1.5 px-0"
-                  style={{ color: "rgba(250,247,244,0.6)" }}
+                  className="block bg-transparent border-none cursor-pointer font-brand-body text-sm py-1.5 px-0 text-brand-ink/70"
                 >
                   Sign Out
                 </button>
@@ -378,8 +315,7 @@ export default function Nav() {
             ) : (
               <Link
                 href="/login"
-                className="block font-body text-sm no-underline py-1.5"
-                style={{ color: "rgba(250,247,244,0.6)" }}
+                className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
                 onClick={() => setMobileOpen(false)}
               >
                 Log In
@@ -388,13 +324,7 @@ export default function Nav() {
           </div>
           <a
             href="/donate"
-            className="inline-block font-body text-xs font-semibold uppercase no-underline mt-2"
-            style={{
-              letterSpacing: "0.14em",
-              color: WARM_BLACK,
-              background: GOLD_ACCENT,
-              padding: "10px 24px",
-            }}
+            className="inline-block font-brand-secondary text-xs font-semibold uppercase tracking-[0.14em] no-underline bg-brand-heritage text-brand-cream px-6 py-2.5 mt-2"
           >
             Donate
           </a>
