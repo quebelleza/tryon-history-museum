@@ -5,8 +5,9 @@ const sizes = {
 };
 
 /**
- * Editorial display headline set in Fraunces with fluid sizing.
- * `as` controls the heading level for document semantics.
+ * Editorial display headline set in Playfair Display SC with fluid
+ * sizing. `as` controls the heading level for document semantics.
+ * Note: the family ships in 400/700 only — `font-normal` is the base.
  */
 export default function DisplayHeadline({
   as: Tag = "h2",
@@ -22,7 +23,7 @@ export default function DisplayHeadline({
   };
   return (
     <Tag
-      className={`font-brand-display font-light m-0 ${sizes[size]} ${tones[tone]} ${className}`}
+      className={`font-brand-display font-normal m-0 ${sizes[size]} ${tones[tone]} ${className}`}
     >
       {children}
     </Tag>

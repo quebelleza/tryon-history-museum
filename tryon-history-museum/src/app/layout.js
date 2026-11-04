@@ -1,6 +1,6 @@
 import "./globals.css";
 import Script from "next/script";
-import { fraunces, inter } from "./fonts";
+import { playfairDisplaySC, montserrat } from "./fonts";
 
 export const viewport = {
   width: "device-width",
@@ -36,7 +36,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${fraunces.variable} ${inter.variable}`}>
+      <body className={`${playfairDisplaySC.variable} ${montserrat.variable}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[#C4A35A] focus:text-[#1A1311] focus:font-semibold focus:text-sm"

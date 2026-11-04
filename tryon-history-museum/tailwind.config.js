@@ -30,11 +30,18 @@ module.exports = {
       fontFamily: {
         display: ['"Cormorant Garamond"', "Garamond", "serif"],
         body: ['"Source Sans 3"', '"Source Sans Pro"', "sans-serif"],
-        // Redesign fonts — loaded via next/font in src/app/fonts.js.
+        // Redesign brand fonts — loaded via next/font in src/app/fonts.js.
         // Do not point existing components at these; `font-display` and
         // `font-body` above stay in place for legacy pages.
-        "brand-display": ["var(--font-fraunces)", "Georgia", "serif"],
-        "brand-body": ["var(--font-inter)", "Helvetica", "Arial", "sans-serif"],
+        // brand-display: Playfair Display SC, brand-body: Montserrat.
+        // brand-secondary resolves to licensed Syntax webfonts via
+        // --font-syntax once the files are supplied (next/font/local);
+        // until then it falls through to system sans-serif.
+        "brand-display": ["var(--font-brand-display)", "Georgia", "serif"],
+        "brand-body": ["var(--font-brand-body)", "Helvetica", "Arial", "sans-serif"],
+        "brand-secondary": [
+          'var(--font-syntax, "Helvetica Neue", Arial, sans-serif)',
+        ],
       },
     },
   },

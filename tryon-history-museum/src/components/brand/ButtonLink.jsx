@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const base =
-  "inline-block font-brand-body text-[13px] font-semibold uppercase tracking-[0.12em] no-underline px-7 py-3.5 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2";
+  "inline-block font-brand-secondary text-[13px] font-semibold uppercase tracking-[0.12em] no-underline px-7 py-3.5 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2";
 
 const variants = {
   primary:

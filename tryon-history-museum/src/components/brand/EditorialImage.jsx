@@ -53,7 +53,7 @@ export default function EditorialImage({
             </span>
           )}
           {credit && (
-            <span className="font-brand-body text-[11px] uppercase tracking-[0.08em] text-brand-ink/45">
+            <span className="font-brand-secondary text-[11px] uppercase tracking-[0.08em] text-brand-ink/45">
               {credit}
             </span>
           )}
