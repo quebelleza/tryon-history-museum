@@ -117,7 +117,7 @@ export default function EventsSection({ events }) {
                   {event.day}
                 </div>
                 <div className="mt-1.5 font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-ink/50">
-                  {event.dateIsTBD ? "Fall 2026" : event.month}
+                  {event.dateIsTBD ? "2027" : event.month}
                 </div>
               </div>
               {/* Details */}
