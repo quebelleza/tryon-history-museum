@@ -1,4 +1,4 @@
-import { Playfair_Display_SC, Montserrat } from "next/font/google";
+import { Playfair_Display, Montserrat } from "next/font/google";
 
 // Official THM brand fonts (Phase 1 — brand foundations).
 // These expose CSS variables consumed by the `font-brand-*` Tailwind
@@ -6,9 +6,9 @@ import { Playfair_Display_SC, Montserrat } from "next/font/google";
 // Source Sans 3 stacks used by existing pages.
 //
 // Typography system:
-//   Playfair Display SC — primary headings / display typography
-//   Syntax              — secondary sans (labels, nav, identity text)
-//   Montserrat          — body text / reading content
+//   Playfair Display — primary headings / display typography
+//   Syntax           — secondary sans (labels, nav, identity text)
+//   Montserrat       — body text / reading content
 //
 // Syntax is a commercial family and no licensed webfont files exist in
 // this project yet (verified: no .woff/.woff2/.otf/.ttf outside
@@ -17,9 +17,8 @@ import { Playfair_Display_SC, Montserrat } from "next/font/google";
 // and the `font-brand-secondary` Tailwind family will pick it up
 // automatically — no token changes needed.
 
-export const playfairDisplaySC = Playfair_Display_SC({
+export const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "700"],
   style: ["normal", "italic"],
   variable: "--font-brand-display",
   display: "swap",

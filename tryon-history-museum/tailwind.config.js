@@ -33,7 +33,7 @@ module.exports = {
         // Redesign brand fonts — loaded via next/font in src/app/fonts.js.
         // Do not point existing components at these; `font-display` and
         // `font-body` above stay in place for legacy pages.
-        // brand-display: Playfair Display SC, brand-body: Montserrat.
+        // brand-display: Playfair Display, brand-body: Montserrat.
         // brand-secondary resolves to licensed Syntax webfonts via
         // --font-syntax once the files are supplied (next/font/local);
         // until then it falls through to system sans-serif.

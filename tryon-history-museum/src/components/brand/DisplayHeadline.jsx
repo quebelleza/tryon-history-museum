@@ -5,9 +5,8 @@ const sizes = {
 };
 
 /**
- * Editorial display headline set in Playfair Display SC with fluid
+ * Editorial display headline set in Playfair Display with fluid
  * sizing. `as` controls the heading level for document semantics.
- * Note: the family ships in 400/700 only — `font-normal` is the base.
  */
 export default function DisplayHeadline({
   as: Tag = "h2",
