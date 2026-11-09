@@ -130,6 +130,12 @@ export default function VisitSection({ siteSettings }) {
                   </span>
                 </div>
               ))}
+              <p
+                className="font-body text-[13px] mt-4 mb-0 italic"
+                style={{ color: MUTED_RED }}
+              >
+                Hours shown are for November and December.
+              </p>
               <div
                 className="mt-6 p-4"
                 style={{
