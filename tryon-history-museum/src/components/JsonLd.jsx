@@ -23,19 +23,13 @@ export function OrganizationJsonLd() {
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Wednesday",
-        opens: "13:00",
-        closes: "16:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Thursday",
-        opens: "13:00",
-        closes: "16:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
         dayOfWeek: "Friday",
+        opens: "13:00",
+        closes: "16:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: "Saturday",
         opens: "13:00",
         closes: "16:00",
       },

@@ -7,10 +7,10 @@ const fallbackSchedule = {
   0: "Closed",
   1: "Closed",
   2: "Closed",
-  3: "1:00 PM – 4:00 PM",
-  4: "1:00 PM – 4:00 PM",
+  3: "Closed",
+  4: "Closed",
   5: "1:00 PM – 4:00 PM",
-  6: "Closed",
+  6: "1:00 PM – 4:00 PM",
 };
 
 function getTodayHours(siteSettings) {

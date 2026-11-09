@@ -8,10 +8,9 @@ const MUTED_RED = "#A8584F";
 const GOLD_ACCENT = "#C4A35A";
 
 const fallbackHours = [
-  { day: "Wednesday", time: "1:00 PM – 4:00 PM" },
-  { day: "Thursday", time: "1:00 PM – 4:00 PM" },
   { day: "Friday", time: "1:00 PM – 4:00 PM" },
-  { day: "Saturday – Tuesday", time: "Closed" },
+  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
+  { day: "Sunday – Thursday", time: "Closed" },
 ];
 
 const fallbackContact = {
@@ -76,7 +75,7 @@ export default function VisitSection({ siteSettings }) {
               className="font-body text-[17px] md:text-[18px] leading-[1.8] max-w-[580px] m-0"
               style={{ color: "rgba(255,255,255,0.6)" }}
             >
-              Open Wednesday through Friday. Free admission &mdash;
+              Open Friday and Saturday. Free admission &mdash;
               donations gratefully accepted.
             </p>
           </FadeIn>

@@ -2,10 +2,9 @@ import { Section, Eyebrow, DisplayHeadline, ButtonLink } from "@/components/bran
 
 // Same fallbacks as the /visit page — do not invent new details here.
 const fallbackHours = [
-  { day: "Wednesday", time: "1:00 PM – 4:00 PM" },
-  { day: "Thursday", time: "1:00 PM – 4:00 PM" },
   { day: "Friday", time: "1:00 PM – 4:00 PM" },
-  { day: "Saturday – Tuesday", time: "Closed" },
+  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
+  { day: "Sunday – Thursday", time: "Closed" },
 ];
 
 const fallbackContact = {

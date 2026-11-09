@@ -356,9 +356,9 @@ export default function ContactSection() {
                         className="font-body text-[15px] leading-relaxed m-0"
                         style={{ color: WARM_BLACK }}
                       >
-                        Wednesday–Friday: 1–4 PM
+                        Friday–Saturday: 1–4 PM
                         <br />
-                        Saturday–Tuesday: Closed
+                        Sunday–Thursday: Closed
                       </p>
                     </div>
                   </div>
