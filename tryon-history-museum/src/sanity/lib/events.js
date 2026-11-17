@@ -1,9 +1,10 @@
 import { client } from './client'
+import { todayInEventZone, partitionEvents } from '@/lib/events/status'
 
 export async function getUpcomingEvents(limit = 4) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayInEventZone()
   
-  const query = `*[_type == "event" && date >= $today] | order(date asc) [0...$limit] {
+  const query = `*[_type == "event" && date >= $today] | order(date asc) {
     _id,
     title,
     slug,
@@ -18,8 +19,10 @@ export async function getUpcomingEvents(limit = 4) {
   }`
 
   try {
-    const events = await client.fetch(query, { today, limit })
-    return events
+    const events = await client.fetch(query, { today })
+    // Same status rule as the Events page: in-progress events stay upcoming
+    // until their actual end time (America/New_York).
+    return partitionEvents(events).upcoming.slice(0, limit)
   } catch (error) {
     console.error('Error fetching events from Sanity:', error)
     return []

@@ -16,10 +16,32 @@ module.exports = {
           muted: "#A8584F",
           gold: "#C4A35A",
         },
+        // Redesign brand kit — namespaced, additive only.
+        // Legacy `tryon.*` tokens above remain the production palette
+        // until redesigned components are migrated and verified.
+        brand: {
+          heritage: "#9C3A2E",
+          ink: "#222222",
+          stone: "#C8B79A",
+          parchment: "#E7E2D6",
+          cream: "#F6F2EA",
+        },
       },
       fontFamily: {
         display: ['"Cormorant Garamond"', "Garamond", "serif"],
         body: ['"Source Sans 3"', '"Source Sans Pro"', "sans-serif"],
+        // Redesign brand fonts — loaded via next/font in src/app/fonts.js.
+        // Do not point existing components at these; `font-display` and
+        // `font-body` above stay in place for legacy pages.
+        // brand-display: Playfair Display, brand-body: Montserrat.
+        // brand-secondary resolves to licensed Syntax webfonts via
+        // --font-syntax once the files are supplied (next/font/local);
+        // until then it falls through to system sans-serif.
+        "brand-display": ["var(--font-brand-display)", "Georgia", "serif"],
+        "brand-body": ["var(--font-brand-body)", "Helvetica", "Arial", "sans-serif"],
+        "brand-secondary": [
+          'var(--font-syntax, "Helvetica Neue", Arial, sans-serif)',
+        ],
       },
     },
   },
