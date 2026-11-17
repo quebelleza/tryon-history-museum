@@ -1,247 +1,192 @@
-"use client";
-
 import Link from "next/link";
-import FadeIn from "./FadeIn";
-import Image from "next/image";
-import SanityImage from "./SanityImage";
+import {
+  Section,
+  Eyebrow,
+  DisplayHeadline,
+  ButtonLink,
+  EditorialImage,
+} from "@/components/brand";
+import { exhibitsHero, exhibitSections } from "@/lib/exhibitsContent";
 
-const DEEP_RED = "#7B2D26";
-const WARM_BLACK = "#1A1311";
-const GOLD_ACCENT = "#C4A35A";
-const MUTED_RED = "#A8584F";
+// Same centralized-data fallbacks as the /visit section — do not
+// hardcode new hours; Sanity siteSettings overrides when present.
+const fallbackHours = [
+  { day: "Friday", time: "1:00 PM – 4:00 PM" },
+  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
+];
 
-function formatDateRange(startDate, endDate, isPermanent) {
-  if (isPermanent) return "Permanent Exhibit";
-  if (!startDate) return "";
+const fallbackContact = {
+  street: "26 Maple Street",
+  cityStateZip: "Tryon, NC 28782",
+};
 
-  const start = new Date(startDate + "T12:00:00");
-  const startStr = start.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+const statusLabels = {
+  display: "Currently on display",
+  unavailable: "Temporarily unavailable",
+};
 
-  if (!endDate) return `Opens ${startStr}`;
+const statusStyles = {
+  display: "text-brand-heritage",
+  unavailable: "text-brand-ink/55",
+};
 
-  const end = new Date(endDate + "T12:00:00");
-  const endStr = end.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
-  return `${startStr} – ${endStr}`;
+// "1:00 PM – 4:00 PM" -> "1–4 PM"; falls back to the raw string.
+function compactTime(time) {
+  const m = String(time).match(
+    /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\s*[–-]\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i
+  );
+  if (!m) return time;
+  const same = m[3].toUpperCase() === m[6].toUpperCase();
+  const t = (h, min) => h + (min && min !== "00" ? ":" + min : "");
+  return t(m[1], m[2]) + (same ? "" : " " + m[3].toUpperCase()) + "–" + t(m[4], m[5]) + " " + m[6].toUpperCase();
 }
 
-function ExhibitCard({ exhibit }) {
-  const dateLabel = formatDateRange(
-    exhibit.startDate,
-    exhibit.endDate,
-    exhibit.isPermanent
-  );
+// Days sharing identical hours collapse to "Friday & Saturday · 1–4 PM";
+// differing hours stay day-specific. Derived from siteSettings data.
+function formatHoursCompact(hours) {
+  const groups = new Map();
+  for (const h of hours) {
+    const key = String(h.time);
+    groups.set(key, [...(groups.get(key) || []), h.day]);
+  }
+  return [...groups.entries()]
+    .map(([time, days]) => days.join(" & ") + " · " + compactTime(time))
+    .join(" · ");
+}
 
-  const slug = exhibit.slug?.current;
-
-  const Wrapper = slug ? Link : "div";
-  const wrapperProps = slug
-    ? { href: `/exhibits/${slug}`, className: "group block no-underline" }
-    : { className: "group" };
-
+function ExhibitEntry({ exhibit }) {
   return (
-    <Wrapper
-      {...wrapperProps}
-      style={{
-        background: "#FFFDF9",
-        border: "1px solid rgba(123,45,38,0.08)",
-      }}
-    >
-      {/* Image */}
-      {exhibit.coverImage?.asset ? (
-        <div className="relative w-full aspect-[16/10] overflow-hidden">
-          <SanityImage
-            image={exhibit.coverImage}
-            alt={exhibit.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-        </div>
-      ) : exhibit.coverImageUrl ? (
-        <div className="relative w-full aspect-[16/10] overflow-hidden">
-          <Image
-            src={exhibit.coverImageUrl}
-            alt={exhibit.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
-        </div>
-      ) : (
-        <div
-          className="w-full aspect-[16/10] flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(135deg, #F5F0EB 0%, #FAF7F4 100%)",
-          }}
-        >
-          <div
-            className="font-display text-4xl font-light"
-            style={{ color: "rgba(123,45,38,0.1)" }}
-          >
-            {exhibit.title?.[0] || "E"}
-          </div>
-        </div>
+    <article className="border-t border-brand-ink/15 pt-8">
+      {exhibit.image && (
+        <EditorialImage
+          src={exhibit.image.src}
+          alt={exhibit.image.alt}
+          credit={exhibit.image.credit}
+          className="mb-5"
+        />
       )}
-
-      {/* Content */}
-      <div className="p-8">
-        {dateLabel && (
-          <div
-            className="font-body text-[11px] uppercase mb-3"
-            style={{ letterSpacing: "0.2em", color: GOLD_ACCENT }}
-          >
-            {dateLabel}
-          </div>
-        )}
-        <h3
-          className="font-display text-2xl font-semibold mb-3"
-          style={{ color: WARM_BLACK }}
+      {exhibit.status && (
+        <p
+          className={`m-0 mb-2 font-brand-secondary text-[10px] font-semibold uppercase tracking-[0.2em] ${statusStyles[exhibit.status]}`}
         >
-          {exhibit.title}
-        </h3>
-        {exhibit.description && (
-          <p
-            className="font-body text-[15px] leading-[1.7] m-0"
-            style={{ color: "rgba(26,19,17,0.6)" }}
-          >
-            {exhibit.description}
-          </p>
-        )}
-      </div>
-    </Wrapper>
+          {statusLabels[exhibit.status]}
+        </p>
+      )}
+      <h3 className="m-0 mb-3 font-brand-display text-[22px] font-normal leading-[1.25] text-brand-ink">
+        {exhibit.title}
+      </h3>
+      <p className="m-0 font-brand-body text-base leading-[1.6] text-brand-ink/75">
+        {exhibit.description}
+      </p>
+      {exhibit.note && (
+        <p className="m-0 mt-3 font-brand-body text-sm italic leading-[1.6] text-brand-ink/60">
+          {exhibit.note}
+        </p>
+      )}
+    </article>
   );
 }
 
-export default function ExhibitsPageSection({ exhibits }) {
-  const permanent = (exhibits || []).filter((e) => e.isPermanent);
-  const rotating = (exhibits || []).filter((e) => !e.isPermanent);
-  const hasNoExhibits = permanent.length === 0 && rotating.length === 0;
+export default function ExhibitsPageSection({ siteSettings }) {
+  const hours = siteSettings?.hours?.length
+    ? siteSettings.hours.map((h) => ({ day: h.day, time: h.time }))
+    : fallbackHours;
+  const addr = siteSettings?.address;
+  const street = addr?.street || fallbackContact.street;
+  const cityStateZip = addr
+    ? `${addr.city}, ${addr.state} ${addr.zip}`
+    : fallbackContact.cityStateZip;
+  const admissionNote = siteSettings?.admissionNote || "Free admission";
+
+  const backgrounds = ["parchment", "cream", "parchment", "cream"];
 
   return (
     <>
-      {/* Page header */}
-      <section
-        className="pt-40 pb-20 md:pt-48 md:pb-24 relative overflow-hidden"
-        style={{
-          background: `linear-gradient(160deg, ${WARM_BLACK} 0%, #5C1F1A 50%, ${DEEP_RED} 100%)`,
-        }}
-      >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)",
-          }}
-        />
-        <div className="max-w-[1200px] mx-auto px-5 md:px-8 relative z-10">
-          <FadeIn>
-            <div
-              className="font-body text-[11px] uppercase mb-4"
-              style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
-            >
-              Explore the Museum
-            </div>
-            <h1 className="font-display text-4xl md:text-6xl font-light text-white leading-[1.1] mb-6">
-              Our{" "}
-              <span className="italic font-semibold">Exhibits</span>
-            </h1>
-            <p
-              className="font-body text-[17px] leading-relaxed max-w-[540px] m-0"
-              style={{ color: "rgba(255,255,255,0.6)" }}
-            >
-              From permanent collections to rotating showcases, discover
-              the stories, artifacts, and artistry that bring Tryon&apos;s
-              heritage to life.
-            </p>
-          </FadeIn>
+      {/* Hero */}
+      <Section bg="cream">
+        <div className="max-w-[720px]">
+          <Eyebrow>{exhibitsHero.eyebrow}</Eyebrow>
+          <h1 className="m-0 font-brand-display text-[clamp(36px,5.5vw,58px)] font-normal leading-[1.12] text-brand-ink">
+            {exhibitsHero.heading}
+          </h1>
+          <p className="m-0 mt-4 font-brand-display text-[clamp(19px,2.4vw,26px)] italic leading-[1.35] text-brand-heritage">
+            {exhibitsHero.subheading}
+          </p>
+          <p className="m-0 mt-7 max-w-[640px] font-brand-body text-base leading-[1.75] text-brand-ink/75">
+            {exhibitsHero.intro}
+          </p>
+          <Link
+            href="/visit"
+            className="mt-7 inline-block font-brand-secondary text-[13px] font-semibold uppercase tracking-[0.12em] text-brand-heritage no-underline border-b border-brand-heritage pb-1 transition-colors hover:text-brand-ink hover:border-brand-ink"
+          >
+            Plan Your Visit &rarr;
+          </Link>
         </div>
-      </section>
+      </Section>
 
-      {/* Permanent Exhibits */}
-      {permanent.length > 0 && (
-        <section className="bg-tryon-cream py-16 md:py-20">
-          <div className="max-w-[1000px] mx-auto px-5 md:px-8">
-            <FadeIn>
-              <div
-                className="font-body text-[11px] uppercase mb-10"
-                style={{ letterSpacing: "0.25em", color: DEEP_RED }}
-              >
-                Permanent Exhibits
+      {/* Exhibit groups */}
+      {exhibitSections.map((section, i) => (
+        <Section key={section.id} bg={backgrounds[i % backgrounds.length]}>
+          <div className="mb-12 md:mb-14">
+            <DisplayHeadline as="h2" size="md">
+              {section.title}
+            </DisplayHeadline>
+          </div>
+          <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2 md:gap-y-14">
+            {section.exhibits.map((exhibit) => (
+              <ExhibitEntry key={exhibit.title} exhibit={exhibit} />
+            ))}
+          </div>
+        </Section>
+      ))}
+
+      {/* Closing visitor invitation */}
+      <Section bg="heritage">
+        <div className="max-w-[720px]">
+          <DisplayHeadline as="h2" tone="cream">
+            Come See the Stories for Yourself.
+          </DisplayHeadline>
+          <p className="m-0 mt-6 max-w-[520px] font-brand-body text-base leading-[1.8] text-brand-cream/75">
+            There&apos;s always something to discover at the Tryon History
+            Museum &amp; Visitor Center.
+          </p>
+
+          <dl className="m-0 mt-10 border-t border-brand-cream/25 pt-8">
+            <div className="flex flex-wrap items-baseline gap-x-10 gap-y-5">
+              <div>
+                <dt className="font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-cream/60">
+                  Admission
+                </dt>
+                <dd className="m-0 mt-1.5 font-brand-body text-[15px] text-brand-cream">
+                  {admissionNote}
+                </dd>
               </div>
-            </FadeIn>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {permanent.map((exhibit, i) => (
-                <FadeIn key={exhibit._id} delay={i * 0.1}>
-                  <ExhibitCard exhibit={exhibit} />
-                </FadeIn>
-              ))}
+              <div>
+                <dt className="font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-cream/60">
+                  Location
+                </dt>
+                <dd className="m-0 mt-1.5 font-brand-body text-[15px] text-brand-cream">
+                  {street} &middot; {cityStateZip}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-cream/60">
+                  Hours
+                </dt>
+                <dd className="m-0 mt-1.5 font-brand-body text-[15px] text-brand-cream">
+                  {formatHoursCompact(hours)}
+                </dd>
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </dl>
 
-      {/* Rotating / Temporary Exhibits */}
-      {rotating.length > 0 && (
-        <section
-          className="py-16 md:py-20"
-          style={{ background: "#F5F0EB" }}
-        >
-          <div className="max-w-[1000px] mx-auto px-5 md:px-8">
-            <FadeIn>
-              <div
-                className="font-body text-[11px] uppercase mb-10"
-                style={{ letterSpacing: "0.25em", color: DEEP_RED }}
-              >
-                Current &amp; Upcoming Exhibits
-              </div>
-            </FadeIn>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {rotating.map((exhibit, i) => (
-                <FadeIn key={exhibit._id} delay={i * 0.1}>
-                  <ExhibitCard exhibit={exhibit} />
-                </FadeIn>
-              ))}
-            </div>
+          <div className="mt-10">
+            <ButtonLink href="/visit" variant="light">
+              Plan Your Visit
+            </ButtonLink>
           </div>
-        </section>
-      )}
-
-      {/* Empty state */}
-      {hasNoExhibits && (
-        <section className="bg-tryon-cream py-20 md:py-28">
-          <div className="max-w-[600px] mx-auto px-5 md:px-8 text-center">
-            <FadeIn>
-              <div
-                className="font-display text-6xl mb-4"
-                style={{ color: "rgba(123,45,38,0.12)" }}
-              >
-                🖼
-              </div>
-              <h2
-                className="font-display text-2xl font-semibold mb-3"
-                style={{ color: WARM_BLACK }}
-              >
-                Exhibits Coming Soon
-              </h2>
-              <p
-                className="font-body text-[15px] leading-relaxed"
-                style={{ color: "rgba(26,19,17,0.55)" }}
-              >
-                We&apos;re preparing our exhibit listings. Check back soon or
-                visit the museum to see what&apos;s on display.
-              </p>
-            </FadeIn>
-          </div>
-        </section>
-      )}
+        </div>
+      </Section>
     </>
   );
 }
