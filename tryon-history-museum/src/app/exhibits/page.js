@@ -1,7 +1,7 @@
 import Nav from "@/components/Nav";
 import ExhibitsPageSection from "@/components/ExhibitsPageSection";
 import Footer from "@/components/Footer";
-import { getAllExhibits } from "@/sanity/lib/exhibits";
+import { getSiteSettings } from "@/sanity/lib/siteSettings";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const revalidate = 60;
@@ -13,7 +13,7 @@ export const metadata = {
 };
 
 export default async function ExhibitsPage() {
-  const allExhibits = await getAllExhibits();
+  const siteSettings = await getSiteSettings();
 
   return (
     <main id="main-content">
@@ -22,7 +22,7 @@ export default async function ExhibitsPage() {
         { name: "Exhibits", url: "https://tryonhistorymuseum.org/exhibits" },
       ]} />
       <Nav />
-      <ExhibitsPageSection exhibits={allExhibits} />
+      <ExhibitsPageSection siteSettings={siteSettings} />
       <Footer />
     </main>
   );
