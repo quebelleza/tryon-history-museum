@@ -1,28 +1,9 @@
 import { Section, Eyebrow, DisplayHeadline, ButtonLink } from "@/components/brand";
-
-// Same fallbacks as the /visit page — do not invent new details here.
-const fallbackHours = [
-  { day: "Friday", time: "1:00 PM – 4:00 PM" },
-  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
-  { day: "Sunday – Thursday", time: "Closed" },
-];
-
-const fallbackContact = {
-  street: "26 Maple Street",
-  cityStateZip: "Tryon, NC 28782",
-  phone: "(828) 440-1116",
-};
+import { getHoursList, getContactInfo } from "@/lib/hours";
 
 export default function VisitMuseum({ siteSettings }) {
-  const hours = siteSettings?.hours?.length
-    ? siteSettings.hours.map((h) => ({ day: h.day, time: h.time }))
-    : fallbackHours;
-  const addr = siteSettings?.address;
-  const street = addr?.street || fallbackContact.street;
-  const cityStateZip = addr
-    ? `${addr.city}, ${addr.state} ${addr.zip}`
-    : fallbackContact.cityStateZip;
-  const phone = siteSettings?.phone || fallbackContact.phone;
+  const hours = getHoursList(siteSettings);
+  const { street, cityStateZip, phone } = getContactInfo(siteSettings);
   const admissionNote = siteSettings?.admissionNote || "Free admission";
   const visitorNote =
     siteSettings?.visitorCenterNote ||

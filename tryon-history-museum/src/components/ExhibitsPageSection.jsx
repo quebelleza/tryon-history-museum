@@ -7,18 +7,9 @@ import {
   EditorialImage,
 } from "@/components/brand";
 import { exhibitsHero, exhibitSections } from "@/lib/exhibitsContent";
+import { getHoursList, getContactInfo, formatHoursCompact } from "@/lib/hours";
 
-// Same centralized-data fallbacks as the /visit section — do not
-// hardcode new hours; Sanity siteSettings overrides when present.
-const fallbackHours = [
-  { day: "Friday", time: "1:00 PM – 4:00 PM" },
-  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
-];
-
-const fallbackContact = {
-  street: "26 Maple Street",
-  cityStateZip: "Tryon, NC 28782",
-};
+// Centralized schedule source — Sanity siteSettings overrides when present.
 
 const statusLabels = {
   display: "Currently on display",
@@ -29,30 +20,6 @@ const statusStyles = {
   display: "text-brand-heritage",
   unavailable: "text-brand-ink/55",
 };
-
-// "1:00 PM – 4:00 PM" -> "1–4 PM"; falls back to the raw string.
-function compactTime(time) {
-  const m = String(time).match(
-    /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\s*[–-]\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i
-  );
-  if (!m) return time;
-  const same = m[3].toUpperCase() === m[6].toUpperCase();
-  const t = (h, min) => h + (min && min !== "00" ? ":" + min : "");
-  return t(m[1], m[2]) + (same ? "" : " " + m[3].toUpperCase()) + "–" + t(m[4], m[5]) + " " + m[6].toUpperCase();
-}
-
-// Days sharing identical hours collapse to "Friday & Saturday · 1–4 PM";
-// differing hours stay day-specific. Derived from siteSettings data.
-function formatHoursCompact(hours) {
-  const groups = new Map();
-  for (const h of hours) {
-    const key = String(h.time);
-    groups.set(key, [...(groups.get(key) || []), h.day]);
-  }
-  return [...groups.entries()]
-    .map(([time, days]) => days.join(" & ") + " · " + compactTime(time))
-    .join(" · ");
-}
 
 function ExhibitEntry({ exhibit }) {
   return (
@@ -88,14 +55,8 @@ function ExhibitEntry({ exhibit }) {
 }
 
 export default function ExhibitsPageSection({ siteSettings }) {
-  const hours = siteSettings?.hours?.length
-    ? siteSettings.hours.map((h) => ({ day: h.day, time: h.time }))
-    : fallbackHours;
-  const addr = siteSettings?.address;
-  const street = addr?.street || fallbackContact.street;
-  const cityStateZip = addr
-    ? `${addr.city}, ${addr.state} ${addr.zip}`
-    : fallbackContact.cityStateZip;
+  const hours = getHoursList(siteSettings);
+  const { street, cityStateZip } = getContactInfo(siteSettings);
   const admissionNote = siteSettings?.admissionNote || "Free admission";
 
   const backgrounds = ["parchment", "cream", "parchment", "cream"];

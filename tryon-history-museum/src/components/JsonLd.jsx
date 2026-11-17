@@ -1,3 +1,4 @@
+import { fallbackOpeningHoursSpecification } from "@/lib/hours";
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
@@ -20,20 +21,8 @@ export function OrganizationJsonLd() {
       latitude: 35.2088,
       longitude: -82.2332,
     },
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Friday",
-        opens: "13:00",
-        closes: "16:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Saturday",
-        opens: "13:00",
-        closes: "16:00",
-      },
-    ],
+    // Centralized fallback schedule — same source as the visit pages
+    openingHoursSpecification: fallbackOpeningHoursSpecification,
     sameAs: ["https://www.facebook.com/tryonhistorymuseum/"],
     description:
       "Discover the rich heritage of Tryon, North Carolina — from Cherokee origins to the railroad age, from Nina Simone's first piano notes to a world-renowned equestrian tradition.",

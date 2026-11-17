@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import FadeIn from "./FadeIn";
+import { getHoursList, compactTime } from "@/lib/hours";
 import BoardVerification from "./BoardVerification";
 
 const DEEP_RED = "#7B2D26";
@@ -356,9 +357,12 @@ export default function ContactSection() {
                         className="font-body text-[15px] leading-relaxed m-0"
                         style={{ color: WARM_BLACK }}
                       >
-                        Friday–Saturday: 1–4 PM
-                        <br />
-                        Sunday–Thursday: Closed
+                        {getHoursList().map((h, i) => (
+                          <span key={h.day}>
+                            {i > 0 && <br />}
+                            {h.day}: {compactTime(h.time)}
+                          </span>
+                        ))}
                       </p>
                     </div>
                   </div>

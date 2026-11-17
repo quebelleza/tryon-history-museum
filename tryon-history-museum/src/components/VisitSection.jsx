@@ -1,221 +1,234 @@
-"use client";
+import Link from "next/link";
+import { Eyebrow, ButtonLink } from "@/components/brand";
+import {
+  scheduleLabel,
+  getHoursList,
+  getContactInfo,
+  formatHoursCompact,
+} from "@/lib/hours";
 
-import FadeIn from "./FadeIn";
+const textLinkClasses =
+  "font-brand-secondary text-[13px] font-semibold uppercase tracking-[0.12em] text-brand-heritage no-underline border-b border-brand-heritage pb-1 transition-colors hover:text-brand-ink hover:border-brand-ink";
 
-const DEEP_RED = "#7B2D26";
-const WARM_BLACK = "#1A1311";
-const MUTED_RED = "#A8584F";
-const GOLD_ACCENT = "#C4A35A";
-
-const fallbackHours = [
-  { day: "Friday", time: "1:00 PM – 4:00 PM" },
-  { day: "Saturday", time: "1:00 PM – 4:00 PM" },
-  { day: "Sunday – Thursday", time: "Closed" },
-];
-
-const fallbackContact = {
-  street: "26 Maple Street",
-  cityStateZip: "Tryon, NC 28782",
-  phone: "(828) 440-1116",
-  email: "info@tryonhistorymuseum.org",
-  mapEmbedUrl: "https://maps.google.com/maps?q=26+Maple+St,+Tryon,+NC+28782&t=&z=16&ie=UTF8&iwloc=&output=embed",
-  visitorCenterNote: "The Museum also serves as Tryon\u2019s official Visitor Center. Stop in for local recommendations, maps, and everything you need to explore our corner of the Blue Ridge foothills.",
-  admissionNote: null,
-};
-
-function getDisplayData(siteSettings) {
-  const hours = siteSettings?.hours?.length
-    ? siteSettings.hours.map((h) => ({ day: h.day, time: h.time }))
-    : fallbackHours;
-
-  const addr = siteSettings?.address;
-  const street = addr?.street || fallbackContact.street;
-  const cityStateZip = addr
-    ? `${addr.city}, ${addr.state} ${addr.zip}`
-    : fallbackContact.cityStateZip;
-  const phone = siteSettings?.phone || fallbackContact.phone;
-  const email = siteSettings?.email || fallbackContact.email;
-  const mapUrl = siteSettings?.mapEmbedUrl || fallbackContact.mapEmbedUrl;
-  const visitorNote = siteSettings?.visitorCenterNote || fallbackContact.visitorCenterNote;
-  const admissionNote = siteSettings?.admissionNote || null;
-
-  return { hours, street, cityStateZip, phone, email, mapUrl, visitorNote, admissionNote };
+function SectionHeading({ children }) {
+  return (
+    <h2 className="m-0 mb-6 font-brand-display text-[clamp(26px,3vw,36px)] font-normal leading-[1.15] text-brand-ink">
+      {children}
+    </h2>
+  );
 }
 
 export default function VisitSection({ siteSettings }) {
-  const { hours, street, cityStateZip, phone, email, mapUrl, visitorNote, admissionNote } = getDisplayData(siteSettings);
+  const { street, cityStateZip, phone, email, mapEmbedUrl } =
+    getContactInfo(siteSettings);
+  const hoursCompact = formatHoursCompact(getHoursList(siteSettings));
+  const admissionNote = siteSettings?.admissionNote || "Free";
+  const visitorNote =
+    siteSettings?.visitorCenterNote ||
+    "The Museum also serves as Tryon\u2019s official Visitor Center. Stop in for local recommendations, maps, and everything you need to explore our corner of the Blue Ridge foothills.";
+  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${street}, ${cityStateZip}`
+  )}`;
+  const phoneHref = `tel:${phone.replace(/[^0-9+]/g, "")}`;
+
+  const facts = [
+    { label: scheduleLabel, value: hoursCompact },
+    { label: "Admission", value: admissionNote },
+    { label: "Typical Visit", value: "15–30 minutes" },
+  ];
+
   return (
     <>
-      {/* ─── Hero ─── */}
-      <section
-        className="pt-24 pb-12 md:pt-28 md:pb-16 relative overflow-hidden"
-        style={{
-          background: "rgba(26,19,17,0.97)",
-        }}
-      >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)",
-          }}
-        />
-        <div className="max-w-[1200px] mx-auto px-5 md:px-8 relative z-10">
-          <FadeIn>
-            <div
-              className="font-body text-[11px] uppercase mb-4"
-              style={{ letterSpacing: "0.3em", color: GOLD_ACCENT }}
-            >
-              Tryon History Museum &amp; Visitor Center
-            </div>
-            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-light text-white leading-[1.05] mb-4">
-              Plan Your <span className="italic font-semibold">Visit</span>
+      {/* Hero */}
+      <section className="bg-brand-cream">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
+          <div className="max-w-[720px]">
+            <Eyebrow>Tryon History Museum &amp; Visitor Center</Eyebrow>
+            <h1 className="m-0 font-brand-display text-[clamp(38px,5.5vw,60px)] font-normal leading-[1.1] text-brand-ink">
+              Plan Your Visit
             </h1>
-            <p
-              className="font-body text-[17px] md:text-[18px] leading-[1.8] max-w-[580px] m-0"
-              style={{ color: "rgba(255,255,255,0.6)" }}
-            >
-              Open Friday and Saturday. Free admission &mdash;
-              donations gratefully accepted.
+            <p className="m-0 mt-4 font-brand-display text-[clamp(19px,2.4vw,26px)] italic leading-[1.35] text-brand-heritage">
+              A little history. A lot of stories. Right in the heart of
+              downtown Tryon.
             </p>
-          </FadeIn>
+            <p className="m-0 mt-7 max-w-[620px] font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              Discover the remarkable people, places, and traditions that
+              shaped our town. Admission is always free, and there&apos;s
+              plenty to explore.
+            </p>
+          </div>
+
+          {/* Visitor facts */}
+          <dl className="m-0 mt-12 grid grid-cols-1 gap-5 border-t border-brand-ink/15 pt-8 sm:grid-cols-3 sm:gap-8">
+            {facts.map((f) => (
+              <div key={f.label}>
+                <dt className="font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-heritage">
+                  {f.label}
+                </dt>
+                <dd className="m-0 mt-2 font-brand-body text-base text-brand-ink">
+                  {f.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      <section id="visit" className="bg-tryon-cream py-24 md:py-28">
-      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-start">
-          {/* Left: Hours */}
-          <FadeIn>
-            <div
-              className="font-body text-[11px] uppercase mb-4"
-              style={{ letterSpacing: "0.3em", color: DEEP_RED }}
-            >
-              Visit Us
-            </div>
-            <h2 className="font-display text-4xl md:text-[44px] font-light text-tryon-black leading-[1.15] mb-10">
-              Hours &amp;
-              <br />
-              <span className="italic font-semibold">Admission</span>
-            </h2>
-            <div
-              className="p-9"
-              style={{
-                background: "#FFFDF9",
-                border: "1px solid rgba(123,45,38,0.1)",
-              }}
-            >
-              {hours.map((h, i) => (
-                <div
-                  key={h.day}
-                  className="flex justify-between items-center py-3.5"
-                  style={{
-                    borderBottom:
-                      i < hours.length - 1
-                        ? "1px solid rgba(123,45,38,0.08)"
-                        : "none",
-                  }}
-                >
-                  <span className="font-body text-[15px] text-tryon-black font-medium">
-                    {h.day}
-                  </span>
-                  <span
-                    className="font-display text-[17px]"
-                    style={{
-                      color: h.time === "Closed" ? MUTED_RED : WARM_BLACK,
-                      fontStyle: h.time === "Closed" ? "italic" : "normal",
-                    }}
-                  >
-                    {h.time}
-                  </span>
-                </div>
-              ))}
-              <p
-                className="font-body text-[13px] mt-4 mb-0 italic"
-                style={{ color: MUTED_RED }}
-              >
-                Hours shown are for November and December.
-              </p>
-              <div
-                className="mt-6 p-4"
-                style={{
-                  background: `${DEEP_RED}08`,
-                  border: `1px solid ${DEEP_RED}15`,
-                }}
-              >
-                <span
-                  className="font-body text-sm font-medium"
-                  style={{ color: DEEP_RED }}
-                >
-                  {admissionNote ? admissionNote.split('—')[0].trim() : 'Free admission'}
-                </span>
-                <span
-                  className="font-body text-[13px] ml-2"
-                  style={{ color: MUTED_RED }}
-                >
-                  {admissionNote ? `— ${admissionNote.split('—').slice(1).join('—').trim()}` : '— donations gratefully accepted'}
-                </span>
-              </div>
-            </div>
-          </FadeIn>
+      {/* What to Expect */}
+      <section className="bg-brand-parchment">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
+          <div className="max-w-[680px]">
+            <SectionHeading>What to Expect</SectionHeading>
+            <p className="m-0 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              Explore the Museum at your own pace, discovering everything from
+              Tryon&apos;s celebrated Toy-Makers and Wood-Carvers to its
+              equestrian traditions, notable residents, and local history.
+              Period music and the sounds of Nina Simone add another layer to
+              the experience.
+            </p>
+            <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              Most visitors spend 15&ndash;30 minutes exploring independently,
+              though a conversation with one of our knowledgeable volunteer
+              docents might keep you a little longer. We certainly don&apos;t
+              mind.
+            </p>
+            <Link href="/exhibits" className={`mt-7 inline-block ${textLinkClasses}`}>
+              Explore Our Exhibits &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
 
-          {/* Right: Location */}
-          <FadeIn delay={0.2}>
-            <div className="lg:mt-14">
-              {/* Embedded Google Map */}
-              <div
-                className="w-full h-60 mb-8 relative overflow-hidden"
-                style={{
-                  border: "1px solid rgba(123,45,38,0.1)",
-                }}
-              >
-                <iframe
-                  src={mapUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  title="Tryon History Museum location"
-                ></iframe>
-              </div>
-
-              <h3 className="font-display text-2xl font-semibold text-tryon-black mb-4">
-                Find Us
-              </h3>
-              <p className="font-body text-base text-tryon-black leading-relaxed mb-2">
+      {/* Finding Us */}
+      <section className="bg-brand-cream">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <SectionHeading>Finding Us</SectionHeading>
+              <p className="m-0 font-brand-display text-xl leading-[1.4] text-brand-ink">
                 {street}
                 <br />
                 {cityStateZip}
               </p>
-              <p className="font-body text-[15px] mb-7" style={{ color: MUTED_RED }}>
-                {phone} &middot; {email}
+              <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+                Convenient street parking is available, along with a parking
+                lot directly across the street.
               </p>
-              <div
-                className="p-5"
-                style={{
-                  background: "#FFFDF9",
-                  border: "1px solid rgba(123,45,38,0.1)",
-                }}
-              >
-                <div
-                  className="font-body text-[11px] uppercase mb-3"
-                  style={{ letterSpacing: "0.2em", color: DEEP_RED }}
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <ButtonLink
+                  href={directionsUrl}
+                  variant="primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Also a Visitor Center
-                </div>
-                <p
-                  className="font-body text-sm leading-relaxed m-0"
-                  style={{ color: "rgba(26,19,17,0.7)" }}
-                >
-                  {visitorNote}
-                </p>
+                  Get Directions
+                </ButtonLink>
+                <ButtonLink href={phoneHref} variant="secondary">
+                  Call the Museum
+                </ButtonLink>
               </div>
+              <p className="m-0 mt-6 font-brand-body text-[15px] text-brand-ink/60">
+                {phone} &middot;{" "}
+                <a
+                  href={`mailto:${email}`}
+                  className="text-brand-heritage underline decoration-brand-heritage/40 underline-offset-2 hover:decoration-brand-heritage"
+                >
+                  {email}
+                </a>
+              </p>
             </div>
-          </FadeIn>
+            <div className="relative min-h-[260px] overflow-hidden border border-brand-ink/10 bg-brand-parchment">
+              <iframe
+                src={mapEmbedUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0, position: "absolute", inset: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                title="Map to the Tryon History Museum & Visitor Center"
+              ></iframe>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Accessibility */}
+      <section className="bg-brand-parchment">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
+          <div className="max-w-[680px]">
+            <SectionHeading>Accessibility</SectionHeading>
+            <p className="m-0 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              The Museum&apos;s front entrance has three steps, and the
+              building is not currently wheelchair accessible. We recognize
+              this limitation and want visitors to have accurate information
+              before arriving.
+            </p>
+            <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              Questions before your visit? Reach us at{" "}
+              <a
+                href={`mailto:${email}`}
+                className="text-brand-heritage underline decoration-brand-heritage/40 underline-offset-2 hover:decoration-brand-heritage"
+              >
+                {email}
+              </a>{" "}
+              or{" "}
+              <a
+                href={phoneHref}
+                className="text-brand-heritage underline decoration-brand-heritage/40 underline-offset-2 hover:decoration-brand-heritage"
+              >
+                {phone}
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Group & school visits */}
+      <section className="bg-brand-cream">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
+          <div className="max-w-[680px]">
+            <SectionHeading>Visiting with a Group?</SectionHeading>
+            <p className="m-0 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              School classes, community organizations, and other groups are
+              welcome to arrange visits. Contact the Museum to discuss a date
+              and the interests of your group.
+            </p>
+            <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              <a
+                href={`mailto:${email}`}
+                className="text-brand-heritage underline decoration-brand-heritage/40 underline-offset-2 hover:decoration-brand-heritage"
+              >
+                {email}
+              </a>{" "}
+              &middot;{" "}
+              <a
+                href={phoneHref}
+                className="text-brand-heritage underline decoration-brand-heritage/40 underline-offset-2 hover:decoration-brand-heritage"
+              >
+                {phone}
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Visitor Center */}
+      <section className="bg-brand-parchment">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
+          <div className="max-w-[680px]">
+            <SectionHeading>More Than a Museum</SectionHeading>
+            <p className="m-0 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              We&apos;re also a Visitor Center. Stop in for information about
+              downtown Tryon and the surrounding foothills, and discover more
+              of what makes this corner of North Carolina special.
+            </p>
+            <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              {visitorNote}
+            </p>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

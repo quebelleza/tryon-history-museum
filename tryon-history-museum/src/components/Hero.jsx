@@ -2,28 +2,18 @@
 
 import Image from "next/image";
 import { ButtonLink } from "@/components/brand";
-
-const fallbackSchedule = {
-  0: "Closed",
-  1: "Closed",
-  2: "Closed",
-  3: "Closed",
-  4: "Closed",
-  5: "1:00 PM – 4:00 PM",
-  6: "1:00 PM – 4:00 PM",
-};
-
-function getTodayHours(siteSettings) {
-  const day = new Date().getDay(); // 0=Sun, 1=Mon, ...
-  if (siteSettings?.hours) {
-    const match = siteSettings.hours.find((h) => h.dayOfWeek === day);
-    if (match) return match.time;
-  }
-  return fallbackSchedule[day];
-}
+import { getVisitStatus, compactTime } from "@/lib/hours";
 
 export default function Hero({ siteSettings }) {
-  const todayHours = getTodayHours(siteSettings);
+  // Shared schedule source + ET-aware status, computed at render time
+  // in the browser — always current despite ISR.
+  const status = getVisitStatus(siteSettings);
+  const hoursLine =
+    status.state === "open"
+      ? compactTime(status.todayTime)
+      : status.nextDay
+        ? `Closed today · Next open ${status.nextDay}, ${compactTime(status.nextTime)}`
+        : "Closed";
   const street = siteSettings?.address?.street || "26 Maple Street";
   const cityStateZip = siteSettings?.address
     ? `${siteSettings.address.city}, ${siteSettings.address.state}`
@@ -65,9 +55,9 @@ export default function Hero({ siteSettings }) {
               our corner of the Carolina foothills.
             </p>
             <div className="mt-6 flex flex-wrap gap-3 md:mt-10 md:gap-4">
-              <ButtonLink href="/history-bits">Explore Our History</ButtonLink>
-              <ButtonLink href="/visit" variant="secondaryOnDark">
-                Plan Your Visit
+              <ButtonLink href="/visit">Plan Your Visit</ButtonLink>
+              <ButtonLink href="/history-bits" variant="secondaryOnDark">
+                Explore Our History
               </ButtonLink>
             </div>
           </div>
@@ -87,7 +77,7 @@ export default function Hero({ siteSettings }) {
               Today&apos;s Hours
             </span>
             <span className="font-brand-display text-base font-normal text-brand-cream">
-              {todayHours}
+              {hoursLine}
             </span>
           </div>
           <div className="flex items-baseline gap-3 py-2 sm:px-6 sm:py-4">

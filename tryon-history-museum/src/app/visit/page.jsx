@@ -15,9 +15,10 @@ export default async function VisitPage() {
   const siteSettings = await getSiteSettings();
 
   return (
-    <main id="main-content" style={{ background: "#1A1311" }}>
+    <main id="main-content" className="bg-brand-cream">
       <Nav />
-      <div className="pt-24 md:pt-28">
+      {/* Spacer for the fixed header */}
+      <div className="pt-20 md:pt-24">
         <VisitSection siteSettings={siteSettings} />
       </div>
       <Footer siteSettings={siteSettings} />

@@ -8,9 +8,12 @@ import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   {
+    label: "Plan Your Visit",
+    href: "/visit",
+  },
+  {
     label: "Explore",
     children: [
-      { name: "Plan Your Visit", href: "/visit" },
       { name: "Exhibits", href: "/exhibits" },
       { name: "History Bits", href: "/history-bits" },
       { name: "Tales of Tryon", href: "/tales-of-tryon" },
@@ -111,7 +114,7 @@ export default function Nav() {
         </a>
 
         {/* Desktop nav — lg breakpoint keeps tablet widths uncrowded */}
-        <div className="hidden lg:flex items-center gap-6 xl:gap-9">
+        <div className="hidden lg:flex items-center gap-5 xl:gap-7">
           {navItems.map((item) => (
             <div
               key={item.label}
@@ -259,28 +262,30 @@ export default function Nav() {
         >
           {navItems.map((item) => (
             <div key={item.label} className="mb-6">
-              <div className="font-brand-secondary text-xs font-semibold uppercase tracking-[0.2em] text-brand-heritage mb-3">
-                {item.label}
-              </div>
               {item.href ? (
                 <a
                   href={item.href}
-                  className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
+                  className="inline-block font-brand-secondary text-xs font-semibold uppercase tracking-[0.2em] no-underline text-brand-heritage"
                   onClick={() => setMobileOpen(false)}
                 >
                   {item.label}
                 </a>
               ) : (
-                item.children.map((child) => (
-                  <a
-                    key={child.name}
-                    href={child.href}
-                    className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {child.name}
-                  </a>
-                ))
+                <>
+                  <div className="font-brand-secondary text-xs font-semibold uppercase tracking-[0.2em] text-brand-heritage mb-3">
+                    {item.label}
+                  </div>
+                  {item.children.map((child) => (
+                    <a
+                      key={child.name}
+                      href={child.href}
+                      className="block font-brand-body text-sm no-underline py-1.5 text-brand-ink/70"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {child.name}
+                    </a>
+                  ))}
+                </>
               )}
             </div>
           ))}
