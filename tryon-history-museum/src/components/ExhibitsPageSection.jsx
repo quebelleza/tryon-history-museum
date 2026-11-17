@@ -27,12 +27,36 @@ const statusLabels = {
 
 const statusStyles = {
   display: "text-brand-heritage",
-  unavailable: "text-brand-ink/45",
+  unavailable: "text-brand-ink/55",
 };
+
+// "1:00 PM – 4:00 PM" -> "1–4 PM"; falls back to the raw string.
+function compactTime(time) {
+  const m = String(time).match(
+    /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\s*[–-]\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i
+  );
+  if (!m) return time;
+  const same = m[3].toUpperCase() === m[6].toUpperCase();
+  const t = (h, min) => h + (min && min !== "00" ? ":" + min : "");
+  return t(m[1], m[2]) + (same ? "" : " " + m[3].toUpperCase()) + "–" + t(m[4], m[5]) + " " + m[6].toUpperCase();
+}
+
+// Days sharing identical hours collapse to "Friday & Saturday · 1–4 PM";
+// differing hours stay day-specific. Derived from siteSettings data.
+function formatHoursCompact(hours) {
+  const groups = new Map();
+  for (const h of hours) {
+    const key = String(h.time);
+    groups.set(key, [...(groups.get(key) || []), h.day]);
+  }
+  return [...groups.entries()]
+    .map(([time, days]) => days.join(" & ") + " · " + compactTime(time))
+    .join(" · ");
+}
 
 function ExhibitEntry({ exhibit }) {
   return (
-    <article className="border-t border-brand-ink/15 pt-6">
+    <article className="border-t border-brand-ink/15 pt-8">
       {exhibit.image && (
         <EditorialImage
           src={exhibit.image.src}
@@ -51,11 +75,11 @@ function ExhibitEntry({ exhibit }) {
       <h3 className="m-0 mb-3 font-brand-display text-[22px] font-normal leading-[1.25] text-brand-ink">
         {exhibit.title}
       </h3>
-      <p className="m-0 font-brand-body text-[15px] leading-[1.75] text-brand-ink/65">
+      <p className="m-0 font-brand-body text-base leading-[1.6] text-brand-ink/75">
         {exhibit.description}
       </p>
       {exhibit.note && (
-        <p className="m-0 mt-3 font-brand-body text-[13px] italic leading-[1.6] text-brand-ink/50">
+        <p className="m-0 mt-3 font-brand-body text-sm italic leading-[1.6] text-brand-ink/60">
           {exhibit.note}
         </p>
       )}
@@ -88,7 +112,7 @@ export default function ExhibitsPageSection({ siteSettings }) {
           <p className="m-0 mt-4 font-brand-display text-[clamp(19px,2.4vw,26px)] italic leading-[1.35] text-brand-heritage">
             {exhibitsHero.subheading}
           </p>
-          <p className="m-0 mt-7 max-w-[560px] font-brand-body text-base leading-[1.8] text-brand-ink/70">
+          <p className="m-0 mt-7 max-w-[640px] font-brand-body text-base leading-[1.75] text-brand-ink/75">
             {exhibitsHero.intro}
           </p>
           <Link
@@ -108,7 +132,7 @@ export default function ExhibitsPageSection({ siteSettings }) {
               {section.title}
             </DisplayHeadline>
           </div>
-          <div className="grid grid-cols-1 gap-x-12 gap-y-10 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2 md:gap-y-14">
             {section.exhibits.map((exhibit) => (
               <ExhibitEntry key={exhibit.title} exhibit={exhibit} />
             ))}
@@ -150,7 +174,7 @@ export default function ExhibitsPageSection({ siteSettings }) {
                   Hours
                 </dt>
                 <dd className="m-0 mt-1.5 font-brand-body text-[15px] text-brand-cream">
-                  {hours.map((h) => `${h.day} ${h.time}`).join(" · ")}
+                  {formatHoursCompact(hours)}
                 </dd>
               </div>
             </div>
