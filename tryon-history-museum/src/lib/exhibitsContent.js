@@ -31,8 +31,7 @@ export const exhibitSections = [
       {
         title: "Tryon Toy-Makers & Wood-Carvers",
         description:
-          "Discover Tryon\u2019s celebrated tradition of handcrafted wooden toys and decorative carving. Our collection includes an extensive assortment of wooden toys, carved craftwork, and a special display of Christmas tree ornaments presented during the holiday season.",
-        note: "The Christmas ornament display is presented seasonally, during the holiday period.",
+          "Discover Tryon\u2019s celebrated tradition of handcrafted wooden toys and decorative carving. Our collection includes an extensive assortment of wooden toys, carved craftwork, and a special display of Christmas tree ornaments presented during the holiday season.",
         image: null,
       },
       {
