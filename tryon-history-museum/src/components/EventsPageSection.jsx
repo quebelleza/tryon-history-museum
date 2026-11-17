@@ -3,6 +3,7 @@
 import Link from "next/link";
 import FadeIn from "./FadeIn";
 import { JAMIE_LAVAL_EVENT } from "@/lib/events/jamieLaval";
+import { partitionEvents } from "@/lib/events/status";
 
 const DEEP_RED = "#7B2D26";
 
@@ -117,8 +118,6 @@ function EventCard({ event, isPast }) {
 }
 
 export default function EventsPageSection({ events }) {
-  const today = new Date().toISOString().split("T")[0];
-
   const sanityEvents = events || [];
   const sanitySlugSet = new Set(sanityEvents.map((e) => e.slug?.current).filter(Boolean));
   const mergedEvents = [
@@ -126,8 +125,9 @@ export default function EventsPageSection({ events }) {
     ...sanityEvents,
   ];
 
-  const upcoming = mergedEvents.filter((e) => e.date >= today);
-  const past = mergedEvents.filter((e) => e.date < today).reverse();
+  // Shared status rule (America/New_York): in-progress events stay
+  // upcoming until their actual end time. Computed at render time.
+  const { upcoming, past } = partitionEvents(mergedEvents);
 
   return (
     <>
@@ -170,17 +170,17 @@ export default function EventsPageSection({ events }) {
       </section>
 
       {/* Upcoming Events */}
-      {upcoming.length > 0 && (
-        <section className="bg-tryon-cream py-16 md:py-20">
-          <div className="max-w-[900px] mx-auto px-5 md:px-8">
-            <FadeIn>
-              <div
-                className="font-body text-[11px] uppercase mb-10"
-                style={{ letterSpacing: "0.25em", color: DEEP_RED }}
-              >
-                Upcoming Events
-              </div>
-            </FadeIn>
+      <section className="bg-tryon-cream py-16 md:py-20">
+        <div className="max-w-[900px] mx-auto px-5 md:px-8">
+          <FadeIn>
+            <div
+              className="font-body text-[11px] uppercase mb-10"
+              style={{ letterSpacing: "0.25em", color: DEEP_RED }}
+            >
+              Upcoming Events
+            </div>
+          </FadeIn>
+          {upcoming.length > 0 ? (
             <div className="flex flex-col gap-6">
               {upcoming.map((event, i) => (
                 <FadeIn key={event._id || event.title} delay={i * 0.08}>
@@ -188,9 +188,41 @@ export default function EventsPageSection({ events }) {
                 </FadeIn>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <FadeIn>
+              <div
+                className="p-8 md:p-12 text-center"
+                style={{
+                  background: "#FFFDF9",
+                  border: "1px solid rgba(123,45,38,0.08)",
+                }}
+              >
+                <h2 className="font-display text-[26px] md:text-[32px] font-semibold text-tryon-black mb-4 mt-0">
+                  More stories are on the way.
+                </h2>
+                <p
+                  className="font-body text-[15px] leading-relaxed mx-auto mb-7 mt-0 max-w-[520px]"
+                  style={{ color: "rgba(26,19,17,0.6)" }}
+                >
+                  Our next program is taking shape. Subscribe for announcements
+                  about upcoming Tales of Tryon programs, special events, and more.
+                </p>
+                <Link
+                  href="/#newsletter"
+                  className="inline-block font-body text-[13px] uppercase font-semibold no-underline px-7 py-3.5 transition-colors duration-200 hover:opacity-90"
+                  style={{
+                    background: DEEP_RED,
+                    color: "#FFFDF9",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  Get Event Updates
+                </Link>
+              </div>
+            </FadeIn>
+          )}
+        </div>
+      </section>
 
       {/* Past Events */}
       {past.length > 0 && (

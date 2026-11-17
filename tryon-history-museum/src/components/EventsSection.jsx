@@ -3,28 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Section, Eyebrow, DisplayHeadline, ButtonLink } from "@/components/brand";
-import { JAMIE_LAVAL_EVENT } from "@/lib/events/jamieLaval";
+import { partitionEvents } from "@/lib/events/status";
 
-const fallbackEvents = [
-  {
-    date: "Nov 12",
-    title: JAMIE_LAVAL_EVENT.title,
-    type: JAMIE_LAVAL_EVENT.eventType,
-    desc: JAMIE_LAVAL_EVENT.description,
-    href: `/events/${JAMIE_LAVAL_EVENT.slug}`,
-    membersOnly: false,
-  },
-  {
-    date: "Fall",
-    title: "At Home in Tryon",
-    type: "Historic Home Tour Series",
-    desc: "An intimate evening in one of Tryon's most distinctive private homes — wine, appetizers, and conversation in a setting that tells its own story. Space is very limited.",
-    href: null,
-    membersOnly: false,
-    interestList: true,
-    dateIsTBD: true,
-  },
-];
+// Evergreen interest-list entry — not a dated event, always shown.
+const interestEvent = {
+  day: "TBD",
+  month: "2027",
+  dateIsTBD: true,
+  title: "At Home in Tryon",
+  type: "Historic Home Tour Series",
+  desc: "An intimate evening in one of Tryon's most distinctive private homes — wine, appetizers, and conversation in a setting that tells its own story. Space is very limited.",
+  href: null,
+  membersOnly: false,
+  interestList: true,
+};
 
 function formatSanityDate(dateStr) {
   if (!dateStr) return { month: "", day: "" };
@@ -35,16 +27,6 @@ function formatSanityDate(dateStr) {
 }
 
 function normalizeEvents(sanityEvents) {
-  if (!sanityEvents || sanityEvents.length === 0) return fallbackEvents.map(e => ({
-    ...e,
-    month: e.dateIsTBD ? "" : e.date.split(" ")[0],
-    day: e.dateIsTBD ? "TBD" : e.date.split(" ")[1],
-    href: e.href || null,
-    membersOnly: e.membersOnly || false,
-    dateIsTBD: e.dateIsTBD || false,
-    interestList: e.interestList || false,
-  }));
-
   return sanityEvents.map((e) => {
     const { month, day } = formatSanityDate(e.date);
     return {
@@ -89,7 +71,10 @@ export default function EventsSection({ events }) {
     }
   }
 
-  const displayEvents = normalizeEvents(events);
+  // Computed at render time in the browser — always reflects "now"
+  // in America/New_York even within the ISR window.
+  const upcomingEvents = normalizeEvents(partitionEvents(events).upcoming);
+  const displayEvents = [...upcomingEvents, interestEvent];
 
   return (
     <>
@@ -106,6 +91,21 @@ export default function EventsSection({ events }) {
           View All Events &rarr;
         </Link>
       </div>
+
+      {upcomingEvents.length === 0 && (
+        <div className="mb-8 border border-brand-ink/10 bg-brand-parchment px-6 py-10 text-center md:px-12 md:py-14">
+          <DisplayHeadline as="h3" size="md" className="mb-4">
+            More stories are on the way.
+          </DisplayHeadline>
+          <p className="mx-auto mb-8 max-w-[540px] font-brand-body text-[15px] leading-[1.75] text-brand-ink/65">
+            Our next program is taking shape. Subscribe for announcements about
+            upcoming Tales of Tryon programs, special events, and more.
+          </p>
+          <ButtonLink href="/#newsletter" variant="primary">
+            Get Event Updates
+          </ButtonLink>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {displayEvents.map((event) => {
