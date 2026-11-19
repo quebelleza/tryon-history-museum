@@ -9,6 +9,17 @@ const DEEP_RED = "#7B2D26";
 
 const STATIC_EVENTS = [
   {
+    _id: "wine-tasting-static",
+    title: "An Evening of Wine & History",
+    date: "2026-12-02",
+    eventType: "Museum Fundraiser",
+    description:
+      "A curated wine tasting with Rachel Vining of Tryon Cellars at the Tryon Depot Room — three local wines, stories of Tryon Cellars, and artisan bites from Mill Spring Farm Store. Tickets $30 single / $50 couple.",
+    time: "5:00 pm",
+    location: "Tryon Depot Room · Tryon NC",
+    slug: { current: "an-evening-of-wine-and-history" },
+  },
+  {
     _id: JAMIE_LAVAL_EVENT.id,
     title: JAMIE_LAVAL_EVENT.title,
     date: JAMIE_LAVAL_EVENT.date,

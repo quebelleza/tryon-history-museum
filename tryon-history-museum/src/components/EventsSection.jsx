@@ -5,6 +5,21 @@ import Link from "next/link";
 import { Section, Eyebrow, DisplayHeadline, ButtonLink } from "@/components/brand";
 import { partitionEvents } from "@/lib/events/status";
 
+// Hardcoded event pages — same pattern as STATIC_EVENTS on /events.
+// Runs through partitionEvents so it drops out of Upcoming after Dec 2 ET.
+const STATIC_CARDS = [
+  {
+    _id: "wine-tasting-static",
+    title: "An Evening of Wine & History",
+    date: "2026-12-02",
+    time: "5:00 pm",
+    eventType: "Museum Fundraiser",
+    description:
+      "A curated tasting with Rachel Vining of Tryon Cellars at the Tryon Depot Room — three local wines and artisan bites from Mill Spring Farm Store. Tickets $30 / $50.",
+    slug: { current: "an-evening-of-wine-and-history" },
+  },
+];
+
 // Evergreen interest-list entry — not a dated event, always shown.
 const interestEvent = {
   day: "TBD",
@@ -74,7 +89,10 @@ export default function EventsSection({ events }) {
   // Computed at render time in the browser — always reflects "now"
   // in America/New_York even within the ISR window.
   const upcomingEvents = normalizeEvents(partitionEvents(events).upcoming);
-  const displayEvents = [...upcomingEvents, interestEvent];
+  const staticCards = normalizeEvents(partitionEvents(STATIC_CARDS).upcoming).filter(
+    (c) => !upcomingEvents.some((e) => e.href === c.href)
+  );
+  const displayEvents = [...staticCards, ...upcomingEvents, interestEvent];
 
   return (
     <>
@@ -92,7 +110,7 @@ export default function EventsSection({ events }) {
         </Link>
       </div>
 
-      {upcomingEvents.length === 0 && (
+      {upcomingEvents.length === 0 && staticCards.length === 0 && (
         <div className="mb-8 border border-brand-ink/10 bg-brand-parchment px-6 py-10 text-center md:px-12 md:py-14">
           <DisplayHeadline as="h3" size="md" className="mb-4">
             More stories are on the way.

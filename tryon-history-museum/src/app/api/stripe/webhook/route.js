@@ -5,7 +5,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { renewalConfirmationEmail } from "@/lib/emails/renewalConfirmation";
 import { welcomeEmail } from "@/lib/emails/welcomeEmail";
 import { donationConfirmationEmail } from "@/lib/emails/donationConfirmation";
+import { eventTicketConfirmationEmail } from "@/lib/emails/eventTicketConfirmation";
 import { computeMembership, computeDonationMembership, computePayment } from "@/lib/membershipPricing";
+import { orderReference, formatCents } from "@/lib/ticketing";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -126,6 +128,154 @@ export async function POST(request) {
     });
 
     const effectiveTier = (dl) => dl && dl !== "none" ? "family" : "individual";
+
+    // ── Event ticket purchase ──
+    if (session.metadata?.payment_type === "event_ticket") {
+      const orderId = session.metadata?.order_id;
+      let order = null;
+      if (orderId) {
+        const { data } = await supabase
+          .from("event_orders")
+          .select("*, ticketed_events(*)")
+          .eq("id", orderId)
+          .maybeSingle();
+        order = data;
+      }
+      if (!order) {
+        const { data } = await supabase
+          .from("event_orders")
+          .select("*, ticketed_events(*)")
+          .eq("stripe_session_id", session.id)
+          .maybeSingle();
+        order = data;
+      }
+      if (!order) {
+        console.error("[stripe-webhook] event_ticket order not found for session", session.id);
+        return NextResponse.json({ received: true });
+      }
+
+      if (order.status !== "paid") {
+        await supabase
+          .from("event_orders")
+          .update({
+            status: "paid",
+            paid_at: new Date().toISOString(),
+            stripe_payment_intent_id:
+              typeof session.payment_intent === "string" ? session.payment_intent : null,
+            amount_cents: session.amount_total ?? order.amount_cents,
+          })
+          .eq("id", order.id);
+        order.status = "paid";
+      }
+
+      // Confirmation email — exactly once per paid order; send failures are
+      // logged and leave email_sent_at null so staff can resend without
+      // touching the payment state.
+      if (!order.email_sent_at) {
+        const { data: items } = await supabase
+          .from("event_order_items")
+          .select("*")
+          .eq("order_id", order.id);
+        const { data: attendees } = await supabase
+          .from("event_order_attendees")
+          .select("full_name")
+          .eq("order_id", order.id);
+
+        const ev = order.ticketed_events || {};
+        const start = ev.starts_at ? new Date(ev.starts_at) : null;
+        const dateLabel = start
+          ? start.toLocaleDateString("en-US", {
+              timeZone: "America/New_York",
+              weekday: "long", month: "long", day: "numeric", year: "numeric",
+            })
+          : "—";
+        const timeLabel = start
+          ? start.toLocaleTimeString("en-US", {
+              timeZone: "America/New_York", hour: "numeric", minute: "2-digit",
+            })
+          : "—";
+        const ticketSummary = (items || [])
+          .map((i) => `${i.quantity} × ${i.ticket_label}`)
+          .join(" · ");
+
+        const { subject, html } = eventTicketConfirmationEmail({
+          firstName: (order.purchaser_name || "").split(" ")[0] || "Friend",
+          eventTitle: ev.title || "Museum Event",
+          eventDateLabel: dateLabel,
+          eventTime: timeLabel,
+          venueName: ev.venue_name || "",
+          venueAddress: ev.venue_address || "",
+          attendeeCount: (attendees || []).length,
+          attendeeNames: (attendees || []).map((a) => a.full_name),
+          ticketSummary,
+          amountFormatted: formatCents(order.amount_cents),
+          orderReference: orderReference(order.id),
+          calendarUrl: `https://tryonhistorymuseum.org/events/${ev.slug}/calendar.ics`,
+          refundPolicy: ev.refund_policy || null,
+        });
+
+        try {
+          const { data: sendData, error: sendError } = await resend.emails.send({
+            from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+            to: order.purchaser_email,
+            subject,
+            html,
+          });
+          if (!sendError) {
+            await supabase
+              .from("event_orders")
+              .update({ email_sent_at: new Date().toISOString() })
+              .eq("id", order.id)
+              .is("email_sent_at", null);
+          }
+          await supabase.from("email_log").insert({
+            member_id: null,
+            email_type: "event_ticket_confirmation",
+            sent_to: order.purchaser_email,
+            status: sendError ? "failed" : "sent",
+            resend_id: sendData?.id || null,
+          });
+        } catch (emailErr) {
+          console.error("[stripe-webhook] Ticket confirmation email error:", emailErr.message);
+          try {
+            await supabase.from("email_log").insert({
+              member_id: null,
+              email_type: "event_ticket_confirmation",
+              sent_to: order.purchaser_email,
+              status: "error",
+              resend_id: null,
+            });
+          } catch (logErr) {
+            console.error("[stripe-webhook] email_log insert failed:", logErr.message);
+          }
+        }
+      }
+
+      // Staff notification for every completed purchase.
+      try {
+        const { subject, html } = buildStaffAlert({
+          typeLabel: `Event Tickets — ${order.ticketed_events?.title || "Event"}`,
+          amount: order.amount_cents / 100,
+          donorLevel: null,
+          name: order.purchaser_name,
+          email: order.purchaser_email,
+          memberId: null,
+          paymentDate,
+          sessionId: session.id,
+          timestamp: notificationTimestamp,
+        });
+        await resend.emails.send({
+          from: "Tryon History Museum <info@tryonhistorymuseum.org>",
+          to: ["info@tryonhistorymuseum.org"],
+          subject,
+          html,
+        });
+      } catch (alertErr) {
+        console.error("[webhook] Staff alert failed:", alertErr.message);
+      }
+
+      return NextResponse.json({ received: true });
+    }
 
     // ── Donation ──
     if (session.metadata?.payment_type === "donation") {
@@ -830,6 +980,47 @@ export async function POST(request) {
         });
       }
     }
+  }
+
+  // ── Ticket order pending hold released when the Stripe session expires ──
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object;
+    if (session.metadata?.payment_type === "event_ticket") {
+      await supabase
+        .from("event_orders")
+        .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+        .eq("stripe_session_id", session.id)
+        .eq("status", "pending");
+    }
+    return NextResponse.json({ received: true });
+  }
+
+  // ── Stripe-issued refunds for ticket orders (handled in the Dashboard) ──
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object;
+    const paymentIntent =
+      typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+    if (paymentIntent) {
+      const { data: order } = await supabase
+        .from("event_orders")
+        .select("id, status, amount_cents")
+        .eq("stripe_payment_intent_id", paymentIntent)
+        .maybeSingle();
+      if (order && order.status === "paid") {
+        const refundedCents = charge.amount_refunded ?? 0;
+        const fullyRefunded = refundedCents >= (charge.amount ?? order.amount_cents);
+        await supabase
+          .from("event_orders")
+          .update({
+            amount_refunded_cents: refundedCents,
+            refunded_at: new Date().toISOString(),
+            // Full refunds free the seats; partial refunds keep the order paid.
+            status: fullyRefunded ? "refunded" : "paid",
+          })
+          .eq("id", order.id);
+      }
+    }
+    return NextResponse.json({ received: true });
   }
 
   return NextResponse.json({ received: true });
