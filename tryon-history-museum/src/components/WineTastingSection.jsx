@@ -67,16 +67,34 @@ export default function WineTastingSection({ refundPolicy, assets = {} }) {
                 </a>
               </p>
             </div>
-            <div className="mx-auto w-full max-w-[380px] border border-brand-ink/10 bg-brand-parchment p-3 lg:max-w-none">
-              <Image
-                src={event.imagePath}
-                alt="Event flyer for An Evening of Wine & History at the Tryon Depot Room"
-                width={783}
-                height={1024}
-                priority
-                className="h-auto w-full"
-              />
-            </div>
+            {assets.depot ? (
+              <figure className="mx-auto w-full max-w-[420px] lg:max-w-none">
+                <div className="relative overflow-hidden border border-brand-ink/15">
+                  <Image
+                    src="/images/events/depot-room.jpg"
+                    alt="The historic Tryon Depot on Depot Street, its passenger platform running alongside the railroad tracks"
+                    width={940}
+                    height={1072}
+                    priority
+                    className="h-auto w-full contrast-[1.03] saturate-[0.9] sepia-[0.18]"
+                  />
+                  {/* Archival ephemera — postmark & handwriting edges at low opacity */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-30"
+                    style={{
+                      backgroundImage:
+                        "url(/images/brand/thm-ephemera-overlay.png)",
+                      backgroundSize: "220% auto",
+                      backgroundPosition: "left top",
+                    }}
+                  />
+                </div>
+                <figcaption className="mt-3 font-brand-body text-[13px] italic leading-[1.5] text-brand-ink/55">
+                  The Tryon Depot on Depot Street — home of the Depot Room.
+                </figcaption>
+              </figure>
+            ) : null}
           </div>
         </div>
       </section>
@@ -84,7 +102,7 @@ export default function WineTastingSection({ refundPolicy, assets = {} }) {
       {/* About the evening */}
       <section className="bg-brand-parchment">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-8 md:py-20">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-20">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
             <div>
               <SectionHeading>The Evening</SectionHeading>
               <p className="m-0 font-brand-body text-base leading-[1.75] text-brand-ink/75">
@@ -99,19 +117,23 @@ export default function WineTastingSection({ refundPolicy, assets = {} }) {
                 programs, and preservation work of the Tryon History Museum
                 &amp; Visitor Center.
               </p>
-              <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
+              <p className="m-0 mt-6 font-brand-display text-lg italic leading-[1.5] text-brand-heritage">
+                An evening of local wines, shared stories, and a little holiday
+                cheer.
+              </p>
+              <p className="m-0 mt-6 font-brand-body text-base leading-[1.75] text-brand-ink/75">
                 This tasting is for guests 21 and older. Valid photo
                 identification is required at the door.
               </p>
             </div>
-            {assets.depot ? (
-              <div className="self-start border border-brand-ink/10 bg-brand-cream p-3">
+            {assets.magnolia ? (
+              <div className="mx-auto w-full max-w-[380px] lg:max-w-[440px]">
                 <Image
-                  src="/images/events/depot-room.jpg"
-                  alt="The historic Tryon Depot, home of the Depot Room event space"
-                  width={900}
-                  height={600}
-                  className="h-auto w-full"
+                  src="/images/events/wine-magnolia.png"
+                  alt="A glass of red wine beside a magnolia blossom and winter greenery"
+                  width={808}
+                  height={748}
+                  className="h-auto w-full mix-blend-multiply [mask-image:radial-gradient(ellipse_72%_68%_at_55%_52%,black_52%,transparent_82%)]"
                 />
               </div>
             ) : null}
@@ -174,8 +196,8 @@ export default function WineTastingSection({ refundPolicy, assets = {} }) {
             </p>
             <p className="m-0 mt-5 font-brand-body text-base leading-[1.75] text-brand-ink/75">
               The Depot Room sits along the tracks in the heart of downtown
-              Tryon, a short walk from the Museum on Maple Street. Doors open
-              at {event.startTime}.
+              Tryon, a short walk from the Museum on Maple Street. The program
+              begins at {event.startTime}.
             </p>
             <div className="mt-7">
               <ButtonLink
@@ -219,11 +241,11 @@ export default function WineTastingSection({ refundPolicy, assets = {} }) {
               assets.sponsorLogos?.[name] ? (
                 <Image
                   key={name}
-                  src={assets.sponsorLogos[name]}
+                  src={assets.sponsorLogos[name].src}
                   alt={`${name} logo`}
-                  width={200}
-                  height={80}
-                  className="h-16 w-auto object-contain"
+                  width={assets.sponsorLogos[name].width}
+                  height={assets.sponsorLogos[name].height}
+                  className={`w-auto object-contain ${assets.sponsorLogos[name].className}`}
                 />
               ) : (
                 <span

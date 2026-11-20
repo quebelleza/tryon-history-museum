@@ -105,11 +105,20 @@ export default async function WineTastingPage() {
 
   const sponsorLogos = {};
   if (assetExists("mill-spring-farm-store-logo.png")) {
-    sponsorLogos["Mill Spring Farm Store"] =
-      "/images/events/mill-spring-farm-store-logo.png";
+    sponsorLogos["Mill Spring Farm Store"] = {
+      src: "/images/events/mill-spring-farm-store-logo.png",
+      width: 354,
+      height: 330,
+      className: "h-20",
+    };
   }
   if (assetExists("new-view-realty-logo.png")) {
-    sponsorLogos["New View Realty"] = "/images/events/new-view-realty-logo.png";
+    sponsorLogos["New View Realty"] = {
+      src: "/images/events/new-view-realty-logo.png",
+      width: 534,
+      height: 156,
+      className: "h-14",
+    };
   }
 
   return (
@@ -124,6 +133,7 @@ export default async function WineTastingPage() {
           refundPolicy={refundPolicy}
           assets={{
             depot: assetExists("depot-room.jpg"),
+            magnolia: assetExists("wine-magnolia.png"),
             sponsorLogos,
           }}
         />

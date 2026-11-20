@@ -18,7 +18,12 @@ export default function TicketSelector({ eventSlug }) {
 
   useEffect(() => {
     fetch(`/api/event-availability?event=${encodeURIComponent(eventSlug)}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((r) => {
+        if (r.ok) return r.json();
+        // Event row or ticket types not created yet → sales haven't opened.
+        if (r.status === 404) return { salesPending: true };
+        return Promise.reject();
+      })
       .then(setAvailability)
       .catch(() => setLoadError(true));
   }, [eventSlug]);
@@ -128,15 +133,18 @@ export default function TicketSelector({ eventSlug }) {
     );
   }
 
-  if (!availability.salesEnabled) {
+  if (availability.salesPending || !availability.salesEnabled) {
     return (
-      <div className="border border-brand-ink/10 bg-brand-parchment p-6 md:p-8">
+      <div className="border border-brand-ink/10 bg-brand-parchment p-6 text-center md:p-10">
         <p className="m-0 font-brand-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-heritage">
           Ticket Sales
         </p>
-        <p className="m-0 mt-3 font-brand-body text-base leading-[1.7] text-brand-ink/75">
-          Online ticket sales are not open yet. For questions about this event,
-          contact the Museum at{" "}
+        <p className="m-0 mt-3 font-brand-display text-[26px] font-normal leading-[1.2] text-brand-ink">
+          Ticket sales opening soon
+        </p>
+        <p className="m-0 mx-auto mt-4 max-w-[400px] font-brand-body text-base leading-[1.7] text-brand-ink/70">
+          Online ticketing for this event is not yet open — please check back
+          soon. In the meantime, questions are welcome at{" "}
           <a
             href="mailto:info@tryonhistorymuseum.org"
             className="text-brand-heritage underline decoration-brand-heritage/40 underline-offset-2"
